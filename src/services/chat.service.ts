@@ -42,6 +42,12 @@ export class ChatService {
     return ensureFound("Chat", chat, { id });
   }
 
+  async findByClientId(clientId: bigint): Promise<IChat> {
+    const id = requireBigInt(clientId, "clientId");
+    const chat = await this.repo.findByClientId(id);
+    return ensureFound("Chat", chat, { clientId: id });
+  }
+
   async update(data: UpdateChatDTO): Promise<IChat> {
     const id = requireBigInt(data.id, "id");
     ensureUpdates(data as Record<string, unknown>, ["mode", "clientId"], "Chat");

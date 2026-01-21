@@ -1,10 +1,12 @@
 import express from "express";
 import dotenv from "dotenv";
-// import morgan from 'morgan';
+import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
-// este error es meramente de typescript pero igualmente funciona, es por las importaciones de modulos que no se pueden importar por el commonjs y el type module
-import swaggerDocument from '../swagger_output.json' with { type: 'json' };
-import { log } from "node:console";
+import { errorHandler } from "./middlewares/error.middleware";
+// import de rutas principales
+import routes from "./routes/indexRoutes";
+import { readFileSync } from "node:fs";
+import path from "node:path";
 
 dotenv.config();
 
@@ -18,7 +20,10 @@ app.disable('x-powered-by')
 // middleware de json para express
 app.use(express.json());
 // middleware de logging en consola
-// app.use(morgan('dev'))
+app.use(morgan('dev'))
+
+// usar rutas principales
+app.use("/", routes)
 
 
 app.get('/', (req, res) => {
@@ -44,9 +49,15 @@ function isAppHealthy(): boolean {
   return true; 
 }
 
+// 📘 Swagger
+const swaggerPath = path.resolve(__dirname, "..", "swagger_output.json");
+const swaggerFile = JSON.parse(readFileSync(swaggerPath, "utf-8"));
 
 // Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
+
+// usar middleware de errores
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${PORT}`)
