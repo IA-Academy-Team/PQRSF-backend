@@ -27,6 +27,14 @@ export class AnalisisRepository {
     return result.rows;
   }
 
+  async findByPqrsId(pqrsId: number): Promise<IAnalisis | null> {
+    const result = await pool.query(
+      `SELECT id, answer, action_taken AS "actionTaken", created_at AS "createdAt", pqrs_id AS "pqrsId", responsible_id AS "responsibleId" FROM analysis WHERE pqrs_id = $1`,
+      normalizeValues([pqrsId])
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(data: UpdateAnalisisDTO): Promise<IAnalisis | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

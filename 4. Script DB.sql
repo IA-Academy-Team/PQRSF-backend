@@ -124,6 +124,7 @@ CREATE TABLE pqrs (
     client_id BIGINT NOT NULL,
     type_pqrs_id INT NOT NULL,
     area_id INT NOT NULL,
+    description TEXT NOT NULL,
     FOREIGN KEY (pqrs_status_id) REFERENCES pqrs_status(id),
     FOREIGN KEY (client_id) REFERENCES client(id),
     FOREIGN KEY (type_pqrs_id) REFERENCES type_pqrs(id),

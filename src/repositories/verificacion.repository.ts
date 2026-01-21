@@ -35,6 +35,17 @@ export class VerificacionRepository {
     return result.rows[0] ?? null;
   }
 
+  async findByIdentifierAndValue(
+    identifier: string,
+    value: string
+  ): Promise<IVerificacion | null> {
+    const result = await pool.query(
+      `SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications WHERE identifier = $1 AND value = $2`,
+      normalizeValues([identifier, value])
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(data: UpdateVerificacionDTO): Promise<IVerificacion | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

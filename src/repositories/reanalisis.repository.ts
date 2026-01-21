@@ -27,6 +27,14 @@ export class ReanalisisRepository {
     return result.rows;
   }
 
+  async findByAnalysisId(analysisId: number): Promise<IReanalisis | null> {
+    const result = await pool.query(
+      `SELECT id, answer, action_taken AS "actionTaken", created_at AS "createdAt", analysis_id AS "analysisId", responsible_id AS "responsibleId" FROM reanalysis WHERE analysis_id = $1`,
+      normalizeValues([analysisId])
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

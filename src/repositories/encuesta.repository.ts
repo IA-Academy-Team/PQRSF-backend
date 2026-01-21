@@ -27,6 +27,14 @@ export class EncuestaRepository {
     return result.rows;
   }
 
+  async findByPqrsId(pqrsId: number): Promise<IEncuesta | null> {
+    const result = await pool.query(
+      `SELECT id, q1_clarity AS "q1Clarity", q2_timeliness AS "q2Timeliness", q3_quality AS "q3Quality", q4_attention AS "q4Attention", q5_overall AS "q5Overall", comment, pqrs_id AS "pqrsId", created_at AS "createdAt" FROM survey WHERE pqrs_id = $1`,
+      normalizeValues([pqrsId])
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(data: UpdateEncuestaDTO): Promise<IEncuesta | null> {
     const fields: string[] = [];
     const values: unknown[] = [];
