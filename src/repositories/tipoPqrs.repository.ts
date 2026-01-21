@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ITipoPqrs } from "../models/tipoPqrs.model";
 import { CreateTipoPqrsDTO, UpdateTipoPqrsDTO, DeleteTipoPqrsDTO } from "../DTOs/tipoPqrs.dto";

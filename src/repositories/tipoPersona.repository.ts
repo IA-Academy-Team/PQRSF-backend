@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ITipoPersona } from "../models/tipoPersona.model";
 import { CreateTipoPersonaDTO, UpdateTipoPersonaDTO, DeleteTipoPersonaDTO } from "../DTOs/tipoPersona.dto";

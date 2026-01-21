@@ -29,3 +29,8 @@ export const deleteUsuario = asyncHandler(async (req: Request, res: Response) =>
   const result = await service.delete({ id } as { id: number });
   res.json({ deleted: result });
 });
+
+export const listUsuarios = asyncHandler(async (_req: Request, res: Response) => {
+  const result = await service.list();
+  res.json(result);
+});

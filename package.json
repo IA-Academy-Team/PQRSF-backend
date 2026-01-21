@@ -7,10 +7,11 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "nodemon --exec ts-node src/index.ts",
+    "dev": "npm run swagger:generate && nodemon --exec ts-node src/index.ts",
     "build": "tsc",
-    "start": "node src/index.jts",
-    "swagger": "ts-node swagger.ts"
+    "start": "npm run swagger:generate && node src/index.ts",
+    "swagger": "ts-node swagger.ts",
+    "swagger:generate": "ts-node swagger.ts"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -32,6 +33,7 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.2",
+    "bcrypt": "^6.0.0",
     "better-auth": "^1.4.16",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",

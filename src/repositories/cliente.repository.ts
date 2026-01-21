@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ICliente } from "../models/cliente.model";
 import { CreateClienteDTO, UpdateClienteDTO, DeleteClienteDTO } from "../DTOs/cliente.dto";

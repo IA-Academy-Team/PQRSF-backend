@@ -49,6 +49,10 @@ export class UsuarioService {
     return ensureFound("User", user, { id });
   }
 
+  async list(): Promise<IUsuario[]> {
+    return this.repo.findAll();
+  }
+
   async update(data: UpdateUsuarioDTO): Promise<IUsuario> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(

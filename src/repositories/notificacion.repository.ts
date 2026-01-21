@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { INotificacion } from "../models/notificacion.model";
 import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../DTOs/notificacion.dto";

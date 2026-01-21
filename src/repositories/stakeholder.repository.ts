@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IStakeholder } from "../models/stakeholder.model";
 import { CreateStakeholderDTO, UpdateStakeholderDTO, DeleteStakeholderDTO } from "../DTOs/stakeholder.dto";

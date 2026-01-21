@@ -23,12 +23,7 @@ app.use(express.json());
 app.use(morgan('dev'))
 
 // usar rutas principales
-app.use("/", routes)
-
-// hola mundo para probar el servidor
-app.get('/', (req, res) => {
-  res.send('Hello backend!');
-});
+app.use("/api", routes)
 
 // A simple health check endpoint
 app.get('/health', (req, res) => {

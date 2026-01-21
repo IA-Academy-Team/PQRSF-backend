@@ -1,10 +1,9 @@
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { createFieldAttribute } from "better-auth/db";
-import { twoFactor } from "better-auth/plugins";
 import { PostgresDialect } from "kysely";
 import bcrypt from "bcrypt";
-import pool from "./db";
+import pool from "./db.config";
 import { sendEmail } from "../utils/mailer.utils";
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
@@ -152,39 +151,9 @@ export const auth = betterAuth({
     },
   },
 
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
-      prompt: "select_account",
-    },
-    // microsoft: {
-    //   clientId: process.env.MICROSOFT_CLIENT_ID!,
-    //   clientSecret: process.env.MICROSOFT_CLIENT_SECRET!,
-    //   tenantId: process.env.MICROSOFT_TENANT_ID || "common",
-    //   authority: process.env.MICROSOFT_AUTHORITY || "https://login.microsoftonline.com",
-    //   prompt: "select_account",
-    // },
-  },
+  socialProviders: {},
 
-  plugins: [
-    twoFactor({
-      schema: {
-        user: {
-          fields: {
-            twoFactorEnabled: "two_factor_enabled",
-          },
-        },
-        twoFactor: {
-          modelName: "two_factor",
-          fields: {
-            userId: "user_id",
-            backupCodes: "backup_codes",
-          },
-        },
-      },
-    }),
-  ],
+  plugins: [],
 
   databaseHooks: {
     user: {
