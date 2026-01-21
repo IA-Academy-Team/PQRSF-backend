@@ -1,0 +1,293 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model TypePerson {
+  id      Int      @id @default(autoincrement())
+  name    String   @db.VarChar(50)
+  clients Client[]
+
+  @@map("type_person")
+}
+
+model Stakeholder {
+  id      Int      @id @default(autoincrement())
+  name    String   @db.VarChar(50)
+  clients Client[]
+
+  @@map("stakeholder")
+}
+
+model TypePqrs {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(50)
+  pqrs Pqrs[]
+
+  @@map("type_pqrs")
+}
+
+model PqrsStatus {
+  id   Int    @id @default(autoincrement())
+  name String @db.VarChar(50)
+  pqrs Pqrs[]
+
+  @@map("pqrs_status")
+}
+
+model Area {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(100)
+  code         String?       @unique @db.VarChar(10)
+  responsibles Responsible[]
+  pqrs         Pqrs[]
+
+  @@map("area")
+}
+
+model TypeDocument {
+  id        Int        @id @default(autoincrement())
+  name      String     @db.VarChar(50)
+  documents Document[]
+
+  @@map("type_document")
+}
+
+model Responsible {
+  id           Int           @id @default(autoincrement())
+  name         String        @db.VarChar(100)
+  email        String        @unique @db.VarChar(100)
+  password     String        @db.VarChar(100)
+  phoneNumber  String        @map("phone_number") @db.VarChar(100)
+  areaId       Int?          @map("area_id")
+  area         Area?         @relation(fields: [areaId], references: [id])
+  analyses     Analysis[]
+  reanalyses   Reanalysis[]
+  responses    Response[]
+  notifications Notification[]
+
+  @@map("responsible")
+}
+
+model Client {
+  id           BigInt      @id @db.BigInt
+  name         String?     @db.VarChar(100)
+  document     String?     @db.VarChar(20)
+  email        String?     @unique @db.VarChar(100)
+  phoneNumber  String?     @map("phone_number") @db.VarChar(100)
+  typePersonId Int?        @map("type_person_id")
+  stakeholderId Int?       @map("stakeholder_id")
+  typePerson   TypePerson? @relation(fields: [typePersonId], references: [id])
+  stakeholder  Stakeholder? @relation(fields: [stakeholderId], references: [id])
+  chats        Chat[]
+  pqrs         Pqrs[]
+
+  @@map("client")
+}
+
+model Chat {
+  id       BigInt    @id @db.BigInt
+  mode     Int?      @default(1) @db.SmallInt
+  clientId BigInt?   @map("client_id")
+  client   Client?   @relation(fields: [clientId], references: [id])
+  messages Message[]
+
+  @@map("chat")
+}
+
+model Message {
+  id        Int      @id @default(autoincrement())
+  content   String?  @db.Text
+  type      Int?     @db.SmallInt
+  createdAt DateTime @default(now()) @map("created_at")
+  chatId    BigInt   @map("chat_id")
+  chat      Chat     @relation(fields: [chatId], references: [id])
+
+  @@map("message")
+}
+
+model Pqrs {
+  id            Int           @id @default(autoincrement())
+  ticketNumber  String        @unique @map("ticket_number") @db.VarChar(50)
+  isAutoResolved Boolean      @default(false) @map("is_auto_resolved")
+  dueDate       DateTime?     @map("due_date") @db.Date
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @default(now()) @map("updated_at")
+  pqrsStatusId  Int           @map("pqrs_status_id")
+  clientId      BigInt        @map("client_id")
+  typePqrsId    Int           @map("type_pqrs_id")
+  areaId        Int           @map("area_id")
+  pqrsStatus    PqrsStatus    @relation(fields: [pqrsStatusId], references: [id])
+  client        Client        @relation(fields: [clientId], references: [id])
+  typePqrs      TypePqrs      @relation(fields: [typePqrsId], references: [id])
+  area          Area          @relation(fields: [areaId], references: [id])
+  analyses      Analysis[]
+  documents     Document[]
+  notifications Notification[]
+  responses     Response[]
+  surveys       Survey[]
+
+  @@map("pqrs")
+}
+
+model Analysis {
+  id            Int         @id @default(autoincrement())
+  answer        String?     @db.Text
+  actionTaken   String?     @map("action_taken") @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at")
+  pqrsId        Int         @map("pqrs_id")
+  responsibleId Int         @map("responsible_id")
+  pqrs          Pqrs        @relation(fields: [pqrsId], references: [id])
+  responsible   Responsible @relation(fields: [responsibleId], references: [id])
+  reanalyses    Reanalysis[]
+
+  @@map("analysis")
+}
+
+model Reanalysis {
+  id            Int         @id @default(autoincrement())
+  answer        String?     @db.Text
+  actionTaken   String?     @map("action_taken") @db.Text
+  createdAt     DateTime    @default(now()) @map("created_at")
+  analysisId    Int         @map("analysis_id")
+  responsibleId Int         @map("responsible_id")
+  analysis      Analysis    @relation(fields: [analysisId], references: [id])
+  responsible   Responsible @relation(fields: [responsibleId], references: [id])
+
+  @@map("reanalysis")
+}
+
+model Document {
+  id             Int          @id @default(autoincrement())
+  url            String       @db.VarChar(500)
+  typeDocumentId Int          @map("type_document_id")
+  pqrsId         Int          @map("pqrs_id")
+  typeDocument   TypeDocument @relation(fields: [typeDocumentId], references: [id])
+  pqrs           Pqrs         @relation(fields: [pqrsId], references: [id])
+  responses      Response[]
+
+  @@map("document")
+}
+
+model Response {
+  id            Int         @id @default(autoincrement())
+  content       String      @db.Text
+  channel       Int         @db.SmallInt
+  sentAt        DateTime    @default(now()) @map("sent_at")
+  documentId    Int         @map("document_id")
+  pqrsId        Int         @map("pqrs_id")
+  responsibleId Int         @map("responsible_id")
+  document      Document    @relation(fields: [documentId], references: [id])
+  pqrs          Pqrs        @relation(fields: [pqrsId], references: [id])
+  responsible   Responsible @relation(fields: [responsibleId], references: [id])
+
+  @@map("response")
+}
+
+model Survey {
+  id           Int      @id @default(autoincrement())
+  q1Clarity    Int?     @map("q1_clarity")
+  q2Timeliness Int?     @map("q2_timeliness")
+  q3Quality    Int?     @map("q3_quality")
+  q4Attention  Int?     @map("q4_attention")
+  q5Overall    Int?     @map("q5_overall")
+  comment      String?  @db.VarChar(500)
+  pqrsId       Int      @map("pqrs_id")
+  createdAt    DateTime @default(now()) @map("created_at")
+  pqrs         Pqrs     @relation(fields: [pqrsId], references: [id])
+
+  @@map("survey")
+}
+
+model Notification {
+  id            Int         @id @default(autoincrement())
+  message       String      @db.VarChar(500)
+  status        Int         @default(1) @db.SmallInt
+  responsibleId Int         @map("responsible_id")
+  pqrsId        Int         @map("pqrs_id")
+  createdAt     DateTime    @default(now()) @map("created_at")
+  responsible   Responsible @relation(fields: [responsibleId], references: [id])
+  pqrs          Pqrs        @relation(fields: [pqrsId], references: [id])
+
+  @@map("notification")
+}
+
+model Role {
+  id          Int    @id @default(autoincrement())
+  name        String @unique @db.VarChar(50)
+  description String? @db.VarChar(255)
+  createdAt   DateTime @default(now()) @map("created_at")
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id               Int       @id @default(autoincrement())
+  email            String    @unique @db.VarChar(255)
+  name             String?   @db.VarChar(255)
+  image            String?   @db.Text
+  phoneNumber      String?   @unique @map("phone_number") @db.VarChar(20)
+  isActive         Boolean   @default(true) @map("is_active")
+  emailVerified    Boolean   @default(false) @map("email_verified")
+  twoFactorEnabled Boolean   @default(false) @map("two_factor_enabled")
+  lastLogin        DateTime? @map("last_login")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime  @default(now()) @map("updated_at")
+  roleId           Int       @default(1) @map("role_id")
+  role             Role      @relation(fields: [roleId], references: [id])
+  sessions         Session[]
+  accounts         Account[]
+
+  @@map("users")
+}
+
+model Session {
+  id        Int      @id @default(autoincrement())
+  token     String   @unique @db.Text
+  expiresAt DateTime @map("expires_at")
+  ipAddress String?  @map("ip_address") @db.Text
+  userAgent String?  @map("user_agent") @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @map("updated_at")
+  userId    Int      @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                    Int       @id @default(autoincrement())
+  providerId            String    @map("provider_id") @db.Text
+  providerAccountId     String    @map("provider_account_id") @db.Text
+  password              String?   @db.Text
+  accessToken           String?   @map("access_token") @db.Text
+  refreshToken          String?   @map("refresh_token") @db.Text
+  idToken               String?   @map("id_token") @db.Text
+  accessTokenExpiresAt  DateTime? @map("access_token_expires_at")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+  scope                 String?   @db.Text
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @map("updated_at")
+  userId                Int       @map("user_id")
+  user                  User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, providerAccountId])
+  @@map("accounts")
+}
+
+model Verification {
+  id        Int      @id @default(autoincrement())
+  identifier String @db.Text
+  value     String  @db.Text
+  expiresAt DateTime @map("expires_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@unique([identifier, value], name: "identifier_value")
+  @@map("verifications")
+}
