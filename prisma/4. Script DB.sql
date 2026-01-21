@@ -200,6 +200,74 @@ CREATE TABLE notification (
     FOREIGN KEY (pqrs_id) REFERENCES pqrs(id)
 );
 
+-- ==============================
+-- Auth
+-- ==============================
+
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL, -- Solo @campuslands.com
+    name VARCHAR(255),                 -- Nombre completo (OAuth-friendly)
+    image TEXT,                         -- Avatar (Google, GitHub, etc.)
+    phone_number VARCHAR(20) UNIQUE,
+    is_active BOOLEAN DEFAULT true,
+    email_verified BOOLEAN DEFAULT false,
+    two_factor_enabled BOOLEAN DEFAULT false,
+    last_login TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    role_id INTEGER NOT NULL DEFAULT 1,
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+CREATE TABLE sessions (
+    id SERIAL PRIMARY KEY,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    provider_id TEXT NOT NULL,          -- google, github, credential
+    provider_account_id TEXT NOT NULL,  -- sub / accountId / email
+    password TEXT,                      -- SOLO para provider 'credentials' cuando el usuario ingrea por contraseña
+    access_token TEXT,
+    refresh_token TEXT,
+    id_token TEXT,
+    access_token_expires_at TIMESTAMPTZ,
+    refresh_token_expires_at TIMESTAMPTZ,
+    scope TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (provider_id, provider_account_id)
+);
+
+-- * esta tabla se encarga de tener una boveda temporal de pruebas de identidad con better auth, no tiene relacion alguna con ninguna tabla de la base de datos
+CREATE TABLE verifications (
+    id SERIAL PRIMARY KEY,
+    identifier TEXT NOT NULL, -- email
+    value TEXT NOT NULL,      -- token / code
+    expires_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    UNIQUE (identifier, value)
+);
+
 COMMENT ON COLUMN notification.status IS '1 = NO LEIDO, 2 = LEIDO';
 
 -- ==============================
@@ -267,3 +335,104 @@ INSERT INTO type_document (name) VALUES
 ('Respuesta'),
 ('Evidencia'),
 ('Otro');
+
+-- ==============================
+-- Auth
+-- ==============================
+
+INSERT INTO roles (name) VALUES
+('responsable'),
+('admin');
+
+
+-- USERS
+-- Test1234 y Admin1234 son las contraseñas de los usuarios de prueba
+INSERT INTO users (email, name, image, phone_number, role_id, is_active, email_verified) VALUES
+('juan.perez@campuslands.com',       'Juan Perez',        NULL, '3001112233', 1, true,  true),
+('admin.alvarez@campuslands.com',    'Admin Alvarez',     NULL, '3002223344', 2, true,  true);
+
+-- SESSIONS
+INSERT INTO sessions (token, user_id, expires_at, ip_address, user_agent, created_at, updated_at)
+VALUES (
+    'token-juan',
+    (SELECT id FROM users WHERE email='juan.perez@campuslands.com'),
+    '2026-12-31T23:59:59.999Z',
+    '127.0.0.1',
+    'Mozilla/5.0 ...',
+    NOW(),
+    NOW()
+),
+(
+    'token-admin',
+    (SELECT id FROM users WHERE email='admin.alvarez@campuslands.com'),
+    '2026-12-31T23:59:59.999Z',
+    '127.0.0.1',
+    'Mozilla/5.0 ...',
+    NOW(),
+    NOW()
+);
+
+-- ACCOUNTS
+INSERT INTO accounts (
+  provider_id,
+  provider_account_id,
+  password,
+  access_token,
+  refresh_token,
+  id_token,
+  access_token_expires_at,
+  refresh_token_expires_at,
+  scope,
+  created_at,
+  updated_at,
+  user_id
+) VALUES
+(
+  'credential',
+  'juan.perez@campuslands.com',
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  'openid profile email',
+  NOW(),
+  NOW(),
+  1
+),
+(
+  'credential',
+  'admin.alvarez@campuslands.com',
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  NULL,
+  'openid profile email',
+  NOW(),
+  NOW(),
+  2
+);
+
+
+
+-- VERFICIATIONS
+INSERT INTO verifications (
+    identifier,
+    value,
+    expires_at
+) VALUES
+(
+    'juan.perez@campuslands.com',
+    '123456',
+    '2022-12-31T23:59:59.999Z'
+),
+(
+    'admin.alvarez@campuslands.com',
+    '654321',
+    '2022-12-31T23:59:59.999Z'
+);  
+
+\dt
