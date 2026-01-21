@@ -13,6 +13,10 @@ const PORT = 3000;
 // middleware de json para express
 app.use(express.json());
 
+app.get('/', (req, res) => {
+  res.send('Hello backend!');
+});
+
 // A simple health check endpoint
 app.get('/health', (req, res) => {
   // In a real app, you might also check database connection, etc.

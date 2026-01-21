@@ -4,7 +4,7 @@ import { createFieldAttribute } from "better-auth/db";
 import { twoFactor } from "better-auth/plugins";
 import { PostgresDialect } from "kysely";
 import bcrypt from "bcrypt";
-import pool from "../database/db";
+import pool from "./db";
 import { sendEmail } from "../email/mailer";
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
