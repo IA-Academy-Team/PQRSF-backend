@@ -17,9 +17,13 @@ app.use(express.json());
 app.get('/health', (req, res) => {
   // In a real app, you might also check database connection, etc.
   if (isAppHealthy()) {
-    res.status(200).send('ok');
+    res.status(200).send({
+      status: 'ok',
+    });
   } else {
-    res.send('Service Unavailable');
+    res.send({
+      status: 'error',
+    });
   }
 });
 

@@ -16,3 +16,7 @@ Este proyecto es una aplicación de gestión de peticiones de recambio de servic
 El proyecto está dividido en dos partes principales: la API y la interfaz de usuario web. La API se encarga de manejar las peticiones de los usuarios y proporcionar información detallada sobre las peticiones. La interfaz de usuario web se encarga de presentar la información de las peticiones en un formato fácil de comprender para los usuarios.
 
 La API se encarga de manejar las peticiones de los usuarios y proporcionar información detallada sobre las peticiones. La interfaz de usuario web se encarga de presentar la información de las peticiones en un formato fácil de comprender para los usuarios.
+
+### Arquitectura del backend
+
+se implementa una arquitectura similar a DDD para manejar las entidades y los servicios por parte del dominio.
