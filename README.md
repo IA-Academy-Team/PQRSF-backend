@@ -10,6 +10,7 @@ Este proyecto es una aplicación de gestión de peticiones de recambio de servic
 - Express.js
 - PostgreSQL
 - Swagger
+- Zod
 
 ## Estructura del proyecto
 
@@ -19,4 +20,39 @@ La API se encarga de manejar las peticiones de los usuarios y proporcionar infor
 
 ### Arquitectura del backend
 
-se implementa una arquitectura similar a DDD para manejar las entidades y los servicios por parte del dominio.
+se implementa una arquitectura similar a MVC que se separa que acuerdo a las funcionalidades de la aplicación.
+
+este es un ejemplo de como se podria dividir la aplicación en diferentes componentes:
+```bash
+.
+├── src
+│   ├── controllers
+│   │   └── user.controller.ts
+│   ├── dtos
+│   │   └── user.dto.ts
+│   ├── index.ts
+│   ├── middlewares
+│   │   └── user.middleware.ts
+│   ├── models
+│   │   └── user.model.ts
+│   ├── routes
+│   │   └── user.route.ts
+│   ├── services
+│   │   └── user.service.ts
+│   └── utils
+│       └── user.util.ts
+```
+
+### Arquitectura del frontend
+
+se implementa una arquitectura similar a MVC que se separa que acuerdo a las funcionalidades de la aplicación.
+
+este es un ejemplo de como se podria dividir la aplicación en diferentes componentes:
+
+```bash
+.
+├── src
+│   ├── components
+│   │   ├── auth
+│   │   │   ├── auth.component.ts
+│   │   │   ├── auth.controller

@@ -1,0 +1,59 @@
+import pool from "../config/db";
+import { normalizeValues } from "./repository.utils";
+import { IArea } from "../models/IArea";
+import { CreateAreaDTO, UpdateAreaDTO, DeleteAreaDTO } from "../DTOs/area.dto";
+
+export class AreaRepository {
+  private readonly table = "area";
+
+  async create(data: CreateAreaDTO): Promise<IArea> {
+    const result = await pool.query(
+      `INSERT INTO area (name, code) VALUES ($1, $2) RETURNING id, name, code`,
+      normalizeValues([data.name, data.code])
+    );
+    return result.rows[0];
+  }
+
+  async findById(id: number): Promise<IArea | null> {
+    const result = await pool.query(
+      `SELECT id, name, code FROM area WHERE id = $1`,
+      normalizeValues([id])
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async findAll(): Promise<IArea[]> {
+    const result = await pool.query(`SELECT id, name, code FROM area ORDER BY id`);
+    return result.rows;
+  }
+
+  async update(data: UpdateAreaDTO): Promise<IArea | null> {
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let index = 1;
+    if (data.name !== undefined) {
+      fields.push(`name = $${index}`);
+      values.push(data.name);
+      index += 1;
+    }
+    if (data.code !== undefined) {
+      fields.push(`code = $${index}`);
+      values.push(data.code);
+      index += 1;
+    }
+    if (fields.length === 0) {
+      return this.findById(data.id as number);
+    }
+    values.push(data.id);
+    const result = await pool.query(
+      `UPDATE area SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name, code`,
+      normalizeValues(values)
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async delete(data: DeleteAreaDTO): Promise<boolean> {
+    const result = await pool.query(`DELETE FROM area WHERE id = $1`, normalizeValues([data.id]));
+    return (result.rowCount ?? 0) > 0;
+  }
+}

@@ -14,11 +14,7 @@ export interface IPqrs {
   pqrsStatusId: number;
   clientId: bigint;
   typePqrsId: number;
-  areaId: number;
+areaId: number;
 }
 
 export type PQRS = IPqrs;
-
-export type CreatePqrsDTO = Omit<IPqrs, "id" | "createdAt" | "updatedAt">;
-export type UpdatePqrsDTO = Partial<CreatePqrsDTO> & { id: number };
-export type DeletePqrsDTO = { id: number };
