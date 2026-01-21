@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IDocumento } from "../models/IDocumento";
+import { IDocumento } from "../models/documento.model";
 import { CreateDocumentoDTO, UpdateDocumentoDTO, DeleteDocumentoDTO } from "../DTOs/documento.dto";
 
 export class DocumentoRepository {

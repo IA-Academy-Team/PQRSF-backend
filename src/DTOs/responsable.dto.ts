@@ -1,4 +1,4 @@
-import { IResponsable } from "../models/IResponsable";
+import { IResponsable } from "../models/responsable.model";
 
 export type CreateResponsableDTO = Omit<IResponsable, "id">;
 export type UpdateResponsableDTO = Partial<Omit<IResponsable, "id">> & { id: number };

@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IPqrs } from "../models/IPqrs";
+import { IPqrs } from "../models/pqrs.model";
 import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../DTOs/pqrs.dto";
 
 export interface PqrsFilters {

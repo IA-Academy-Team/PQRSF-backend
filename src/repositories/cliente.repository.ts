@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { ICliente } from "../models/ICliente";
+import { ICliente } from "../models/cliente.model";
 import { CreateClienteDTO, UpdateClienteDTO, DeleteClienteDTO } from "../DTOs/cliente.dto";
 
 export class ClienteRepository {

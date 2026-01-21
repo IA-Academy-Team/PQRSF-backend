@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { ISesion } from "../models/ISesion";
+import { ISesion } from "../models/sesion.model";
 import { CreateSesionDTO, UpdateSesionDTO, DeleteSesionDTO } from "../DTOs/sesion.dto";
 
 export class SesionRepository {
@@ -25,6 +25,14 @@ export class SesionRepository {
   async findAll(): Promise<ISesion[]> {
     const result = await pool.query(`SELECT id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM sessions ORDER BY id`);
     return result.rows;
+  }
+
+  async findByToken(token: string): Promise<ISesion | null> {
+    const result = await pool.query(
+      `SELECT id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM sessions WHERE token = $1`,
+      normalizeValues([token])
+    );
+    return result.rows[0] ?? null;
   }
 
   async update(data: UpdateSesionDTO): Promise<ISesion | null> {

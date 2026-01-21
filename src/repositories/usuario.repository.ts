@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IUsuario } from "../models/IUsuario";
+import { IUsuario } from "../models/usuario.model";
 import { CreateUsuarioDTO, UpdateUsuarioDTO, DeleteUsuarioDTO } from "../DTOs/usuario.dto";
 
 export class UsuarioRepository {

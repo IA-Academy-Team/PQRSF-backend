@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IResponsable } from "../models/IResponsable";
+import { IResponsable } from "../models/responsable.model";
 import { CreateResponsableDTO, UpdateResponsableDTO, DeleteResponsableDTO } from "../DTOs/responsable.dto";
 
 export class ResponsableRepository {
@@ -24,6 +24,22 @@ export class ResponsableRepository {
 
   async findAll(): Promise<IResponsable[]> {
     const result = await pool.query(`SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible ORDER BY id`);
+    return result.rows;
+  }
+
+  async findByEmail(email: string): Promise<IResponsable | null> {
+    const result = await pool.query(
+      `SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible WHERE email = $1`,
+      normalizeValues([email])
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async findByAreaId(areaId: number): Promise<IResponsable[]> {
+    const result = await pool.query(
+      `SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible WHERE area_id = $1 ORDER BY id`,
+      normalizeValues([areaId])
+    );
     return result.rows;
   }
 

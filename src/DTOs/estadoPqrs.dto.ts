@@ -1,4 +1,4 @@
-import { IEstadoPqrs } from "../models/IEstadoPqrs";
+import { IEstadoPqrs } from "../models/estado.model";
 
 export type CreateEstadoPqrsDTO = Omit<IEstadoPqrs, "id">;
 export type UpdateEstadoPqrsDTO = Partial<Omit<IEstadoPqrs, "id">> & { id: number };

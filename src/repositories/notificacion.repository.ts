@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { INotificacion } from "../models/INotificacion";
+import { INotificacion } from "../models/notificacion.model";
 import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../DTOs/notificacion.dto";
 
 export class NotificacionRepository {

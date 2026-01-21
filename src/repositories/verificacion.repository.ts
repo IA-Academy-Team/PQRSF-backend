@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IVerificacion } from "../models/IVerificacion";
+import { IVerificacion } from "../models/verificacion.model";
 import { CreateVerificacionDTO, UpdateVerificacionDTO, DeleteVerificacionDTO } from "../DTOs/verificacion.dto";
 
 export class VerificacionRepository {
@@ -25,6 +25,14 @@ export class VerificacionRepository {
   async findAll(): Promise<IVerificacion[]> {
     const result = await pool.query(`SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications ORDER BY id`);
     return result.rows;
+  }
+
+  async findByIdentifier(identifier: string): Promise<IVerificacion | null> {
+    const result = await pool.query(
+      `SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications WHERE identifier = $1`,
+      normalizeValues([identifier])
+    );
+    return result.rows[0] ?? null;
   }
 
   async update(data: UpdateVerificacionDTO): Promise<IVerificacion | null> {

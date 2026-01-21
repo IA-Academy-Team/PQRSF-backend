@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IMensaje } from "../models/IMensaje";
+import { IMensaje } from "../models/mensaje.model";
 import { CreateMensajeDTO, UpdateMensajeDTO, DeleteMensajeDTO } from "../DTOs/mensaje.dto";
 
 export class MensajeRepository {

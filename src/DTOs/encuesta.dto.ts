@@ -1,4 +1,4 @@
-import { IEncuesta } from "../models/IEncuesta";
+import { IEncuesta } from "../models/encuesta.model";
 
 export type CreateEncuestaDTO = Omit<IEncuesta, "id" | "createdAt">;
 export type UpdateEncuestaDTO = Partial<Omit<IEncuesta, "id">> & { id: number };

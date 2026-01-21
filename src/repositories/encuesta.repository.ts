@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IEncuesta } from "../models/IEncuesta";
+import { IEncuesta } from "../models/encuesta.model";
 import { CreateEncuestaDTO, UpdateEncuestaDTO, DeleteEncuestaDTO } from "../DTOs/encuesta.dto";
 
 export class EncuestaRepository {

@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IEstadoPqrs } from "../models/IEstadoPqrs";
+import { IEstadoPqrs } from "../models/estado.model";
 import { CreateEstadoPqrsDTO, UpdateEstadoPqrsDTO, DeleteEstadoPqrsDTO } from "../DTOs/estadoPqrs.dto";
 
 export class EstadoPqrsRepository {

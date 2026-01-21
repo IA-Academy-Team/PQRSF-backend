@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IRol } from "../models/IRol";
+import { IRol } from "../models/rol.model";
 import { CreateRolDTO, UpdateRolDTO, DeleteRolDTO } from "../DTOs/rol.dto";
 
 export class RolRepository {
@@ -25,6 +25,14 @@ export class RolRepository {
   async findAll(): Promise<IRol[]> {
     const result = await pool.query(`SELECT id, name, description, created_at AS "createdAt" FROM roles ORDER BY id`);
     return result.rows;
+  }
+
+  async findByName(name: string): Promise<IRol | null> {
+    const result = await pool.query(
+      `SELECT id, name, description, created_at AS "createdAt" FROM roles WHERE name = $1`,
+      normalizeValues([name])
+    );
+    return result.rows[0] ?? null;
   }
 
   async update(data: UpdateRolDTO): Promise<IRol | null> {

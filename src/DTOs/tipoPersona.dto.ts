@@ -1,4 +1,4 @@
-import { ITipoPersona } from "../models/ITipoPersona";
+import { ITipoPersona } from "../models/tipoPersona.model";
 
 export type CreateTipoPersonaDTO = Omit<ITipoPersona, "id">;
 export type UpdateTipoPersonaDTO = Partial<Omit<ITipoPersona, "id">> & { id: number };

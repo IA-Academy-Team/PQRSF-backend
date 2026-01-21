@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IChat } from "../models/IChat";
+import { IChat } from "../models/chat.model";
 import { CreateChatDTO, UpdateChatDTO, DeleteChatDTO } from "../DTOs/chat.dto";
 
 export class ChatRepository {

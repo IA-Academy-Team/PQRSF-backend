@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { IArea } from "../models/IArea";
+import { IArea } from "../models/area.model";
 import { CreateAreaDTO, UpdateAreaDTO, DeleteAreaDTO } from "../DTOs/area.dto";
 
 export class AreaRepository {

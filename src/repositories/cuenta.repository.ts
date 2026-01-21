@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { ICuenta } from "../models/ICuenta";
+import { ICuenta } from "../models/cuenta.model";
 import { CreateCuentaDTO, UpdateCuentaDTO, DeleteCuentaDTO } from "../DTOs/cuenta.dto";
 
 export class CuentaRepository {

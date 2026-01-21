@@ -1,4 +1,4 @@
-import { ICliente } from "../models/ICliente";
+import { ICliente } from "../models/cliente.model";
 
 export type CreateClienteDTO = ICliente;
 export type UpdateClienteDTO = Partial<Omit<ICliente, "id">> & { id: bigint };

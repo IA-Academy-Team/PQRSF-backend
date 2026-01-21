@@ -1,6 +1,6 @@
 import pool from "../config/db";
 import { normalizeValues } from "./repository.utils";
-import { ITipoPqrs } from "../models/ITipoPqrs";
+import { ITipoPqrs } from "../models/tipoPqrs.model";
 import { CreateTipoPqrsDTO, UpdateTipoPqrsDTO, DeleteTipoPqrsDTO } from "../DTOs/tipoPqrs.dto";
 
 export class TipoPqrsRepository {

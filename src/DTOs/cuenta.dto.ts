@@ -1,4 +1,4 @@
-import { ICuenta } from "../models/ICuenta";
+import { ICuenta } from "../models/cuenta.model";
 
 export type CreateCuentaDTO = Omit<ICuenta, "id" | "createdAt" | "updatedAt">;
 export type UpdateCuentaDTO = Partial<Omit<ICuenta, "id">> & { id: number };

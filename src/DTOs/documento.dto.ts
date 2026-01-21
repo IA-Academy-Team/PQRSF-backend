@@ -1,4 +1,4 @@
-import { IDocumento } from "../models/IDocumento";
+import { IDocumento } from "../models/documento.model";
 
 export type CreateDocumentoDTO = Omit<IDocumento, "id">;
 export type UpdateDocumentoDTO = Partial<Omit<IDocumento, "id">> & { id: number };
