@@ -6,14 +6,14 @@ export class PqrsRepository {
     return pool.pqrs.create({ data });
   }
 
-  async findById(id: string): Promise<PQRS | null> {
+  async findById(id: number): Promise<PQRS | null> {
     return pool.pqrs.findUnique({ where: { id } });
   }
 
-  async updateStatus(id: string, status: string) {
+  async updateStatus(id: number, pqrsStatusId: number) {
     return pool.pqrs.update({
       where: { id },
-      data: { status },
+      data: { pqrsStatusId },
     });
   }
 }

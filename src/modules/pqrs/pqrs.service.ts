@@ -1,6 +1,6 @@
 import { PqrsRepository } from "./pqrs.repository";
 import { PQRSStatus } from "./pqrs.types";
-import { CreatePqrsDTO } from "./pqrs.schema";
+import { CreatePqrsDTO } from "./pqrs.types";
 import { generateTicket } from "../../utils/ticket.utils";
 import { calculateDueDate } from "../../utils/date.utils";
 
@@ -12,11 +12,11 @@ export class PqrsService {
 
     const pqrs = await this.repo.create({
       ticketNumber,
-      clientId: data.client_id,
-      areaId: data.area_id,
-      status: "RADICADO",
+      clientId: data.clientId,
+      areaId: data.areaId,
+      pqrsStatusId: 1,
       dueDate: calculateDueDate(15),
-      isAutoResolved: data.is_auto_resolved,
+      isAutoResolved: data.isAutoResolved,
     });
 
     return pqrs;
