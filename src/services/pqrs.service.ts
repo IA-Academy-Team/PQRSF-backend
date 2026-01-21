@@ -1,0 +1,231 @@
+import { AppError } from "../middlewares/error.middleware";
+import { CreatePqrsDTO, DeletePqrsDTO, UpdatePqrsDTO } from "../DTOs/pqrs.dto";
+import { IPqrs } from "../models/IPqrs";
+import { PqrsRepository, PqrsFilters } from "../repositories/pqrs.repository";
+import { AreaRepository } from "../repositories/area.repository";
+import { TipoPqrsRepository } from "../repositories/tipoPqrs.repository";
+import { ClienteRepository } from "../repositories/cliente.repository";
+import { calculateDueDate } from "../utils/date.utils";
+import { generateTicket } from "../utils/ticket.utils";
+import {
+  ensureFound,
+  ensureUpdates,
+  optionalBoolean,
+  optionalDate,
+  optionalPositiveInt,
+  optionalString,
+  requireBigInt,
+  requirePositiveInt,
+  requireString,
+} from "../utils/validation.utils";
+
+const PQRS_STATUS = {
+  RADICADO: 1,
+  ANALISIS: 2,
+  REANALISIS: 3,
+  CERRADO: 4,
+} as const;
+
+export class PqrsService {
+  constructor(
+    private readonly repo = new PqrsRepository(),
+    private readonly areaRepo = new AreaRepository(),
+    private readonly tipoPqrsRepo = new TipoPqrsRepository(),
+    private readonly clienteRepo = new ClienteRepository()
+  ) {}
+
+  private validateTransition(current: number, next: number, isAutoResolved: boolean) {
+    const allowed: Record<number, number[]> = {
+      [PQRS_STATUS.RADICADO]: [PQRS_STATUS.ANALISIS, PQRS_STATUS.CERRADO],
+      [PQRS_STATUS.ANALISIS]: [PQRS_STATUS.REANALISIS, PQRS_STATUS.CERRADO],
+      [PQRS_STATUS.REANALISIS]: [PQRS_STATUS.CERRADO],
+    };
+
+    if (current === PQRS_STATUS.RADICADO && next === PQRS_STATUS.CERRADO) {
+      if (!isAutoResolved) {
+        throw new AppError(
+          "PQRS cannot be closed directly unless it is auto resolved",
+          409,
+          "BUSINESS_RULE_VIOLATION"
+        );
+      }
+      return;
+    }
+
+    if (!allowed[current]?.includes(next)) {
+      throw new AppError(
+        `Invalid status transition ${current} -> ${next}`,
+        409,
+        "BUSINESS_RULE_VIOLATION",
+        { current, next }
+      );
+    }
+  }
+
+  async create(data: CreatePqrsDTO): Promise<IPqrs> {
+    const clientId = requireBigInt(data.clientId, "clientId");
+    const typePqrsId = requirePositiveInt(data.typePqrsId, "typePqrsId");
+    const areaId = requirePositiveInt(data.areaId, "areaId");
+    const isAutoResolved = optionalBoolean(
+      data.isAutoResolved,
+      "isAutoResolved"
+    ) ?? false;
+
+    ensureFound(
+      "Client",
+      await this.clienteRepo.findById(clientId),
+      { clientId }
+    );
+    ensureFound(
+      "Area",
+      await this.areaRepo.findById(areaId),
+      { areaId }
+    );
+    ensureFound(
+      "TypePqrs",
+      await this.tipoPqrsRepo.findById(typePqrsId),
+      { typePqrsId }
+    );
+
+    const ticketNumber = data.ticketNumber
+      ? requireString(data.ticketNumber, "ticketNumber")
+      : generateTicket();
+    const existingTicket = await this.repo.findByTicketNumber(ticketNumber);
+    if (existingTicket) {
+      throw new AppError(
+        "Ticket number already exists",
+        409,
+        "CONFLICT",
+        { ticketNumber }
+      );
+    }
+
+    const dueDate =
+      data.dueDate !== undefined && data.dueDate !== null
+        ? optionalDate(data.dueDate, "dueDate")
+        : new Date(calculateDueDate(15));
+
+    const statusId =
+      data.pqrsStatusId ?? (isAutoResolved ? PQRS_STATUS.CERRADO : PQRS_STATUS.RADICADO);
+
+    if (isAutoResolved && statusId !== PQRS_STATUS.CERRADO) {
+      throw new AppError(
+        "Auto-resolved PQRS must start as Cerrado",
+        409,
+        "BUSINESS_RULE_VIOLATION"
+      );
+    }
+    if (!isAutoResolved && statusId !== PQRS_STATUS.RADICADO) {
+      throw new AppError(
+        "Non auto-resolved PQRS must start as Radicado",
+        409,
+        "BUSINESS_RULE_VIOLATION"
+      );
+    }
+
+    return this.repo.create({
+      ticketNumber,
+      isAutoResolved,
+      dueDate,
+      pqrsStatusId: statusId,
+      clientId,
+      typePqrsId,
+      areaId,
+    });
+  }
+
+  async findById(id: number): Promise<IPqrs> {
+    const pqrs = await this.repo.findById(requirePositiveInt(id, "id"));
+    return ensureFound("PQRS", pqrs, { id });
+  }
+
+  async list(filters: PqrsFilters): Promise<IPqrs[]> {
+    const validated: PqrsFilters = {
+      pqrsStatusId: optionalPositiveInt(filters.pqrsStatusId, "pqrsStatusId"),
+      areaId: optionalPositiveInt(filters.areaId, "areaId"),
+      ticketNumber: optionalString(filters.ticketNumber, "ticketNumber") ?? undefined,
+      fromDate: optionalDate(filters.fromDate, "fromDate") ?? undefined,
+      toDate: optionalDate(filters.toDate, "toDate") ?? undefined,
+    };
+    return this.repo.findAllWithFilters(validated);
+  }
+
+  async update(data: UpdatePqrsDTO): Promise<IPqrs> {
+    const id = requirePositiveInt(data.id, "id");
+    ensureUpdates(data as Record<string, unknown>, [
+      "ticketNumber",
+      "isAutoResolved",
+      "dueDate",
+      "pqrsStatusId",
+      "clientId",
+      "typePqrsId",
+      "areaId",
+    ], "PQRS");
+
+    const current = await this.findById(id);
+
+    if (data.ticketNumber !== undefined) {
+      const ticketNumber = requireString(data.ticketNumber, "ticketNumber");
+      const existing = await this.repo.findByTicketNumber(ticketNumber);
+      if (existing && existing.id !== id) {
+        throw new AppError(
+          "Ticket number already exists",
+          409,
+          "CONFLICT",
+          { ticketNumber }
+        );
+      }
+    }
+
+    const isAutoResolved =
+      data.isAutoResolved !== undefined
+        ? optionalBoolean(data.isAutoResolved, "isAutoResolved")
+        : current.isAutoResolved;
+
+    if (data.pqrsStatusId !== undefined) {
+      const next = requirePositiveInt(data.pqrsStatusId, "pqrsStatusId");
+      this.validateTransition(current.pqrsStatusId, next, isAutoResolved);
+    }
+
+    if (data.clientId !== undefined) {
+      const clientId = requireBigInt(data.clientId, "clientId");
+      ensureFound(
+        "Client",
+        await this.clienteRepo.findById(clientId),
+        { clientId }
+      );
+    }
+    if (data.typePqrsId !== undefined) {
+      const typePqrsId = requirePositiveInt(data.typePqrsId, "typePqrsId");
+      ensureFound(
+        "TypePqrs",
+        await this.tipoPqrsRepo.findById(typePqrsId),
+        { typePqrsId }
+      );
+    }
+    if (data.areaId !== undefined) {
+      const areaId = requirePositiveInt(data.areaId, "areaId");
+      ensureFound(
+        "Area",
+        await this.areaRepo.findById(areaId),
+        { areaId }
+      );
+    }
+
+    const updated = await this.repo.update({
+      ...data,
+      id,
+      isAutoResolved,
+      dueDate:
+        data.dueDate !== undefined ? optionalDate(data.dueDate, "dueDate") : undefined,
+    });
+
+    return ensureFound("PQRS", updated, { id });
+  }
+
+  async delete(data: DeletePqrsDTO): Promise<boolean> {
+    const id = requirePositiveInt(data.id, "id");
+    await this.findById(id);
+    return this.repo.delete({ id });
+  }
+}

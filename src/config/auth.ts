@@ -5,7 +5,7 @@ import { twoFactor } from "better-auth/plugins";
 import { PostgresDialect } from "kysely";
 import bcrypt from "bcrypt";
 import pool from "./db";
-import { sendEmail } from "../email/mailer";
+import { sendEmail } from "../utils/mailer.utils";
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
   "campuslands.com",
