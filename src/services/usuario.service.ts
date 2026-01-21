@@ -1,5 +1,5 @@
 import { CreateUsuarioDTO, DeleteUsuarioDTO, UpdateUsuarioDTO } from "../DTOs/usuario.dto";
-import { IUsuario } from "../models/IUsuario";
+import { IUsuario } from "../models/usuario.model";
 import { UsuarioRepository } from "../repositories/usuario.repository";
 import { RolRepository } from "../repositories/rol.repository";
 import { AppError } from "../middlewares/error.middleware";
@@ -82,7 +82,12 @@ export class UsuarioService {
 
     const updated = await this.repo.update({
       id,
-      email: data.email !== undefined ? optionalEmail(data.email, "email") : undefined,
+      email:
+        data.email !== undefined
+          ? data.email === null
+            ? undefined
+            : requireEmail(data.email, "email")
+          : undefined,
       name: data.name !== undefined ? optionalString(data.name, "name") : undefined,
       image: data.image !== undefined ? optionalString(data.image, "image") : undefined,
       phoneNumber:

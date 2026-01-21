@@ -1,5 +1,5 @@
 import { CreateCuentaDTO, DeleteCuentaDTO, UpdateCuentaDTO } from "../DTOs/cuenta.dto";
-import { ICuenta } from "../models/ICuenta";
+import { ICuenta } from "../models/cuenta.model";
 import { CuentaRepository } from "../repositories/cuenta.repository";
 import { UsuarioRepository } from "../repositories/usuario.repository";
 import { AppError } from "../middlewares/error.middleware";
@@ -8,6 +8,7 @@ import {
   ensureUpdates,
   optionalDate,
   optionalString,
+  requireDate,
   requirePositiveInt,
   requireString,
 } from "../utils/validation.utils";
@@ -38,6 +39,15 @@ export class CuentaService {
       );
     }
 
+    const accessTokenExpiresAt =
+      data.accessTokenExpiresAt === undefined || data.accessTokenExpiresAt === null
+        ? null
+        : requireDate(data.accessTokenExpiresAt, "accessTokenExpiresAt");
+    const refreshTokenExpiresAt =
+      data.refreshTokenExpiresAt === undefined || data.refreshTokenExpiresAt === null
+        ? null
+        : requireDate(data.refreshTokenExpiresAt, "refreshTokenExpiresAt");
+
     return this.repo.create({
       providerId,
       providerAccountId,
@@ -45,12 +55,8 @@ export class CuentaService {
       accessToken: data.accessToken ?? null,
       refreshToken: data.refreshToken ?? null,
       idToken: data.idToken ?? null,
-      accessTokenExpiresAt: data.accessTokenExpiresAt
-        ? optionalDate(data.accessTokenExpiresAt, "accessTokenExpiresAt")
-        : null,
-      refreshTokenExpiresAt: data.refreshTokenExpiresAt
-        ? optionalDate(data.refreshTokenExpiresAt, "refreshTokenExpiresAt")
-        : null,
+      accessTokenExpiresAt,
+      refreshTokenExpiresAt,
       scope: data.scope ?? null,
       userId,
     });

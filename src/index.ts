@@ -25,7 +25,7 @@ app.use(morgan('dev'))
 // usar rutas principales
 app.use("/", routes)
 
-
+// hola mundo para probar el servidor
 app.get('/', (req, res) => {
   res.send('Hello backend!');
 });

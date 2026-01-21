@@ -1,5 +1,5 @@
 import { CreateEncuestaDTO, DeleteEncuestaDTO, UpdateEncuestaDTO } from "../DTOs/encuesta.dto";
-import { IEncuesta } from "../models/IEncuesta";
+import { IEncuesta } from "../models/encuesta.model";
 import { EncuestaRepository } from "../repositories/encuesta.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";
 import { AppError } from "../middlewares/error.middleware";

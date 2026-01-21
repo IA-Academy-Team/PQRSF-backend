@@ -1,5 +1,5 @@
 import { CreateResponsableDTO, DeleteResponsableDTO, UpdateResponsableDTO } from "../DTOs/responsable.dto";
-import { IResponsable } from "../models/IResponsable";
+import { IResponsable } from "../models/responsable.model";
 import { ResponsableRepository } from "../repositories/responsable.repository";
 import { AreaRepository } from "../repositories/area.repository";
 import { AppError } from "../middlewares/error.middleware";
@@ -7,8 +7,6 @@ import {
   ensureFound,
   ensureUpdates,
   optionalEmail,
-  optionalPositiveInt,
-  optionalString,
   requireEmail,
   requirePositiveInt,
   requireString,
@@ -26,9 +24,9 @@ export class ResponsableService {
     const password = requireString(data.password, "password");
     const phoneNumber = requireString(data.phoneNumber, "phoneNumber");
     const areaId =
-      data.areaId !== undefined && data.areaId !== null
-        ? optionalPositiveInt(data.areaId, "areaId")
-        : null;
+      data.areaId === undefined || data.areaId === null
+        ? null
+        : requirePositiveInt(data.areaId, "areaId");
 
     const existing = await this.repo.findByEmail(email);
     if (existing) {
@@ -64,7 +62,8 @@ export class ResponsableService {
     }
 
     if (data.areaId !== undefined) {
-      const areaId = optionalPositiveInt(data.areaId, "areaId");
+      const areaId =
+        data.areaId === null ? null : requirePositiveInt(data.areaId, "areaId");
       if (areaId) {
         ensureFound("Area", await this.areaRepo.findById(areaId), { areaId });
       }
@@ -72,15 +71,31 @@ export class ResponsableService {
 
     const updated = await this.repo.update({
       id,
-      name: data.name !== undefined ? optionalString(data.name, "name") : undefined,
+      name:
+        data.name !== undefined
+          ? data.name === null
+            ? undefined
+            : requireString(data.name, "name")
+          : undefined,
       email: data.email !== undefined ? requireEmail(data.email, "email") : undefined,
-      password: data.password !== undefined ? requireString(data.password, "password") : undefined,
+      password:
+        data.password !== undefined
+          ? data.password === null
+            ? undefined
+            : requireString(data.password, "password")
+          : undefined,
       phoneNumber:
         data.phoneNumber !== undefined
-          ? requireString(data.phoneNumber, "phoneNumber")
+          ? data.phoneNumber === null
+            ? undefined
+            : requireString(data.phoneNumber, "phoneNumber")
           : undefined,
       areaId:
-        data.areaId !== undefined ? optionalPositiveInt(data.areaId, "areaId") : undefined,
+        data.areaId !== undefined
+          ? data.areaId === null
+            ? null
+            : requirePositiveInt(data.areaId, "areaId")
+          : undefined,
     });
     return ensureFound("Responsable", updated, { id });
   }

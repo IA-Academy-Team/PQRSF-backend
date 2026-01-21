@@ -1,5 +1,5 @@
 import { CreateVerificacionDTO, DeleteVerificacionDTO, UpdateVerificacionDTO } from "../DTOs/verificacion.dto";
-import { IVerificacion } from "../models/IVerificacion";
+import { IVerificacion } from "../models/verificacion.model";
 import { VerificacionRepository } from "../repositories/verificacion.repository";
 import { AppError } from "../middlewares/error.middleware";
 import {
@@ -7,6 +7,7 @@ import {
   ensureUpdates,
   optionalDate,
   optionalString,
+  requireDate,
   requirePositiveInt,
   requireString,
 } from "../utils/validation.utils";
@@ -49,7 +50,12 @@ export class VerificacionService {
       identifier:
         data.identifier !== undefined ? requireString(data.identifier, "identifier") : undefined,
       value: data.value !== undefined ? requireString(data.value, "value") : undefined,
-      expiresAt: data.expiresAt !== undefined ? optionalDate(data.expiresAt, "expiresAt") : undefined,
+      expiresAt:
+        data.expiresAt !== undefined
+          ? data.expiresAt === null
+            ? undefined
+            : requireDate(data.expiresAt, "expiresAt")
+          : undefined,
     });
     return ensureFound("Verification", updated, { id });
   }

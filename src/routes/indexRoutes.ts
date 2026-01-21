@@ -19,20 +19,20 @@ import encuestaRoutes from "./encuesta.routes";
 
 const router = Router();
 
-router.use("/pqrs", pqrsRoutes);
-router.use("/analisis", analisisRoutes);
-router.use("/reanalisis", reanalisisRoutes);
-router.use("/notificaciones", notificacionRoutes);
-router.use("/clientes", clienteRoutes);
-router.use("/chats", chatRoutes);
-router.use("/mensajes", mensajeRoutes);
-router.use("/responsables", responsableRoutes);
-router.use("/usuarios", usuarioRoutes);
-router.use("/sesiones", sesionRoutes);
-router.use("/cuentas", cuentaRoutes);
-router.use("/verificaciones", verificacionRoutes);
-router.use("/documentos", documentoRoutes);
-router.use("/respuestas", respuestaRoutes);
-router.use("/encuestas", encuestaRoutes);
+router.use("pqrs", pqrsRoutes);
+router.use("analisis", analisisRoutes);
+router.use("reanalisis", reanalisisRoutes);
+router.use("notificaciones", notificacionRoutes);
+router.use("clientes", clienteRoutes);
+router.use("chats", chatRoutes);
+router.use("mensajes", mensajeRoutes);
+router.use("responsables", responsableRoutes);
+router.use("usuarios", usuarioRoutes);
+router.use("sesiones", sesionRoutes);
+router.use("cuentas", cuentaRoutes);
+router.use("verificaciones", verificacionRoutes);
+router.use("documentos", documentoRoutes);
+router.use("respuestas", respuestaRoutes);
+router.use("encuestas", encuestaRoutes);
 
 export default router;
