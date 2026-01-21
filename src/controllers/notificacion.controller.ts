@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CreateNotificacionDTO, UpdateNotificacionDTO } from "../DTOs/notificacion.dto";
 import { NotificacionService } from "../services/notificacion.service";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new NotificacionService();
 

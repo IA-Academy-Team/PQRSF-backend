@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { EncuestaService } from "../services/encuesta.service";
 import { CreateEncuestaDTO, UpdateEncuestaDTO } from "../DTOs/encuesta.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new EncuestaService();
 

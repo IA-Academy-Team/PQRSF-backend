@@ -7,12 +7,14 @@ import { errorHandler } from "./middlewares/error.middleware";
 import routes from "./routes/indexRoutes";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { rateLimiter } from "./middlewares/rateLimit.middleware";
+import { corsMiddleware } from "./middlewares/cors.middleware";
 
 dotenv.config();
 
+// define app con express
 const app = express();
-const PORT = 3000;
-// const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 
 // desactivar el header x-powered-by por defecto en express para mayor seguridad
@@ -21,6 +23,10 @@ app.disable('x-powered-by')
 app.use(express.json());
 // middleware de logging en consola
 app.use(morgan('dev'))
+// rate limiter
+app.use(rateLimiter)
+// middleware de CORS
+app.use(corsMiddleware)
 
 // usar rutas principales
 app.use("/api", routes)

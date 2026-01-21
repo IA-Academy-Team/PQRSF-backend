@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { VerificacionService } from "../services/verificacion.service";
 import { CreateVerificacionDTO, UpdateVerificacionDTO } from "../DTOs/verificacion.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new VerificacionService();
 

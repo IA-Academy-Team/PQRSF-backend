@@ -1,17 +1,17 @@
 import { Request, Response } from "express";
-import { auth } from "../config/auth.config";
-import { AppError } from "../middlewares/error.middleware";
+import { auth } from "../../config/auth.config";
+import { AppError } from "../../middlewares/error.middleware";
 import {
   AuthLoginDTO,
   AuthRegisterDTO,
   AuthRequestResetDTO,
   AuthResetDTO,
-} from "../DTOs/auth.dto";
-import { asyncHandler } from "./controller.utils";
+} from "../../DTOs/auth.dto";
+import { asyncHandler } from "../../utils/controller.utils";
 import {
   requireEmail,
   requireString,
-} from "../utils/validation.utils";
+} from "../../utils/validation.utils";
 
 const ensurePassword = (value: unknown, field: string) => {
   const password = requireString(value, field);

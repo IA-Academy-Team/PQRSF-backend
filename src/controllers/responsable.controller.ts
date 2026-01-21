@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { ResponsableService } from "../services/responsable.service";
 import { CreateResponsableDTO, UpdateResponsableDTO } from "../DTOs/responsable.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new ResponsableService();
 
