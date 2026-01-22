@@ -1,4 +1,4 @@
-import { CreateCuentaDTO, DeleteCuentaDTO, UpdateCuentaDTO } from "../DTOs/cuenta.dto";
+import { CreateCuentaDTO, DeleteCuentaDTO, UpdateCuentaDTO } from "../schemas/cuenta.schema";
 import { ICuenta } from "../models/cuenta.model";
 import { CuentaRepository } from "../repositories/cuenta.repository";
 import { UsuarioRepository } from "../repositories/usuario.repository";

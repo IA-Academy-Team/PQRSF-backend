@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IReanalisis } from "../models/reanalisis.model";
-import { CreateReanalisisDTO, UpdateReanalisisDTO, DeleteReanalisisDTO } from "../DTOs/reanalisis.dto";
+import { CreateReanalisisDTO, UpdateReanalisisDTO, DeleteReanalisisDTO } from "../schemas/reanalisis.schema";
 
 export class ReanalisisRepository {
   private readonly table = "reanalysis";

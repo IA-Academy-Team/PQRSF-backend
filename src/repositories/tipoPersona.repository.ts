@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ITipoPersona } from "../models/tipoPersona.model";
-import { CreateTipoPersonaDTO, UpdateTipoPersonaDTO, DeleteTipoPersonaDTO } from "../DTOs/tipoPersona.dto";
+import { CreateTipoPersonaDTO, UpdateTipoPersonaDTO, DeleteTipoPersonaDTO } from "../schemas/tipoPersona.schema";
 
 export class TipoPersonaRepository {
   private readonly table = "type_person";

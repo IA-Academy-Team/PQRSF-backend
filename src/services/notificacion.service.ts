@@ -1,4 +1,4 @@
-import { CreateNotificacionDTO, DeleteNotificacionDTO, UpdateNotificacionDTO } from "../DTOs/notificacion.dto";
+import { CreateNotificacionDTO, DeleteNotificacionDTO, UpdateNotificacionDTO } from "../schemas/notificacion.schema";
 import { INotificacion } from "../models/notificacion.model";
 import { NotificacionRepository } from "../repositories/notificacion.repository";
 import { ResponsableRepository } from "../repositories/responsable.repository";

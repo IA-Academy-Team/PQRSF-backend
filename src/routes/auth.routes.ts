@@ -16,7 +16,6 @@ router.post(
 );
 router.post(
   "/login",
-  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthLogin' } } */
   login
 );
 router.post("/logout", logout);

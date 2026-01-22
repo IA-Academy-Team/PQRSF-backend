@@ -1,4 +1,4 @@
-import { CreateClienteDTO, DeleteClienteDTO, UpdateClienteDTO } from "../DTOs/cliente.dto";
+import { CreateClienteDTO, DeleteClienteDTO, UpdateClienteDTO } from "../schemas/cliente.schema";
 import { ICliente } from "../models/cliente.model";
 import { ClienteRepository } from "../repositories/cliente.repository";
 import { StakeholderRepository } from "../repositories/stakeholder.repository";

@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IRespuesta } from "../models/respuesta.model";
-import { CreateRespuestaDTO, UpdateRespuestaDTO, DeleteRespuestaDTO } from "../DTOs/respuesta.dto";
+import { CreateRespuestaDTO, UpdateRespuestaDTO, DeleteRespuestaDTO } from "../schemas/respuesta.schema";
 
 export class RespuestaRepository {
   private readonly table = "response";

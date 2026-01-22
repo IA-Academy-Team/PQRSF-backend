@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IPqrs } from "../models/pqrs.model";
-import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../DTOs/pqrs.dto";
+import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../schemas/pqrs.schema";
 
 export interface PqrsFilters {
   pqrsStatusId?: number;

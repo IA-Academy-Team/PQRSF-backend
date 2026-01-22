@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IRol } from "../models/rol.model";
-import { CreateRolDTO, UpdateRolDTO, DeleteRolDTO } from "../DTOs/rol.dto";
+import { CreateRolDTO, UpdateRolDTO, DeleteRolDTO } from "../schemas/rol.schema";
 
 export class RolRepository {
   private readonly table = "roles";

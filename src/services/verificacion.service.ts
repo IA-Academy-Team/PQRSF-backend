@@ -1,4 +1,4 @@
-import { CreateVerificacionDTO, DeleteVerificacionDTO, UpdateVerificacionDTO } from "../DTOs/verificacion.dto";
+import { CreateVerificacionDTO, DeleteVerificacionDTO, UpdateVerificacionDTO } from "../schemas/verificacion.schema";
 import { IVerificacion } from "../models/verificacion.model";
 import { VerificacionRepository } from "../repositories/verificacion.repository";
 import { AppError } from "../middlewares/error.middleware";

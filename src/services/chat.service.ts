@@ -1,4 +1,4 @@
-import { CreateChatDTO, DeleteChatDTO, UpdateChatDTO } from "../DTOs/chat.dto";
+import { CreateChatDTO, DeleteChatDTO, UpdateChatDTO } from "../schemas/chat.schema";
 import { IChat } from "../models/chat.model";
 import { ChatRepository } from "../repositories/chat.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";

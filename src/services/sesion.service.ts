@@ -1,4 +1,4 @@
-import { CreateSesionDTO, DeleteSesionDTO, UpdateSesionDTO } from "../DTOs/sesion.dto";
+import { CreateSesionDTO, DeleteSesionDTO, UpdateSesionDTO } from "../schemas/sesion.schema";
 import { ISesion } from "../models/sesion.model";
 import { SesionRepository } from "../repositories/sesion.repository";
 import { UsuarioRepository } from "../repositories/usuario.repository";

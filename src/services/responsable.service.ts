@@ -1,4 +1,4 @@
-import { CreateResponsableDTO, DeleteResponsableDTO, UpdateResponsableDTO } from "../DTOs/responsable.dto";
+import { CreateResponsableDTO, DeleteResponsableDTO, UpdateResponsableDTO } from "../schemas/responsable.schema";
 import { IResponsable } from "../models/responsable.model";
 import { ResponsableRepository } from "../repositories/responsable.repository";
 import { AreaRepository } from "../repositories/area.repository";

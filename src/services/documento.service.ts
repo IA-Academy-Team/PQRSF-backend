@@ -1,4 +1,4 @@
-import { CreateDocumentoDTO, DeleteDocumentoDTO, UpdateDocumentoDTO } from "../DTOs/documento.dto";
+import { CreateDocumentoDTO, DeleteDocumentoDTO, UpdateDocumentoDTO } from "../schemas/documento.schema";
 import { IDocumento } from "../models/documento.model";
 import { DocumentoRepository } from "../repositories/documento.repository";
 import { TipoDocumentoRepository } from "../repositories/tipoDocumento.repository";

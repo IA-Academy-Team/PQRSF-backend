@@ -1,37 +1,44 @@
 import { Request, Response } from "express";
-import { CreateChatDTO, UpdateChatDTO } from "../DTOs/chat.dto";
 import { ChatService } from "../services/chat.service";
-import { asyncHandler, parseBigIntParam } from "../utils/controller.utils";
+import { asyncHandler } from "../utils/controller.utils";
+import {
+  chatClientParamSchema,
+  chatIdParamSchema,
+  createChatSchema,
+  deleteChatSchema,
+  updateChatSchema,
+} from "../schemas/chat.schema";
 
 const service = new ChatService();
 
 export const createChat = asyncHandler(async (req: Request, res: Response) => {
-  const data = req.body as CreateChatDTO;
+  const data = createChatSchema.parse(req.body);
   const result = await service.create(data);
   res.status(201).json(result);
 });
 
 export const getChatById = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseBigIntParam(req.params.id, "id");
+  const { id } = chatIdParamSchema.parse(req.params);
   const result = await service.findById(id);
   res.json(result);
 });
 
 export const listChatByClient = asyncHandler(async (req: Request, res: Response) => {
-  const clientId = parseBigIntParam(req.params.clientId, "clientId");
+  const { clientId } = chatClientParamSchema.parse(req.params);
   const result = await service.findByClientId(clientId);
   res.json(result);
 });
 
 export const updateChat = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseBigIntParam(req.params.id, "id");
-  const data = { ...(req.body as UpdateChatDTO), id };
+  const { id } = deleteChatSchema.parse(req.params);
+  const body = updateChatSchema.parse(req.body);
+  const data = { ...body, id };
   const result = await service.update(data);
   res.json(result);
 });
 
 export const deleteChat = asyncHandler(async (req: Request, res: Response) => {
-  const id = parseBigIntParam(req.params.id, "id");
+  const { id } = deleteChatSchema.parse(req.params);
   const result = await service.delete({ id });
   res.json({ deleted: result });
 });

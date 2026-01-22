@@ -1,4 +1,4 @@
-import { CreateEncuestaDTO, DeleteEncuestaDTO, UpdateEncuestaDTO } from "../DTOs/encuesta.dto";
+import { CreateEncuestaDTO, DeleteEncuestaDTO, UpdateEncuestaDTO } from "../schemas/encuesta.schema";
 import { IEncuesta } from "../models/encuesta.model";
 import { EncuestaRepository } from "../repositories/encuesta.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";

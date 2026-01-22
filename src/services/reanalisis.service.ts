@@ -1,4 +1,4 @@
-import { CreateReanalisisDTO, DeleteReanalisisDTO, UpdateReanalisisDTO } from "../DTOs/reanalisis.dto";
+import { CreateReanalisisDTO, DeleteReanalisisDTO, UpdateReanalisisDTO } from "../schemas/reanalisis.schema";
 import { IReanalisis } from "../models/reanalisis.model";
 import { ReanalisisRepository } from "../repositories/reanalisis.repository";
 import { AnalisisRepository } from "../repositories/analisis.repository";

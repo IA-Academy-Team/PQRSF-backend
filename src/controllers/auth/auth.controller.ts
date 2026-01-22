@@ -1,17 +1,17 @@
 import { Request, Response } from "express";
 import { auth } from "../../config/auth.config";
 import { AppError } from "../../middlewares/error.middleware";
-import {
-  AuthLoginDTO,
-  AuthRegisterDTO,
-  AuthRequestResetDTO,
-  AuthResetDTO,
-} from "../../DTOs/auth.dto";
 import { asyncHandler } from "../../utils/controller.utils";
 import {
   requireEmail,
   requireString,
 } from "../../utils/validation.utils";
+import {
+  authLoginSchema,
+  authRegisterSchema,
+  authRequestResetSchema,
+  authResetSchema,
+} from "../../schemas/auth.schema";
 
 const ensurePassword = (value: unknown, field: string) => {
   const password = requireString(value, field);
@@ -26,7 +26,7 @@ const ensurePassword = (value: unknown, field: string) => {
 };
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
-  const payload = req.body as AuthRegisterDTO;
+  const payload = authRegisterSchema.parse(req.body);
   const email = requireEmail(payload.email, "email");
   const password = ensurePassword(payload.password, "password");
   const name =
@@ -47,18 +47,7 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const payload = req.body as Record<string, unknown>;
-  const allowedKeys = new Set(["email", "password"]);
-  for (const key of Object.keys(payload)) {
-    if (!allowedKeys.has(key)) {
-      throw new AppError(
-        `Unexpected field: ${key}`,
-        400,
-        "VALIDATION_ERROR"
-      );
-    }
-  }
-
+  const payload = authLoginSchema.parse(req.body);
   const email = requireEmail(payload.email, "email");
   const password = requireString(payload.password, "password");
 
@@ -82,7 +71,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
 
 export const requestPasswordReset = asyncHandler(
   async (req: Request, res: Response) => {
-    const payload = req.body as AuthRequestResetDTO;
+    const payload = authRequestResetSchema.parse(req.body);
     const email = requireEmail(payload.email, "email");
 
     const data = await auth.api.requestPasswordReset({
@@ -96,7 +85,7 @@ export const requestPasswordReset = asyncHandler(
 );
 
 export const resetPassword = asyncHandler(async (req: Request, res: Response) => {
-  const payload = req.body as AuthResetDTO;
+  const payload = authResetSchema.parse(req.body);
   const token = requireString(payload.token, "token");
   const newPassword = ensurePassword(payload.newPassword, "newPassword");
 
