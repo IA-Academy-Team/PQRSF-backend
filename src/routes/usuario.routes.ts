@@ -11,8 +11,16 @@ const router = Router();
 
 router.get("/", listUsuarios);
 router.get("/:id", getUsuarioById);
-router.post("/", createUsuario);
-router.patch("/:id", updateUsuario);
+router.post(
+  "/",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateUsuario' } } */
+  createUsuario
+);
+router.patch(
+  "/:id",
+  /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateUsuario' } } */
+  updateUsuario
+);
 router.delete("/:id", deleteUsuario);
 
 export default router;

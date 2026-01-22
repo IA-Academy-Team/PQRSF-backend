@@ -9,10 +9,26 @@ import {
 
 const router = Router();
 
-router.post("/register", register);
-router.post("/login", login);
+router.post(
+  "/register",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthRegister' } } */
+  register
+);
+router.post(
+  "/login",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthLogin' } } */
+  login
+);
 router.post("/logout", logout);
-router.post("/password/request", requestPasswordReset);
-router.post("/password/reset", resetPassword);
+router.post(
+  "/password/request",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthRequestReset' } } */
+  requestPasswordReset
+);
+router.post(
+  "/password/reset",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthReset' } } */
+  resetPassword
+);
 
 export default router;
