@@ -51,15 +51,41 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
   const email = requireEmail(payload.email, "email");
   const password = requireString(payload.password, "password");
 
-  const data = await auth.api.signInEmail({
-    body: {
-      email,
-      password,
-    },
-    headers: req.headers as Record<string, string>,
-  });
+  try {
+    const data = await auth.api.signInEmail({
+      body: {
+        email,
+        password,
+      },
+      headers: req.headers as Record<string, string>,
+    });
 
-  res.json(data);
+    res.json(data);
+  } catch (err) {
+    if (err && typeof err === "object") {
+      const message =
+        "message" in err && typeof err.message === "string"
+          ? err.message
+          : "";
+      if (message.includes("Credential account not found")) {
+        throw new AppError(
+          "No existe una cuenta de credenciales para este correo. Registra el usuario con /api/auth/register.",
+          401,
+          "AUTH_CREDENTIALS_NOT_FOUND",
+          { email }
+        );
+      }
+      if (message.toLowerCase().includes("invalid") || message.toLowerCase().includes("password")) {
+        throw new AppError(
+          "Credenciales invalidas",
+          401,
+          "AUTH_INVALID_CREDENTIALS",
+          { email }
+        );
+      }
+    }
+    throw err;
+  }
 });
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {

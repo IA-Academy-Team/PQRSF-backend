@@ -18,7 +18,7 @@ export const optionalString = (value: unknown, field: string) => {
 
 export const requireEmail = (value: unknown, field: string) => {
   const email = requireString(value, field).toLowerCase();
-  const emailRegex = /^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/;
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(email)) {
     throw badRequest(`${field} must be a valid email`, { field });
   }
