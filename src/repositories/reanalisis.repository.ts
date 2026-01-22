@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IReanalisis } from "../models/reanalisis.model";
 import { CreateReanalisisDTO, UpdateReanalisisDTO, DeleteReanalisisDTO } from "../DTOs/reanalisis.dto";

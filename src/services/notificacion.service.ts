@@ -1,5 +1,5 @@
 import { CreateNotificacionDTO, DeleteNotificacionDTO, UpdateNotificacionDTO } from "../DTOs/notificacion.dto";
-import { INotificacion } from "../models/INotificacion";
+import { INotificacion } from "../models/notificacion.model";
 import { NotificacionRepository } from "../repositories/notificacion.repository";
 import { ResponsableRepository } from "../repositories/responsable.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";
@@ -10,6 +10,7 @@ import {
   optionalPositiveInt,
   optionalString,
   requirePositiveInt,
+  requireString,
 } from "../utils/validation.utils";
 
 export class NotificacionService {
@@ -89,7 +90,12 @@ export class NotificacionService {
 
     const updated = await this.repo.update({
       id,
-      message: data.message !== undefined ? optionalString(data.message, "message") : undefined,
+      message:
+        data.message !== undefined
+          ? data.message === null
+            ? undefined
+            : requireString(data.message, "message")
+          : undefined,
       status,
     });
     return ensureFound("Notification", updated, { id });

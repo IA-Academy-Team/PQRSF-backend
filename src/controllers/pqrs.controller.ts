@@ -6,7 +6,7 @@ import {
   parseNumberParam,
   parseOptionalDateQuery,
   parseOptionalNumberQuery,
-} from "./controller.utils";
+} from "../utils/controller.utils";
 
 const service = new PqrsService();
 

@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CreateChatDTO, UpdateChatDTO } from "../DTOs/chat.dto";
 import { ChatService } from "../services/chat.service";
-import { asyncHandler, parseBigIntParam } from "./controller.utils";
+import { asyncHandler, parseBigIntParam } from "../utils/controller.utils";
 
 const service = new ChatService();
 

@@ -1,5 +1,5 @@
 import { CreateSesionDTO, DeleteSesionDTO, UpdateSesionDTO } from "../DTOs/sesion.dto";
-import { ISesion } from "../models/ISesion";
+import { ISesion } from "../models/sesion.model";
 import { SesionRepository } from "../repositories/sesion.repository";
 import { UsuarioRepository } from "../repositories/usuario.repository";
 import { AppError } from "../middlewares/error.middleware";
@@ -8,6 +8,7 @@ import {
   ensureUpdates,
   optionalDate,
   optionalString,
+  requireDate,
   requirePositiveInt,
   requireString,
 } from "../utils/validation.utils";
@@ -70,7 +71,12 @@ export class SesionService {
     const updated = await this.repo.update({
       id,
       token: data.token !== undefined ? requireString(data.token, "token") : undefined,
-      expiresAt: data.expiresAt !== undefined ? optionalDate(data.expiresAt, "expiresAt") : undefined,
+      expiresAt:
+        data.expiresAt !== undefined
+          ? data.expiresAt === null
+            ? undefined
+            : requireDate(data.expiresAt, "expiresAt")
+          : undefined,
       ipAddress: data.ipAddress !== undefined ? optionalString(data.ipAddress, "ipAddress") : undefined,
       userAgent: data.userAgent !== undefined ? optionalString(data.userAgent, "userAgent") : undefined,
       userId: data.userId !== undefined ? requirePositiveInt(data.userId, "userId") : undefined,

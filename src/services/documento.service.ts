@@ -1,9 +1,9 @@
 import { CreateDocumentoDTO, DeleteDocumentoDTO, UpdateDocumentoDTO } from "../DTOs/documento.dto";
-import { IDocumento } from "../models/IDocumento";
+import { IDocumento } from "../models/documento.model";
 import { DocumentoRepository } from "../repositories/documento.repository";
 import { TipoDocumentoRepository } from "../repositories/tipoDocumento.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";
-import { ensureFound, ensureUpdates, optionalString, requirePositiveInt, requireString } from "../utils/validation.utils";
+import { ensureFound, ensureUpdates, requirePositiveInt, requireString } from "../utils/validation.utils";
 
 export class DocumentoService {
   constructor(
@@ -49,7 +49,12 @@ export class DocumentoService {
 
     const updated = await this.repo.update({
       id,
-      url: data.url !== undefined ? optionalString(data.url, "url") : undefined,
+      url:
+        data.url !== undefined
+          ? data.url === null
+            ? undefined
+            : requireString(data.url, "url")
+          : undefined,
       typeDocumentId:
         data.typeDocumentId !== undefined
           ? requirePositiveInt(data.typeDocumentId, "typeDocumentId")

@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IRol } from "../models/rol.model";
 import { CreateRolDTO, UpdateRolDTO, DeleteRolDTO } from "../DTOs/rol.dto";

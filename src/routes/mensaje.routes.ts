@@ -11,8 +11,16 @@ const router = Router();
 
 router.get("/chat/:chatId", listMensajesByChat);
 router.get("/:id", getMensajeById);
-router.post("/", createMensaje);
-router.patch("/:id", updateMensaje);
+router.post(
+  "/",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateMensaje' } } */
+  createMensaje
+);
+router.patch(
+  "/:id",
+  /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateMensaje' } } */
+  updateMensaje
+);
 router.delete("/:id", deleteMensaje);
 
 export default router;

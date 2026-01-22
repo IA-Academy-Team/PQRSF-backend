@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ICuenta } from "../models/cuenta.model";
 import { CreateCuentaDTO, UpdateCuentaDTO, DeleteCuentaDTO } from "../DTOs/cuenta.dto";

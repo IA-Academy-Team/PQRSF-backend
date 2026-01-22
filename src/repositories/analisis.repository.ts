@@ -1,6 +1,6 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IAnalisis } from "../models/IAnalisis";
+import { IAnalisis } from "../models/analisis.model";
 import { CreateAnalisisDTO, UpdateAnalisisDTO, DeleteAnalisisDTO } from "../DTOs/analisis.dto";
 
 export class AnalisisRepository {

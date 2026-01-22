@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IPqrs } from "../models/pqrs.model";
 import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../DTOs/pqrs.dto";

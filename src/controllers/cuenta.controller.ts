@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CuentaService } from "../services/cuenta.service";
 import { CreateCuentaDTO, UpdateCuentaDTO } from "../DTOs/cuenta.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new CuentaService();
 

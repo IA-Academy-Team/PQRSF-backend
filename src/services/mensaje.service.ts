@@ -1,5 +1,5 @@
 import { CreateMensajeDTO, DeleteMensajeDTO, UpdateMensajeDTO } from "../DTOs/mensaje.dto";
-import { IMensaje } from "../models/IMensaje";
+import { IMensaje } from "../models/mensaje.model";
 import { MensajeRepository } from "../repositories/mensaje.repository";
 import { ChatRepository } from "../repositories/chat.repository";
 import { AppError } from "../middlewares/error.middleware";

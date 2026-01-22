@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { CreateMensajeDTO, UpdateMensajeDTO } from "../DTOs/mensaje.dto";
 import { MensajeService } from "../services/mensaje.service";
-import { asyncHandler, parseBigIntParam, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseBigIntParam, parseNumberParam } from "../utils/controller.utils";
 
 const service = new MensajeService();
 

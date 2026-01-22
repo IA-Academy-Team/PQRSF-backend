@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IArea } from "../models/area.model";
 import { CreateAreaDTO, UpdateAreaDTO, DeleteAreaDTO } from "../DTOs/area.dto";

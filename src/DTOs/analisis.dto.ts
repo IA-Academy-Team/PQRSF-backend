@@ -1,4 +1,4 @@
-import { IAnalisis } from "../models/IAnalisis";
+import { IAnalisis } from "../models/analisis.model";
 
 export type CreateAnalisisDTO = Omit<IAnalisis, "id" | "createdAt">;
 export type UpdateAnalisisDTO = Partial<Omit<IAnalisis, "id">> & { id: number };

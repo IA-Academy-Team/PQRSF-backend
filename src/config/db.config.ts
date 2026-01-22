@@ -1,4 +1,7 @@
 import { Pool } from 'pg';
+import dotenv from "dotenv";
+
+dotenv.config();
 
 // crea el objeto de conexión a la base de datos
 const pool = new Pool({

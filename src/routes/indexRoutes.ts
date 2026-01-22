@@ -16,9 +16,11 @@ import verificacionRoutes from "./verificacion.routes";
 import documentoRoutes from "./documento.routes";
 import respuestaRoutes from "./respuesta.routes";
 import encuestaRoutes from "./encuesta.routes";
+import authRoutes from "./auth.routes";
 
 const router = Router();
 
+router.use("/auth", authRoutes);
 router.use("/pqrs", pqrsRoutes);
 router.use("/analisis", analisisRoutes);
 router.use("/reanalisis", reanalisisRoutes);

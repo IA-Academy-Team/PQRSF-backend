@@ -1,5 +1,5 @@
 import { CreateAnalisisDTO, DeleteAnalisisDTO, UpdateAnalisisDTO } from "../DTOs/analisis.dto";
-import { IAnalisis } from "../models/IAnalisis";
+import { IAnalisis } from "../models/analisis.model";
 import { AnalisisRepository } from "../repositories/analisis.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";
 import { ResponsableRepository } from "../repositories/responsable.repository";

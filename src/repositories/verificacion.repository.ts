@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IVerificacion } from "../models/verificacion.model";
 import { CreateVerificacionDTO, UpdateVerificacionDTO, DeleteVerificacionDTO } from "../DTOs/verificacion.dto";

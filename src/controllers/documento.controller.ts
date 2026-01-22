@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { DocumentoService } from "../services/documento.service";
 import { CreateDocumentoDTO, UpdateDocumentoDTO } from "../DTOs/documento.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new DocumentoService();
 

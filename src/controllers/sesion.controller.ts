@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { SesionService } from "../services/sesion.service";
 import { CreateSesionDTO, UpdateSesionDTO } from "../DTOs/sesion.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new SesionService();
 

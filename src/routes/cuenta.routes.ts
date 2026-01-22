@@ -9,8 +9,16 @@ import {
 const router = Router();
 
 router.get("/:id", getCuentaById);
-router.post("/", createCuenta);
-router.patch("/:id", updateCuenta);
+router.post(
+  "/",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateCuenta' } } */
+  createCuenta
+);
+router.patch(
+  "/:id",
+  /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateCuenta' } } */
+  updateCuenta
+);
 router.delete("/:id", deleteCuenta);
 
 export default router;

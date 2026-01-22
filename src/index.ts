@@ -7,12 +7,15 @@ import { errorHandler } from "./middlewares/error.middleware";
 import routes from "./routes/indexRoutes";
 import { readFileSync } from "node:fs";
 import path from "node:path";
+import { rateLimiter } from "./middlewares/rateLimit.middleware";
+import { corsMiddleware } from "./middlewares/cors.middleware";
+import pool from "./config/db.config";
 
 dotenv.config();
 
+// define app con express
 const app = express();
-const PORT = 3000;
-// const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3000;
 
 
 // desactivar el header x-powered-by por defecto en express para mayor seguridad
@@ -21,19 +24,18 @@ app.disable('x-powered-by')
 app.use(express.json());
 // middleware de logging en consola
 app.use(morgan('dev'))
+// rate limiter
+app.use(rateLimiter)
+// middleware de CORS
+app.use(corsMiddleware)
 
 // usar rutas principales
-app.use("/", routes)
-
-
-app.get('/', (req, res) => {
-  res.send('Hello backend!');
-});
+app.use("/api", routes)
 
 // A simple health check endpoint
-app.get('/health', (req, res) => {
+app.get('/health', async (req, res) => {
   // In a real app, you might also check database connection, etc.
-  if (isAppHealthy()) {
+  if (await isAppHealthy()) {
     res.status(200).send({
       status: 'ok',
     });
@@ -44,9 +46,26 @@ app.get('/health', (req, res) => {
   }
 });
 
-function isAppHealthy(): boolean {
-  // Implement logic to check critical dependencies
-  return true; 
+const HEALTH_CHECK_TTL_MS = 5_000;
+let lastHealthCheckAt = 0;
+let lastHealthStatus = false;
+
+async function isAppHealthy(): Promise<boolean> {
+  const now = Date.now();
+  if (now - lastHealthCheckAt < HEALTH_CHECK_TTL_MS) {
+    return lastHealthStatus;
+  }
+
+  try {
+    await pool.query("SELECT 1");
+    lastHealthStatus = true;
+  } catch {
+    lastHealthStatus = false;
+  } finally {
+    lastHealthCheckAt = now;
+  }
+
+  return lastHealthStatus;
 }
 
 // 📘 Swagger

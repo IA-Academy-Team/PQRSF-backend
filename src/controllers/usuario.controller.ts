@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { UsuarioService } from "../services/usuario.service";
 import { CreateUsuarioDTO, UpdateUsuarioDTO } from "../DTOs/usuario.dto";
-import { asyncHandler, parseNumberParam } from "./controller.utils";
+import { asyncHandler, parseNumberParam } from "../utils/controller.utils";
 
 const service = new UsuarioService();
 
@@ -28,4 +28,9 @@ export const deleteUsuario = asyncHandler(async (req: Request, res: Response) =>
   const id = parseNumberParam(req.params.id, "id");
   const result = await service.delete({ id } as { id: number });
   res.json({ deleted: result });
+});
+
+export const listUsuarios = asyncHandler(async (_req: Request, res: Response) => {
+  const result = await service.list();
+  res.json(result);
 });

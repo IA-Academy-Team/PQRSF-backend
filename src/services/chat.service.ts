@@ -1,5 +1,5 @@
 import { CreateChatDTO, DeleteChatDTO, UpdateChatDTO } from "../DTOs/chat.dto";
-import { IChat } from "../models/IChat";
+import { IChat } from "../models/chat.model";
 import { ChatRepository } from "../repositories/chat.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
 import { AppError } from "../middlewares/error.middleware";

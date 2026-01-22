@@ -16,3 +16,6 @@ export const SMTP_SECURE = process.env.SMTP_SECURE || false;
 export const SMTP_USER = process.env.SMTP_USER || '';
 export const SMTP_PASS = process.env.SMTP_PASS || '';
 export const MAIL_FROM = process.env.MAIL_FROM || '';
+
+// CORS
+export const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';

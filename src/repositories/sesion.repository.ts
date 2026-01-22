@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ISesion } from "../models/sesion.model";
 import { CreateSesionDTO, UpdateSesionDTO, DeleteSesionDTO } from "../DTOs/sesion.dto";

@@ -12,11 +12,23 @@ import {
 const router = Router();
 
 router.get("/responsable/:responsibleId/count", countNotificacionesNoLeidas);
-router.post("/mark-read", markNotificacionesAsRead);
+router.post(
+  "/mark-read",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/MarkNotificacionesAsRead' } } */
+  markNotificacionesAsRead
+);
 router.get("/", listNotificacionesByResponsable);
 router.get("/:id", getNotificacionById);
-router.post("/", createNotificacion);
-router.patch("/:id", updateNotificacion);
+router.post(
+  "/",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateNotificacion' } } */
+  createNotificacion
+);
+router.patch(
+  "/:id",
+  /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateNotificacion' } } */
+  updateNotificacion
+);
 router.delete("/:id", deleteNotificacion);
 
 export default router;

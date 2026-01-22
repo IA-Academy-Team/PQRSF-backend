@@ -1,5 +1,5 @@
 import { CreateClienteDTO, DeleteClienteDTO, UpdateClienteDTO } from "../DTOs/cliente.dto";
-import { ICliente } from "../models/ICliente";
+import { ICliente } from "../models/cliente.model";
 import { ClienteRepository } from "../repositories/cliente.repository";
 import { StakeholderRepository } from "../repositories/stakeholder.repository";
 import { TipoPersonaRepository } from "../repositories/tipoPersona.repository";
@@ -8,9 +8,9 @@ import {
   ensureFound,
   ensureUpdates,
   optionalEmail,
-  optionalPositiveInt,
   optionalString,
   requireBigInt,
+  requirePositiveInt,
 } from "../utils/validation.utils";
 
 export class ClienteService {
@@ -52,9 +52,9 @@ export class ClienteService {
     }
 
     const typePersonId =
-      data.typePersonId !== undefined && data.typePersonId !== null
-        ? optionalPositiveInt(data.typePersonId, "typePersonId")
-        : null;
+      data.typePersonId === undefined || data.typePersonId === null
+        ? null
+        : requirePositiveInt(data.typePersonId, "typePersonId");
     if (typePersonId) {
       ensureFound(
         "TypePerson",
@@ -64,9 +64,9 @@ export class ClienteService {
     }
 
     const stakeholderId =
-      data.stakeholderId !== undefined && data.stakeholderId !== null
-        ? optionalPositiveInt(data.stakeholderId, "stakeholderId")
-        : null;
+      data.stakeholderId === undefined || data.stakeholderId === null
+        ? null
+        : requirePositiveInt(data.stakeholderId, "stakeholderId");
     if (stakeholderId) {
       ensureFound(
         "Stakeholder",
@@ -124,7 +124,10 @@ export class ClienteService {
     }
 
     if (data.typePersonId !== undefined) {
-      const typePersonId = optionalPositiveInt(data.typePersonId, "typePersonId");
+      const typePersonId =
+        data.typePersonId === null
+          ? null
+          : requirePositiveInt(data.typePersonId, "typePersonId");
       if (typePersonId) {
         ensureFound(
           "TypePerson",
@@ -135,7 +138,10 @@ export class ClienteService {
     }
 
     if (data.stakeholderId !== undefined) {
-      const stakeholderId = optionalPositiveInt(data.stakeholderId, "stakeholderId");
+      const stakeholderId =
+        data.stakeholderId === null
+          ? null
+          : requirePositiveInt(data.stakeholderId, "stakeholderId");
       if (stakeholderId) {
         ensureFound(
           "Stakeholder",
@@ -157,11 +163,15 @@ export class ClienteService {
           : undefined,
       typePersonId:
         data.typePersonId !== undefined
-          ? optionalPositiveInt(data.typePersonId, "typePersonId")
+          ? data.typePersonId === null
+            ? null
+            : requirePositiveInt(data.typePersonId, "typePersonId")
           : undefined,
       stakeholderId:
         data.stakeholderId !== undefined
-          ? optionalPositiveInt(data.stakeholderId, "stakeholderId")
+          ? data.stakeholderId === null
+            ? null
+            : requirePositiveInt(data.stakeholderId, "stakeholderId")
           : undefined,
     });
 

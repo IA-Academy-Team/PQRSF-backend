@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IResponsable } from "../models/responsable.model";
 import { CreateResponsableDTO, UpdateResponsableDTO, DeleteResponsableDTO } from "../DTOs/responsable.dto";

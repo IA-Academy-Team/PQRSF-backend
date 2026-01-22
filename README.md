@@ -45,14 +45,31 @@ este es un ejemplo de como se podria dividir la aplicación en diferentes compon
 
 ### Arquitectura del frontend
 
-se implementa una arquitectura similar a MVC que se separa que acuerdo a las funcionalidades de la aplicación.
+## DOCUMENTACION DE LA API
 
-este es un ejemplo de como se podria dividir la aplicación en diferentes componentes:
+## Instalación
 
-```bash
-.
-├── src
-│   ├── components
-│   │   ├── auth
-│   │   │   ├── auth.component.ts
-│   │   │   ├── auth.controller
+Para instalar el proyecto, sigue estos pasos:
+
+1. Clona el repositorio en tu máquina local.
+2. Abre una terminal y navega hasta la carpeta del proyecto.
+3. Ejecuta el comando `npm install` para instalar las dependencias del proyecto.
+4. Configura la base de datos PostgreSQL y actualiza la configuración de la base de datos en el archivo `config.ts` creando tu .env en la raiz del proyecto.
+5. Ejecuta el comando `npm run dev` para iniciar el servidor.
+
+## Uso
+
+Para usar el proyecto, sigue estos pasos:
+
+1. Abre tu navegador web y navega hasta la dirección `http://localhost:3000`.
+2. Inicia sesión con tus credenciales de usuario.
+3. Utiliza la interfaz de usuario web para realizar consultas y crear peticiones de recambio de servicios.
+
+## Contribución
+
+Si deseas contribuir al proyecto, sigue estos pasos:
+
+1. Haz un fork del repositorio.
+2. Crea una nueva rama para tu contribución.
+3. Realiza tus cambios y asegúrate de que el código sea limpio y bien documentado.
+4. Envía una solicitud de

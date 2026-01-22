@@ -1,6 +1,6 @@
 import { AppError } from "../middlewares/error.middleware";
 import { CreatePqrsDTO, DeletePqrsDTO, UpdatePqrsDTO } from "../DTOs/pqrs.dto";
-import { IPqrs } from "../models/IPqrs";
+import { IPqrs } from "../models/pqrs.model";
 import { PqrsRepository, PqrsFilters } from "../repositories/pqrs.repository";
 import { AreaRepository } from "../repositories/area.repository";
 import { TipoPqrsRepository } from "../repositories/tipoPqrs.repository";
@@ -15,6 +15,7 @@ import {
   optionalPositiveInt,
   optionalString,
   requireBigInt,
+  requireDate,
   requirePositiveInt,
   requireString,
 } from "../utils/validation.utils";
@@ -101,9 +102,9 @@ export class PqrsService {
     }
 
     const dueDate =
-      data.dueDate !== undefined && data.dueDate !== null
-        ? optionalDate(data.dueDate, "dueDate")
-        : new Date(calculateDueDate(15));
+      data.dueDate === undefined || data.dueDate === null
+        ? new Date(calculateDueDate(15))
+        : requireDate(data.dueDate, "dueDate");
 
     const statusId =
       data.pqrsStatusId ?? (isAutoResolved ? PQRS_STATUS.CERRADO : PQRS_STATUS.RADICADO);
@@ -178,9 +179,7 @@ export class PqrsService {
     }
 
     const isAutoResolved =
-      data.isAutoResolved !== undefined
-        ? optionalBoolean(data.isAutoResolved, "isAutoResolved")
-        : current.isAutoResolved;
+      optionalBoolean(data.isAutoResolved, "isAutoResolved") ?? current.isAutoResolved;
 
     if (data.pqrsStatusId !== undefined) {
       const next = requirePositiveInt(data.pqrsStatusId, "pqrsStatusId");
@@ -217,7 +216,11 @@ export class PqrsService {
       id,
       isAutoResolved,
       dueDate:
-        data.dueDate !== undefined ? optionalDate(data.dueDate, "dueDate") : undefined,
+        data.dueDate !== undefined
+          ? data.dueDate === null
+            ? null
+            : requireDate(data.dueDate, "dueDate")
+          : undefined,
     });
 
     return ensureFound("PQRS", updated, { id });

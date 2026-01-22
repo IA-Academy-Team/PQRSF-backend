@@ -1,4 +1,4 @@
-import pool from "../config/db";
+import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IMensaje } from "../models/mensaje.model";
 import { CreateMensajeDTO, UpdateMensajeDTO, DeleteMensajeDTO } from "../DTOs/mensaje.dto";

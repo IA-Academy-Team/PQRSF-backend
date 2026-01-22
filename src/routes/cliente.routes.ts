@@ -9,8 +9,16 @@ import {
 const router = Router();
 
 router.get("/:id", getClienteById);
-router.post("/", createCliente);
-router.patch("/:id", updateCliente);
+router.post(
+  "/",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateCliente' } } */
+  createCliente
+);
+router.patch(
+  "/:id",
+  /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateCliente' } } */
+  updateCliente
+);
 router.delete("/:id", deleteCliente);
 
 export default router;
