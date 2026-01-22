@@ -7,7 +7,6 @@ export type AuthRegisterDTO = {
 export type AuthLoginDTO = {
   email: string;
   password: string;
-  rememberMe?: boolean;
 };
 
 export type AuthRequestResetDTO = {

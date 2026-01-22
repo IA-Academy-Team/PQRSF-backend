@@ -47,7 +47,18 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
-  const payload = req.body as AuthLoginDTO;
+  const payload = req.body as Record<string, unknown>;
+  const allowedKeys = new Set(["email", "password"]);
+  for (const key of Object.keys(payload)) {
+    if (!allowedKeys.has(key)) {
+      throw new AppError(
+        `Unexpected field: ${key}`,
+        400,
+        "VALIDATION_ERROR"
+      );
+    }
+  }
+
   const email = requireEmail(payload.email, "email");
   const password = requireString(payload.password, "password");
 
@@ -55,7 +66,6 @@ export const login = asyncHandler(async (req: Request, res: Response) => {
     body: {
       email,
       password,
-      rememberMe: payload.rememberMe,
     },
     headers: req.headers as Record<string, string>,
   });

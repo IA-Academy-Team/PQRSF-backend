@@ -20,6 +20,7 @@ import authRoutes from "./auth.routes";
 
 const router = Router();
 
+router.use("/auth", authRoutes);
 router.use("/pqrs", pqrsRoutes);
 router.use("/analisis", analisisRoutes);
 router.use("/reanalisis", reanalisisRoutes);
@@ -35,6 +36,5 @@ router.use("/verificaciones", verificacionRoutes);
 router.use("/documentos", documentoRoutes);
 router.use("/respuestas", respuestaRoutes);
 router.use("/encuestas", encuestaRoutes);
-router.use("/auth", authRoutes);
 
 export default router;

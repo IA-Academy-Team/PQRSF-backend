@@ -21,6 +21,96 @@
         }
       }
     },
+    "/api/auth/register": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthRegister"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthLogin"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "description": "",
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/auth/password/request": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthRequestReset"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
+    "/api/auth/password/reset": {
+      "post": {
+        "description": "",
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/AuthReset"
+            }
+          }
+        ],
+        "responses": {
+          "default": {
+            "description": ""
+          }
+        }
+      }
+    },
     "/api/pqrs/": {
       "get": {
         "description": "",
@@ -1304,96 +1394,6 @@
         "responses": {
           "201": {
             "description": "Created"
-          }
-        }
-      }
-    },
-    "/api/auth/register": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/AuthRegister"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/auth/login": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/AuthLogin"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/auth/logout": {
-      "post": {
-        "description": "",
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/auth/password/request": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/AuthRequestReset"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
-          }
-        }
-      }
-    },
-    "/api/auth/password/reset": {
-      "post": {
-        "description": "",
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/AuthReset"
-            }
-          }
-        ],
-        "responses": {
-          "default": {
-            "description": ""
           }
         }
       }
@@ -3374,6 +3374,33 @@
               }
             }
           }
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "email",
+            "password"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "type": "object",
+          "properties": {
+            "name": {
+              "type": "string",
+              "example": "Juan Perez"
+            },
+            "email": {
+              "type": "string",
+              "example": "juan.perez@campuslands.com"
+            },
+            "password": {
+              "type": "string",
+              "example": "Test1234"
+            }
+          }
         }
       }
     },
@@ -3404,15 +3431,29 @@
                   "example": "string"
                 }
               }
+            }
+          }
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "email",
+            "password"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "example": "juan.perez@campuslands.com"
             },
-            "rememberMe": {
-              "type": "object",
-              "properties": {
-                "type": {
-                  "type": "string",
-                  "example": "boolean"
-                }
-              }
+            "password": {
+              "type": "string",
+              "example": "Test1234"
             }
           }
         }
@@ -3447,6 +3488,28 @@
               }
             }
           }
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "email"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "type": "object",
+          "properties": {
+            "email": {
+              "type": "string",
+              "example": "juan.perez@campuslands.com"
+            },
+            "redirectTo": {
+              "type": "string",
+              "example": "http://localhost:5173/reset"
+            }
+          }
         }
       }
     },
@@ -3477,6 +3540,29 @@
                   "example": "string"
                 }
               }
+            }
+          }
+        },
+        "required": {
+          "type": "array",
+          "example": [
+            "token",
+            "newPassword"
+          ],
+          "items": {
+            "type": "string"
+          }
+        },
+        "example": {
+          "type": "object",
+          "properties": {
+            "token": {
+              "type": "string",
+              "example": "reset-token-here"
+            },
+            "newPassword": {
+              "type": "string",
+              "example": "Test1234"
             }
           }
         }

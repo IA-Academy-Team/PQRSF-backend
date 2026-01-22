@@ -331,13 +331,23 @@ const doc = {
                 email: { type: "string" },
                 password: { type: "string" },
             },
+            required: ["email", "password"],
+            example: {
+                name: "Juan Perez",
+                email: "juan.perez@campuslands.com",
+                password: "Test1234",
+            },
         },
         AuthLogin: {
             type: "object",
             properties: {
                 email: { type: "string" },
                 password: { type: "string" },
-                rememberMe: { type: "boolean" },
+            },
+            required: ["email", "password"],
+            example: {
+                email: "juan.perez@campuslands.com",
+                password: "Test1234",
             },
         },
         AuthRequestReset: {
@@ -346,12 +356,22 @@ const doc = {
                 email: { type: "string" },
                 redirectTo: { type: "string" },
             },
+            required: ["email"],
+            example: {
+                email: "juan.perez@campuslands.com",
+                redirectTo: "http://localhost:5173/reset",
+            },
         },
         AuthReset: {
             type: "object",
             properties: {
                 token: { type: "string" },
                 newPassword: { type: "string" },
+            },
+            required: ["token", "newPassword"],
+            example: {
+                token: "reset-token-here",
+                newPassword: "Test1234",
             },
         },
     },
