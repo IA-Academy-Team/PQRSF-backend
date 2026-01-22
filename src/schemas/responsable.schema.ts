@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { optionalNullablePositiveIntSchema, positiveIntSchema } from "./common.schema";
+import { optionalNullablePositiveIntSchema, positiveIntSchema } from "./core/common.schema";
 
 export const createResponsableSchema = z
   .object({

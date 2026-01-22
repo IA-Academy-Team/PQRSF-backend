@@ -4,6 +4,10 @@ export const nonEmptyStringSchema = z.string().trim().min(1);
 export const optionalStringSchema = nonEmptyStringSchema.optional();
 export const nullableStringSchema = nonEmptyStringSchema.nullable();
 export const optionalNullableStringSchema = nonEmptyStringSchema.nullable().optional();
+export const optionalNullableStringAllowEmptySchema = z.preprocess(
+  (value) => (value === "" ? undefined : value),
+  nonEmptyStringSchema.nullable().optional()
+);
 
 export const emailSchema = nonEmptyStringSchema.email();
 export const optionalEmailSchema = emailSchema.optional();

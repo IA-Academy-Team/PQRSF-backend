@@ -5,14 +5,15 @@ import {
   optionalDateSchema,
   optionalNullableDateSchema,
   optionalNullableStringSchema,
+  optionalNullableStringAllowEmptySchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createUsuarioSchema = z
   .object({
     email: emailSchema,
     name: optionalNullableStringSchema,
-    image: optionalNullableStringSchema,
+    image: optionalNullableStringAllowEmptySchema,
     phoneNumber: optionalNullableStringSchema,
     isActive: optionalBooleanSchema,
     emailVerified: optionalBooleanSchema,
@@ -26,7 +27,7 @@ export const updateUsuarioSchema = z
   .object({
     email: emailSchema.optional(),
     name: optionalNullableStringSchema,
-    image: optionalNullableStringSchema,
+    image: optionalNullableStringAllowEmptySchema,
     phoneNumber: optionalNullableStringSchema,
     isActive: optionalBooleanSchema,
     emailVerified: optionalBooleanSchema,

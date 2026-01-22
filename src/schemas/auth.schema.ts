@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { emailSchema, nonEmptyStringSchema, optionalStringSchema } from "./common.schema";
+import { emailSchema, nonEmptyStringSchema, optionalStringSchema } from "./core/common.schema";
 
 export const authRegisterSchema = z
   .object({

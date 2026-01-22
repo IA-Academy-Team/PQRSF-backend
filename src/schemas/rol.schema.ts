@@ -4,7 +4,7 @@ import {
   optionalDateSchema,
   optionalNullableStringSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createRolSchema = z
   .object({

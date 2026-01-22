@@ -4,7 +4,7 @@ import {
   optionalNullableStringSchema,
   optionalPositiveIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 const scoreSchema = z.coerce.number().int().min(1).max(5);
 const optionalNullableScoreSchema = scoreSchema.nullable().optional();

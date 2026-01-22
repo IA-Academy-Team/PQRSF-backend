@@ -7,7 +7,7 @@ import {
   optionalPositiveIntSchema,
   positiveBigIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createPqrsSchema = z
   .object({

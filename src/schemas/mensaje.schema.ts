@@ -5,7 +5,7 @@ import {
   optionalNullableStringSchema,
   positiveBigIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createMensajeSchema = z
   .object({

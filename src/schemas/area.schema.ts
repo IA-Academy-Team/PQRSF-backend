@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nonEmptyStringSchema, optionalNullableStringSchema, positiveIntSchema } from "./common.schema";
+import { nonEmptyStringSchema, optionalNullableStringSchema, positiveIntSchema } from "./core/common.schema";
 
 export const createAreaSchema = z
   .object({

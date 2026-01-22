@@ -3,7 +3,7 @@ import {
   optionalNullablePositiveIntSchema,
   optionalPositiveBigIntSchema,
   positiveBigIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createChatSchema = z
   .object({

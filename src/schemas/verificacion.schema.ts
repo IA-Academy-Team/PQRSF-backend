@@ -4,7 +4,7 @@ import {
   nonEmptyStringSchema,
   optionalDateSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createVerificacionSchema = z
   .object({

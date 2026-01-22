@@ -5,20 +5,12 @@
 BASE: /api  (segun src/lib/api.ts)
 
 == Publicos / Auth ==
-POST   /auth/login                 -> login (correo/password) | retorna {token, user}
-POST   /auth/logout                -> cerrar sesion (invalida session/token)
-POST   /auth/register              -> registrar usuario (users + accounts)
-POST   /auth/forgot-password       -> enviar codigo/link (verifications)
-POST   /auth/reset-password        -> reset con token/codigo
 GET    /auth/me                    -> usuario autenticado (para rehidratar auth)
 POST   /auth/refresh               -> renovar token (si aplica)
 POST   /auth/verify-email          -> verificar correo con codigo (verifications)
-GET    /health                     -> health check (public route)
 
 == Usuarios / Roles / Cargos ==
-GET    /users                       -> listar usuarios
 POST   /users                       -> crear usuario
-GET    /users/{id}                  -> obtener usuario
 PUT    /users/{id}                  -> actualizar usuario
 DELETE /users/{id}                  -> eliminar usuario
 GET    /users/email/{email}         -> buscar por email

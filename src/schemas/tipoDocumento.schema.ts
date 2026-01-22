@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { nonEmptyStringSchema, positiveIntSchema } from "./common.schema";
+import { nonEmptyStringSchema, positiveIntSchema } from "./core/common.schema";
 
 export const createTipoDocumentoSchema = z
   .object({

@@ -4,7 +4,7 @@ import {
   optionalDateSchema,
   optionalPositiveIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createRespuestaSchema = z
   .object({
