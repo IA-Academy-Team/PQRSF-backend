@@ -92,7 +92,7 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   await auth.api.signOut({
     headers: req.headers as Record<string, string>,
   });
-  res.status(204).send();
+  res.status(200).json({ logout: true });
 });
 
 export const requestPasswordReset = asyncHandler(
