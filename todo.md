@@ -1,28 +1,4 @@
-🗓️ Día 1 – Base sólida
 
-Configuración proyecto
-
-DB connection
-
-Better Auth
-
-Middlewares base
-
-Utils (errores, fechas)
-
-🗓️ Día 2–3 – Core PQRS (HU-01)
-
-PQRS module completo
-
-Estados
-
-Ticket único
-
-Endpoint bot
-
-Validaciones
-
-👉 Si esto falla, todo falla
 
 🗓️ Día 4 – Analysis / Reanalysis (HU-02)
 

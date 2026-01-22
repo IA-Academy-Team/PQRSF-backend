@@ -8,12 +8,12 @@ import {
 
 const router = Router();
 
-router.get("/:id", getSesionById);
 router.post(
   "/",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateSesion' } } */
   createSesion
 );
+router.get("/:id", getSesionById);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateSesion' } } */

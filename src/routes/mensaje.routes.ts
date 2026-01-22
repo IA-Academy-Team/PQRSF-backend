@@ -9,13 +9,13 @@ import {
 
 const router = Router();
 
-router.get("/chat/:chatId", listMensajesByChat);
-router.get("/:id", getMensajeById);
 router.post(
   "/",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateMensaje' } } */
   createMensaje
 );
+router.get("/chat/:chatId", listMensajesByChat);
+router.get("/:id", getMensajeById);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateMensaje' } } */

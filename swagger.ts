@@ -242,34 +242,22 @@ const doc = {
         CreateResponsable: {
             type: "object",
             properties: {
-                name: { type: "string" },
-                email: { type: "string" },
-                password: { type: "string" },
-                phoneNumber: { type: "string" },
+                userId: { type: "integer" },
                 areaId: { type: "integer" },
             },
             example: {
-                name: "string",
-                email: "string",
-                password: "string",
-                phoneNumber: "string",
+                userId: 1,
                 areaId: 1,
             },
         },
         UpdateResponsable: {
             type: "object",
             properties: {
-                name: { type: "string" },
-                email: { type: "string" },
-                password: { type: "string" },
-                phoneNumber: { type: "string" },
+                userId: { type: "integer" },
                 areaId: { type: "integer" },
             },
             example: {
-                name: "string",
-                email: "string",
-                password: "string",
-                phoneNumber: "string",
+                userId: 1,
                 areaId: 1,
             },
         },

@@ -1,0 +1,567 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "requests": [
+    {
+      "name": "List PQRS",
+      "method": "GET",
+      "path": "/api/pqrs",
+      "query": {
+        "pqrsStatusId": 1,
+        "areaId": 1,
+        "ticketNumber": "string",
+        "fromDate": "2025-01-01T00:00:00Z",
+        "toDate": "2025-01-31T00:00:00Z"
+      }
+    },
+    {
+      "name": "Get PQRS by id",
+      "method": "GET",
+      "path": "/api/pqrs/1"
+    },
+    {
+      "name": "Create PQRS",
+      "method": "POST",
+      "path": "/api/pqrs",
+      "body": {
+        "ticketNumber": "string",
+        "isAutoResolved": false,
+        "dueDate": "2025-01-01T00:00:00Z",
+        "pqrsStatusId": 1,
+        "clientId": 1,
+        "typePqrsId": 1,
+        "areaId": 1
+      }
+    },
+    {
+      "name": "Update PQRS",
+      "method": "PATCH",
+      "path": "/api/pqrs/1",
+      "body": {
+        "ticketNumber": "string",
+        "isAutoResolved": false,
+        "dueDate": "2025-01-01T00:00:00Z",
+        "pqrsStatusId": 1,
+        "clientId": 1,
+        "typePqrsId": 1,
+        "areaId": 1
+      }
+    },
+    {
+      "name": "Delete PQRS",
+      "method": "DELETE",
+      "path": "/api/pqrs/1"
+    },
+
+    {
+      "name": "Get Analisis by id",
+      "method": "GET",
+      "path": "/api/analisis/1"
+    },
+    {
+      "name": "Create Analisis",
+      "method": "POST",
+      "path": "/api/analisis",
+      "body": {
+        "answer": "string",
+        "actionTaken": "string",
+        "pqrsId": 1,
+        "responsibleId": 1
+      }
+    },
+    {
+      "name": "Update Analisis",
+      "method": "PATCH",
+      "path": "/api/analisis/1",
+      "body": {
+        "answer": "string",
+        "actionTaken": "string"
+      }
+    },
+    {
+      "name": "Delete Analisis",
+      "method": "DELETE",
+      "path": "/api/analisis/1"
+    },
+
+    {
+      "name": "Get Reanalisis by id",
+      "method": "GET",
+      "path": "/api/reanalisis/1"
+    },
+    {
+      "name": "Create Reanalisis",
+      "method": "POST",
+      "path": "/api/reanalisis",
+      "body": {
+        "answer": "string",
+        "actionTaken": "string",
+        "analysisId": 1,
+        "responsibleId": 1
+      }
+    },
+    {
+      "name": "Update Reanalisis",
+      "method": "PATCH",
+      "path": "/api/reanalisis/1",
+      "body": {
+        "answer": "string",
+        "actionTaken": "string"
+      }
+    },
+    {
+      "name": "Delete Reanalisis",
+      "method": "DELETE",
+      "path": "/api/reanalisis/1"
+    },
+
+    {
+      "name": "List Notificaciones by responsable",
+      "method": "GET",
+      "path": "/api/notificaciones",
+      "query": {
+        "responsibleId": 1
+      }
+    },
+    {
+      "name": "Count Notificaciones no leidas",
+      "method": "GET",
+      "path": "/api/notificaciones/responsable/1/count"
+    },
+    {
+      "name": "Get Notificacion by id",
+      "method": "GET",
+      "path": "/api/notificaciones/1"
+    },
+    {
+      "name": "Create Notificacion",
+      "method": "POST",
+      "path": "/api/notificaciones",
+      "body": {
+        "message": "string",
+        "status": 1,
+        "responsibleId": 1,
+        "pqrsId": 1
+      }
+    },
+    {
+      "name": "Mark Notificaciones as read",
+      "method": "POST",
+      "path": "/api/notificaciones/mark-read",
+      "body": {
+        "ids": [1]
+      }
+    },
+    {
+      "name": "Update Notificacion",
+      "method": "PATCH",
+      "path": "/api/notificaciones/1",
+      "body": {
+        "message": "string",
+        "status": 1
+      }
+    },
+    {
+      "name": "Delete Notificacion",
+      "method": "DELETE",
+      "path": "/api/notificaciones/1"
+    },
+
+    {
+      "name": "Get Cliente by id",
+      "method": "GET",
+      "path": "/api/clientes/1"
+    },
+    {
+      "name": "Create Cliente",
+      "method": "POST",
+      "path": "/api/clientes",
+      "body": {
+        "id": 1,
+        "name": "string",
+        "document": "string",
+        "email": "string",
+        "phoneNumber": "string",
+        "typePersonId": 1,
+        "stakeholderId": 1
+      }
+    },
+    {
+      "name": "Update Cliente",
+      "method": "PATCH",
+      "path": "/api/clientes/1",
+      "body": {
+        "name": "string",
+        "document": "string",
+        "email": "string",
+        "phoneNumber": "string",
+        "typePersonId": 1,
+        "stakeholderId": 1
+      }
+    },
+    {
+      "name": "Delete Cliente",
+      "method": "DELETE",
+      "path": "/api/clientes/1"
+    },
+
+    {
+      "name": "List Chats by client",
+      "method": "GET",
+      "path": "/api/chats/client/1"
+    },
+    {
+      "name": "Get Chat by id",
+      "method": "GET",
+      "path": "/api/chats/1"
+    },
+    {
+      "name": "Create Chat",
+      "method": "POST",
+      "path": "/api/chats",
+      "body": {
+        "id": 1,
+        "mode": 1,
+        "clientId": 1
+      }
+    },
+    {
+      "name": "Update Chat",
+      "method": "PATCH",
+      "path": "/api/chats/1",
+      "body": {
+        "mode": 1,
+        "clientId": 1
+      }
+    },
+    {
+      "name": "Delete Chat",
+      "method": "DELETE",
+      "path": "/api/chats/1"
+    },
+
+    {
+      "name": "List Mensajes by chat",
+      "method": "GET",
+      "path": "/api/mensajes/chat/1"
+    },
+    {
+      "name": "Get Mensaje by id",
+      "method": "GET",
+      "path": "/api/mensajes/1"
+    },
+    {
+      "name": "Create Mensaje",
+      "method": "POST",
+      "path": "/api/mensajes",
+      "body": {
+        "content": "string",
+        "type": 1,
+        "chatId": 1
+      }
+    },
+    {
+      "name": "Update Mensaje",
+      "method": "PATCH",
+      "path": "/api/mensajes/1",
+      "body": {
+        "content": "string",
+        "type": 1,
+        "chatId": 1
+      }
+    },
+    {
+      "name": "Delete Mensaje",
+      "method": "DELETE",
+      "path": "/api/mensajes/1"
+    },
+    {
+      "name": "Create Responsable",
+      "method": "POST",
+      "path": "/api/responsables",
+      "body": {
+        "userId": 1,
+        "areaId": 1
+      }
+    },
+    {
+      "name": "Update Responsable",
+      "method": "PATCH",
+      "path": "/api/responsables/1",
+      "body": {
+        "userId": 1,
+        "areaId": 1
+      }
+    },
+    // {
+    //   "name": "Delete Responsable",
+    //   "method": "DELETE",
+    //   "path": "/api/responsables/1"
+    // },
+
+    {
+      "name": "Get Respuesta by id",
+      "method": "GET",
+      "path": "/api/respuestas/1"
+    },
+    {
+      "name": "Create Respuesta",
+      "method": "POST",
+      "path": "/api/respuestas",
+      "body": {
+        "content": "string",
+        "channel": 1,
+        "sentAt": "2025-01-01T00:00:00Z",
+        "documentId": 1,
+        "pqrsId": 1,
+        "responsibleId": 1
+      }
+    },
+    {
+      "name": "Update Respuesta",
+      "method": "PATCH",
+      "path": "/api/respuestas/1",
+      "body": {
+        "content": "string",
+        "channel": 1,
+        "sentAt": "2025-01-01T00:00:00Z",
+        "documentId": 1,
+        "pqrsId": 1,
+        "responsibleId": 1
+      }
+    },
+    {
+      "name": "Delete Respuesta",
+      "method": "DELETE",
+      "path": "/api/respuestas/1"
+    },
+
+    {
+      "name": "Get Sesion by id",
+      "method": "GET",
+      "path": "/api/sesiones/1"
+    },
+    {
+      "name": "Create Sesion",
+      "method": "POST",
+      "path": "/api/sesiones",
+      "body": {
+        "token": "string",
+        "expiresAt": "2025-01-01T00:00:00Z",
+        "ipAddress": "string",
+        "userAgent": "string",
+        "userId": 1
+      }
+    },
+    {
+      "name": "Update Sesion",
+      "method": "PATCH",
+      "path": "/api/sesiones/1",
+      "body": {
+        "token": "string",
+        "expiresAt": "2025-01-01T00:00:00Z",
+        "ipAddress": "string",
+        "userAgent": "string",
+        "userId": 1
+      }
+    },
+    {
+      "name": "Delete Sesion",
+      "method": "DELETE",
+      "path": "/api/sesiones/1"
+    },
+
+    {
+      "name": "List Usuarios",
+      "method": "GET",
+      "path": "/api/usuarios"
+    },
+    {
+      "name": "Get Usuario by id",
+      "method": "GET",
+      "path": "/api/usuarios/1"
+    },
+    {
+      "name": "Create Usuario",
+      "method": "POST",
+      "path": "/api/usuarios",
+      "body": {
+        "email": "string",
+        "name": "string",
+        "image": "string",
+        "phoneNumber": "string",
+        "isActive": true,
+        "emailVerified": false,
+        "twoFactorEnabled": false,
+        "lastLogin": "2025-01-01T00:00:00Z",
+        "roleId": 1
+      }
+    },
+    {
+      "name": "Update Usuario",
+      "method": "PATCH",
+      "path": "/api/usuarios/1",
+      "body": {
+        "email": "string",
+        "name": "string",
+        "image": "string",
+        "phoneNumber": "string",
+        "isActive": true,
+        "emailVerified": false,
+        "twoFactorEnabled": false,
+        "lastLogin": "2025-01-01T00:00:00Z",
+        "roleId": 1
+      }
+    },
+    {
+      "name": "Delete Usuario",
+      "method": "DELETE",
+      "path": "/api/usuarios/1"
+    },
+
+    {
+      "name": "Get Verificacion by id",
+      "method": "GET",
+      "path": "/api/verificaciones/1"
+    },
+    {
+      "name": "Create Verificacion",
+      "method": "POST",
+      "path": "/api/verificaciones",
+      "body": {
+        "identifier": "string",
+        "value": "string",
+        "expiresAt": "2025-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Update Verificacion",
+      "method": "PATCH",
+      "path": "/api/verificaciones/1",
+      "body": {
+        "identifier": "string",
+        "value": "string",
+        "expiresAt": "2025-01-01T00:00:00Z"
+      }
+    },
+    {
+      "name": "Delete Verificacion",
+      "method": "DELETE",
+      "path": "/api/verificaciones/1"
+    },
+
+    {
+      "name": "Get Cuenta by id",
+      "method": "GET",
+      "path": "/api/cuentas/1"
+    },
+    {
+      "name": "Create Cuenta",
+      "method": "POST",
+      "path": "/api/cuentas",
+      "body": {
+        "providerId": "string",
+        "providerAccountId": "string",
+        "password": "string",
+        "accessToken": "string",
+        "refreshToken": "string",
+        "idToken": "string",
+        "accessTokenExpiresAt": "2025-01-01T00:00:00Z",
+        "refreshTokenExpiresAt": "2025-01-01T00:00:00Z",
+        "scope": "string",
+        "userId": 1
+      }
+    },
+    {
+      "name": "Update Cuenta",
+      "method": "PATCH",
+      "path": "/api/cuentas/1",
+      "body": {
+        "providerId": "string",
+        "providerAccountId": "string",
+        "password": "string",
+        "accessToken": "string",
+        "refreshToken": "string",
+        "idToken": "string",
+        "accessTokenExpiresAt": "2025-01-01T00:00:00Z",
+        "refreshTokenExpiresAt": "2025-01-01T00:00:00Z",
+        "scope": "string",
+        "userId": 1
+      }
+    },
+    {
+      "name": "Delete Cuenta",
+      "method": "DELETE",
+      "path": "/api/cuentas/1"
+    },
+
+    {
+      "name": "Get Documento by id",
+      "method": "GET",
+      "path": "/api/documentos/1"
+    },
+    {
+      "name": "Create Documento",
+      "method": "POST",
+      "path": "/api/documentos",
+      "body": {
+        "url": "string",
+        "typeDocumentId": 1,
+        "pqrsId": 1
+      }
+    },
+    {
+      "name": "Update Documento",
+      "method": "PATCH",
+      "path": "/api/documentos/1",
+      "body": {
+        "url": "string",
+        "typeDocumentId": 1,
+        "pqrsId": 1
+      }
+    },
+    {
+      "name": "Delete Documento",
+      "method": "DELETE",
+      "path": "/api/documentos/1"
+    },
+
+    {
+      "name": "Get Encuesta by id",
+      "method": "GET",
+      "path": "/api/encuestas/1"
+    },
+    {
+      "name": "Create Encuesta",
+      "method": "POST",
+      "path": "/api/encuestas",
+      "body": {
+        "q1Clarity": 1,
+        "q2Timeliness": 1,
+        "q3Quality": 1,
+        "q4Attention": 1,
+        "q5Overall": 1,
+        "comment": "string",
+        "pqrsId": 1
+      }
+    },
+    {
+      "name": "Update Encuesta",
+      "method": "PATCH",
+      "path": "/api/encuestas/1",
+      "body": {
+        "q1Clarity": 1,
+        "q2Timeliness": 1,
+        "q3Quality": 1,
+        "q4Attention": 1,
+        "q5Overall": 1,
+        "comment": "string",
+        "pqrsId": 1
+      }
+    },
+    {
+      "name": "Delete Encuesta",
+      "method": "DELETE",
+      "path": "/api/encuestas/1"
+    }
+  ]
+}

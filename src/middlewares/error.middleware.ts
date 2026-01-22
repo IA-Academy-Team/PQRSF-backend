@@ -56,16 +56,37 @@ const mapPostgresError = (error: unknown) => {
 
 export const errorHandler = (
   err: unknown,
-  _req: Request,
+  req: Request,
   res: Response,
   _next: NextFunction
 ) => {
+  const sanitize = (value: unknown): unknown => {
+    if (typeof value === "bigint") return value.toString();
+    if (Array.isArray(value)) return value.map(sanitize);
+    if (value && typeof value === "object") {
+      const entries = Object.entries(value as Record<string, unknown>).map(
+        ([key, val]) => [key, sanitize(val)]
+      );
+      return Object.fromEntries(entries);
+    }
+    return value;
+  };
+
   if (err instanceof AppError) {
+    if (err.statusCode >= 400 && err.statusCode < 500) {
+      console.warn("[Request Error]", {
+        method: req.method,
+        path: req.originalUrl,
+        code: err.code,
+        message: err.message,
+        details: sanitize(err.details),
+      });
+    }
     return res.status(err.statusCode).json({
       error: {
         code: err.code,
         message: err.message,
-        details: err.details,
+        details: sanitize(err.details),
       },
     });
   }
@@ -91,7 +112,7 @@ export const errorHandler = (
       error: {
         code: mapped.code,
         message: mapped.message,
-        details: mapped.details,
+        details: sanitize(mapped.details),
       },
     });
   }

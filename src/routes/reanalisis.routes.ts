@@ -8,12 +8,12 @@ import {
 
 const router = Router();
 
-router.get("/:id", getReanalisisById);
 router.post(
   "/",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateReanalisis' } } */
   createReanalisis
 );
+router.get("/:id", getReanalisisById);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateReanalisis' } } */

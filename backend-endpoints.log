@@ -1,0 +1,174 @@
+# Backend endpoints necesarios (frontend PQRSF)
+# Fuente: servicios en src/services, vistas en src/views, auth-context, y modelo en temp.sql
+# Objetivo: eliminar toda mock data y conectar el frontend al backend.
+
+BASE: /api  (segun src/lib/api.ts)
+
+== Publicos / Auth ==
+POST   /auth/login                 -> login (correo/password) | retorna {token, user}
+POST   /auth/logout                -> cerrar sesion (invalida session/token)
+POST   /auth/register              -> registrar usuario (users + accounts)
+POST   /auth/forgot-password       -> enviar codigo/link (verifications)
+POST   /auth/reset-password        -> reset con token/codigo
+GET    /auth/me                    -> usuario autenticado (para rehidratar auth)
+POST   /auth/refresh               -> renovar token (si aplica)
+POST   /auth/verify-email          -> verificar correo con codigo (verifications)
+GET    /health                     -> health check (public route)
+
+== Usuarios / Roles / Cargos ==
+GET    /users                       -> listar usuarios
+POST   /users                       -> crear usuario
+GET    /users/{id}                  -> obtener usuario
+PUT    /users/{id}                  -> actualizar usuario
+DELETE /users/{id}                  -> eliminar usuario
+GET    /users/email/{email}         -> buscar por email
+PATCH  /users/{id}/status           -> activar/inactivar (toggle en Usuarios)
+
+GET    /roles                       -> listar roles (tabla roles)
+POST   /roles                       -> crear rol
+PUT    /roles/{id}                  -> actualizar rol
+DELETE /roles/{id}                  -> eliminar rol
+
+GET    /cargos                      -> listar cargos (UI Gestion de Cargos)
+POST   /cargos                      -> crear cargo
+PUT    /cargos/{id}                 -> actualizar cargo
+DELETE /cargos/{id}                 -> eliminar cargo
+PATCH  /cargos/{id}/status          -> activar/inactivar cargo
+
+== Catalogos ==
+GET    /catalog/type-pqrsf          -> listar tipos PQRS (type_pqrs)
+POST   /catalog/type-pqrsf          -> crear tipo
+GET    /catalog/type-pqrsf/{id}     -> obtener tipo
+PUT    /catalog/type-pqrsf/{id}     -> actualizar tipo
+DELETE /catalog/type-pqrsf/{id}     -> eliminar tipo
+
+GET    /catalog/pqrs-status         -> listar estados PQRS (pqrs_status)
+POST   /catalog/pqrs-status         -> crear estado
+GET    /catalog/pqrs-status/{id}    -> obtener estado
+PUT    /catalog/pqrs-status/{id}    -> actualizar estado
+DELETE /catalog/pqrs-status/{id}    -> eliminar estado
+
+GET    /catalog/type-document       -> listar tipos de documento (type_document)
+POST   /catalog/type-document       -> crear tipo de documento
+GET    /catalog/type-document/{id}  -> obtener tipo
+PUT    /catalog/type-document/{id}  -> actualizar tipo
+DELETE /catalog/type-document/{id}  -> eliminar tipo
+
+== Personas / Stakeholders ==
+GET    /users/type-person           -> listar tipo de persona (type_person)
+POST   /users/type-person           -> crear tipo
+GET    /users/type-person/{id}      -> obtener tipo
+PUT    /users/type-person/{id}      -> actualizar tipo
+DELETE /users/type-person/{id}      -> eliminar tipo
+
+GET    /users/state-holder          -> listar stakeholders (stakeholder)
+POST   /users/state-holder          -> crear stakeholder
+GET    /users/state-holder/{id}     -> obtener stakeholder
+PUT    /users/state-holder/{id}     -> actualizar stakeholder
+DELETE /users/state-holder/{id}     -> eliminar stakeholder
+
+== Areas / Responsables ==
+GET    /area                         -> listar areas
+POST   /area                         -> crear area
+GET    /area/{id}                    -> obtener area
+PUT    /area/{id}                    -> actualizar area
+DELETE /area/{id}                    -> eliminar area
+
+GET    /area/responsible             -> listar responsables
+POST   /area/responsible             -> crear responsable
+GET    /area/responsible/{id}        -> obtener responsable
+PUT    /area/responsible/{id}        -> actualizar responsable
+DELETE /area/responsible/{id}        -> eliminar responsable
+GET    /area/{areaId}/responsible    -> responsables por area
+
+== Clientes (solicitantes) ==
+GET    /clients                      -> listar clientes
+POST   /clients                      -> crear cliente
+GET    /clients/{id}                 -> obtener cliente
+PUT    /clients/{id}                 -> actualizar cliente
+DELETE /clients/{id}                 -> eliminar cliente
+
+== PQRSF (core) ==
+GET    /pqrsf                         -> listar PQRSF
+POST   /pqrsf                         -> crear PQRSF
+GET    /pqrsf/{id}                    -> obtener PQRSF
+PUT    /pqrsf/{id}                    -> actualizar PQRSF
+DELETE /pqrsf/{id}                    -> eliminar PQRSF
+GET    /pqrsf/radicado/{code}         -> buscar por radicado
+GET    /pqrsf/status/{statusId}       -> filtrar por estado
+GET    /pqrsf/type/{typeId}           -> filtrar por tipo
+GET    /pqrsf/user/{userId}           -> filtrar por usuario
+GET    /pqrsf/area/{areaId}           -> filtrar por area
+GET    /pqrsf/search                  -> filtros avanzados (query: texto, fechas, prioridad, etc.)
+
+== Analisis / Reanalisis ==
+GET    /pqrsf/{pqrsfId}/analysis      -> listar analisis
+POST   /pqrsf/analysis                -> crear analisis
+PUT    /pqrsf/analysis/{id}           -> actualizar analisis
+
+GET    /pqrsf/reanalysis/{id}         -> obtener reanalisis
+POST   /pqrsf/reanalysis              -> crear reanalisis
+PUT    /pqrsf/reanalysis/{id}         -> actualizar reanalisis
+
+== Respuestas al cliente ==
+GET    /pqrsf/{pqrsfId}/responses     -> listar respuestas
+POST   /pqrsf/{pqrsfId}/responses     -> enviar respuesta (response)
+PUT    /responses/{id}                -> editar respuesta
+
+== Documentos / Evidencias ==
+GET    /pqrsf/{pqrsfId}/documents     -> listar documentos
+POST   /pqrsf/{pqrsfId}/documents     -> subir documento (multipart/form-data)
+DELETE /documents/{id}                -> eliminar documento
+GET    /documents/{id}/download       -> descargar archivo
+
+== Encuestas ==
+GET    /pqrsf/{pqrsfId}/survey         -> obtener encuesta
+POST   /pqrsf/survey                   -> crear encuesta
+PUT    /pqrsf/survey/{id}              -> actualizar encuesta
+
+== Notificaciones ==
+GET    /notifications                  -> listar notificaciones (responsable)
+PATCH  /notifications/{id}             -> marcar leida
+PATCH  /notifications/mark-all-read     -> marcar todas leidas
+
+== Chat (WhatsApp / IA) ==
+GET    /chat                           -> listar chats
+POST   /chat                           -> crear chat
+GET    /chat/{id}                      -> obtener chat
+PUT    /chat/{id}                      -> actualizar chat
+DELETE /chat/{id}                      -> eliminar chat
+GET    /chat/user/{userId}             -> chats por usuario
+GET    /chat/area/{areaId}             -> chats por area
+
+GET    /chat/{chatId}/messages         -> listar mensajes
+POST   /chat/messages                  -> enviar mensaje
+PUT    /chat/messages/{id}             -> editar mensaje
+DELETE /chat/messages/{id}             -> eliminar mensaje
+
+GET    /chat/message-storage/{id}      -> obtener almacenamiento de mensajes
+POST   /chat/message-storage           -> crear almacenamiento
+PUT    /chat/message-storage/{id}      -> actualizar almacenamiento
+
+GET    /chat/{chatId}/summary          -> obtener resumen
+POST   /chat/summary                   -> crear resumen
+PUT    /chat/summary/{id}              -> actualizar resumen
+DELETE /chat/summary/{id}              -> eliminar resumen
+
+== Seguimiento / Apelaciones / Cierre ==
+POST   /pqrsf/{pqrsfId}/finalize       -> cerrar PQRSF (estado cerrada)
+POST   /pqrsf/{pqrsfId}/appeal         -> enviar a apelacion
+GET    /pqrsf/seguimiento              -> listado respondidas (admin)
+GET    /pqrsf/apelaciones              -> listado apeladas (admin/area)
+GET    /pqrsf/cerradas                 -> listado cerradas (admin)
+
+== Dashboard / Metricas ==
+GET    /dashboard/admin/metrics        -> totales, cards, graficas admin
+GET    /dashboard/admin/chats          -> chats recientes admin
+GET    /dashboard/area/{areaId}/metrics-> cards area responsable
+GET    /dashboard/area/{areaId}/pending-> pendientes de respuesta
+GET    /dashboard/area/{areaId}/appeals-> apelaciones recientes
+
+Notas:
+- Algunas entidades en frontend no aparecen en temp.sql (message_storage, summary, cargos). Crear tablas o ajustar modelos si se van a usar.
+- Ajustar nombres de rutas si el backend ya tiene convenciones distintas, pero la funcionalidad es requerida para eliminar mocks.
+- Para adjuntos (documentos/evidencias) usar endpoints con multipart y guardar url en document.url.

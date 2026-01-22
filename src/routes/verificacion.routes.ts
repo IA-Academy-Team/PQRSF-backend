@@ -8,12 +8,12 @@ import {
 
 const router = Router();
 
-router.get("/:id", getVerificacionById);
 router.post(
   "/",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateVerificacion' } } */
   createVerificacion
 );
+router.get("/:id", getVerificacionById);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateVerificacion' } } */

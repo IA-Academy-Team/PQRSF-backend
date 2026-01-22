@@ -34,3 +34,8 @@ export const deleteResponsable = asyncHandler(async (req: Request, res: Response
   const result = await service.delete({ id });
   res.json({ deleted: result });
 });
+
+export const getAllResponsables = asyncHandler(async (req: Request, res: Response) => {
+  const responsables = await service.findAll();
+  res.json(responsables);
+});

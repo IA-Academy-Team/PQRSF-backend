@@ -1,8 +1,5 @@
 export interface IResponsable {
   id: number;
-  name: string;
-  email: string;
-  password: string;
-  phoneNumber: string;
+  userId: number;
   areaId: number | null;
 }

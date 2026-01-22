@@ -8,12 +8,12 @@ import {
 
 const router = Router();
 
-router.get("/:id", getRespuestaById);
 router.post(
   "/",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateRespuesta' } } */
   createRespuesta
 );
+router.get("/:id", getRespuestaById);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateRespuesta' } } */
