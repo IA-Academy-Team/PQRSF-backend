@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IEncuesta } from "../models/encuesta.model";
-import { CreateEncuestaDTO, UpdateEncuestaDTO, DeleteEncuestaDTO } from "../DTOs/encuesta.dto";
+import { CreateEncuestaDTO, UpdateEncuestaDTO, DeleteEncuestaDTO } from "../schemas/encuesta.schema";
 
 export class EncuestaRepository {
   private readonly table = "survey";

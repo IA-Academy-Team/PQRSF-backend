@@ -1,4 +1,4 @@
-import { CreateUsuarioDTO, DeleteUsuarioDTO, UpdateUsuarioDTO } from "../DTOs/usuario.dto";
+import { CreateUsuarioDTO, DeleteUsuarioDTO, UpdateUsuarioDTO } from "../schemas/usuario.schema";
 import { IUsuario } from "../models/usuario.model";
 import { UsuarioRepository } from "../repositories/usuario.repository";
 import { RolRepository } from "../repositories/rol.repository";

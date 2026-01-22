@@ -20,6 +20,15 @@ const doc = {
                 typePqrsId: { type: "integer" },
                 areaId: { type: "integer" },
             },
+            example: {
+                ticketNumber: "string",
+                isAutoResolved: false,
+                dueDate: "2025-01-01T00:00:00Z",
+                pqrsStatusId: 1,
+                clientId: 1,
+                typePqrsId: 1,
+                areaId: 1,
+            },
         },
         UpdatePqrs: {
             type: "object",
@@ -32,6 +41,15 @@ const doc = {
                 typePqrsId: { type: "integer" },
                 areaId: { type: "integer" },
             },
+            example: {
+                ticketNumber: "string",
+                isAutoResolved: false,
+                dueDate: "2025-01-01T00:00:00Z",
+                pqrsStatusId: 1,
+                clientId: 1,
+                typePqrsId: 1,
+                areaId: 1,
+            },
         },
         CreateAnalisis: {
             type: "object",
@@ -40,6 +58,12 @@ const doc = {
                 actionTaken: { type: "string" },
                 pqrsId: { type: "integer" },
                 responsibleId: { type: "integer" },
+            },
+            example: {
+                answer: "string",
+                actionTaken: "string",
+                pqrsId: 1,
+                responsibleId: 1,
             },
         },
         UpdateAnalisis: {
@@ -50,6 +74,12 @@ const doc = {
                 pqrsId: { type: "integer" },
                 responsibleId: { type: "integer" },
             },
+            example: {
+                answer: "string",
+                actionTaken: "string",
+                pqrsId: 1,
+                responsibleId: 1,
+            },
         },
         CreateReanalisis: {
             type: "object",
@@ -58,6 +88,12 @@ const doc = {
                 actionTaken: { type: "string" },
                 analysisId: { type: "integer" },
                 responsibleId: { type: "integer" },
+            },
+            example: {
+                answer: "string",
+                actionTaken: "string",
+                analysisId: 1,
+                responsibleId: 1,
             },
         },
         UpdateReanalisis: {
@@ -68,6 +104,12 @@ const doc = {
                 analysisId: { type: "integer" },
                 responsibleId: { type: "integer" },
             },
+            example: {
+                answer: "string",
+                actionTaken: "string",
+                analysisId: 1,
+                responsibleId: 1,
+            },
         },
         CreateNotificacion: {
             type: "object",
@@ -76,6 +118,12 @@ const doc = {
                 status: { type: "integer" },
                 responsibleId: { type: "integer" },
                 pqrsId: { type: "integer" },
+            },
+            example: {
+                message: "string",
+                status: 1,
+                responsibleId: 1,
+                pqrsId: 1,
             },
         },
         UpdateNotificacion: {
@@ -86,6 +134,12 @@ const doc = {
                 responsibleId: { type: "integer" },
                 pqrsId: { type: "integer" },
             },
+            example: {
+                message: "string",
+                status: 1,
+                responsibleId: 1,
+                pqrsId: 1,
+            },
         },
         MarkNotificacionesAsRead: {
             type: "object",
@@ -94,6 +148,9 @@ const doc = {
                     type: "array",
                     items: { type: "integer" },
                 },
+            },
+            example: {
+                ids: [1],
             },
         },
         CreateCliente: {
@@ -106,6 +163,14 @@ const doc = {
                 typePersonId: { type: "integer" },
                 stakeholderId: { type: "integer" },
             },
+            example: {
+                name: "string",
+                document: "string",
+                email: "string",
+                phoneNumber: "string",
+                typePersonId: 1,
+                stakeholderId: 1,
+            },
         },
         UpdateCliente: {
             type: "object",
@@ -117,6 +182,14 @@ const doc = {
                 typePersonId: { type: "integer" },
                 stakeholderId: { type: "integer" },
             },
+            example: {
+                name: "string",
+                document: "string",
+                email: "string",
+                phoneNumber: "string",
+                typePersonId: 1,
+                stakeholderId: 1,
+            },
         },
         CreateChat: {
             type: "object",
@@ -124,12 +197,20 @@ const doc = {
                 mode: { type: "integer" },
                 clientId: { type: "integer", format: "int64" },
             },
+            example: {
+                mode: 1,
+                clientId: 1,
+            },
         },
         UpdateChat: {
             type: "object",
             properties: {
                 mode: { type: "integer" },
                 clientId: { type: "integer", format: "int64" },
+            },
+            example: {
+                mode: 1,
+                clientId: 1,
             },
         },
         CreateMensaje: {
@@ -139,6 +220,11 @@ const doc = {
                 type: { type: "integer" },
                 chatId: { type: "integer", format: "int64" },
             },
+            example: {
+                content: "string",
+                type: 1,
+                chatId: 1,
+            },
         },
         UpdateMensaje: {
             type: "object",
@@ -146,6 +232,11 @@ const doc = {
                 content: { type: "string" },
                 type: { type: "integer" },
                 chatId: { type: "integer", format: "int64" },
+            },
+            example: {
+                content: "string",
+                type: 1,
+                chatId: 1,
             },
         },
         CreateResponsable: {
@@ -157,6 +248,13 @@ const doc = {
                 phoneNumber: { type: "string" },
                 areaId: { type: "integer" },
             },
+            example: {
+                name: "string",
+                email: "string",
+                password: "string",
+                phoneNumber: "string",
+                areaId: 1,
+            },
         },
         UpdateResponsable: {
             type: "object",
@@ -166,6 +264,13 @@ const doc = {
                 password: { type: "string" },
                 phoneNumber: { type: "string" },
                 areaId: { type: "integer" },
+            },
+            example: {
+                name: "string",
+                email: "string",
+                password: "string",
+                phoneNumber: "string",
+                areaId: 1,
             },
         },
         CreateUsuario: {
@@ -181,6 +286,17 @@ const doc = {
                 lastLogin: { type: "string", format: "date-time" },
                 roleId: { type: "integer" },
             },
+            example: {
+                email: "string",
+                name: "string",
+                image: "string",
+                phoneNumber: "string",
+                isActive: true,
+                emailVerified: false,
+                twoFactorEnabled: false,
+                lastLogin: "2025-01-01T00:00:00Z",
+                roleId: 1,
+            },
         },
         UpdateUsuario: {
             type: "object",
@@ -195,6 +311,17 @@ const doc = {
                 lastLogin: { type: "string", format: "date-time" },
                 roleId: { type: "integer" },
             },
+            example: {
+                email: "string",
+                name: "string",
+                image: "string",
+                phoneNumber: "string",
+                isActive: true,
+                emailVerified: false,
+                twoFactorEnabled: false,
+                lastLogin: "2025-01-01T00:00:00Z",
+                roleId: 1,
+            },
         },
         CreateSesion: {
             type: "object",
@@ -205,6 +332,13 @@ const doc = {
                 userAgent: { type: "string" },
                 userId: { type: "integer" },
             },
+            example: {
+                token: "string",
+                expiresAt: "2025-01-01T00:00:00Z",
+                ipAddress: "string",
+                userAgent: "string",
+                userId: 1,
+            },
         },
         UpdateSesion: {
             type: "object",
@@ -214,6 +348,13 @@ const doc = {
                 ipAddress: { type: "string" },
                 userAgent: { type: "string" },
                 userId: { type: "integer" },
+            },
+            example: {
+                token: "string",
+                expiresAt: "2025-01-01T00:00:00Z",
+                ipAddress: "string",
+                userAgent: "string",
+                userId: 1,
             },
         },
         CreateCuenta: {
@@ -230,6 +371,18 @@ const doc = {
                 scope: { type: "string" },
                 userId: { type: "integer" },
             },
+            example: {
+                providerId: "string",
+                providerAccountId: "string",
+                password: "string",
+                accessToken: "string",
+                refreshToken: "string",
+                idToken: "string",
+                accessTokenExpiresAt: "2025-01-01T00:00:00Z",
+                refreshTokenExpiresAt: "2025-01-01T00:00:00Z",
+                scope: "string",
+                userId: 1,
+            },
         },
         UpdateCuenta: {
             type: "object",
@@ -245,6 +398,18 @@ const doc = {
                 scope: { type: "string" },
                 userId: { type: "integer" },
             },
+            example: {
+                providerId: "string",
+                providerAccountId: "string",
+                password: "string",
+                accessToken: "string",
+                refreshToken: "string",
+                idToken: "string",
+                accessTokenExpiresAt: "2025-01-01T00:00:00Z",
+                refreshTokenExpiresAt: "2025-01-01T00:00:00Z",
+                scope: "string",
+                userId: 1,
+            },
         },
         CreateVerificacion: {
             type: "object",
@@ -252,6 +417,11 @@ const doc = {
                 identifier: { type: "string" },
                 value: { type: "string" },
                 expiresAt: { type: "string", format: "date-time" },
+            },
+            example: {
+                identifier: "string",
+                value: "string",
+                expiresAt: "2025-01-01T00:00:00Z",
             },
         },
         UpdateVerificacion: {
@@ -261,6 +431,11 @@ const doc = {
                 value: { type: "string" },
                 expiresAt: { type: "string", format: "date-time" },
             },
+            example: {
+                identifier: "string",
+                value: "string",
+                expiresAt: "2025-01-01T00:00:00Z",
+            },
         },
         CreateDocumento: {
             type: "object",
@@ -269,6 +444,11 @@ const doc = {
                 typeDocumentId: { type: "integer" },
                 pqrsId: { type: "integer" },
             },
+            example: {
+                url: "string",
+                typeDocumentId: 1,
+                pqrsId: 1,
+            },
         },
         UpdateDocumento: {
             type: "object",
@@ -276,6 +456,11 @@ const doc = {
                 url: { type: "string" },
                 typeDocumentId: { type: "integer" },
                 pqrsId: { type: "integer" },
+            },
+            example: {
+                url: "string",
+                typeDocumentId: 1,
+                pqrsId: 1,
             },
         },
         CreateEncuesta: {
@@ -289,6 +474,15 @@ const doc = {
                 comment: { type: "string" },
                 pqrsId: { type: "integer" },
             },
+            example: {
+                q1Clarity: 1,
+                q2Timeliness: 1,
+                q3Quality: 1,
+                q4Attention: 1,
+                q5Overall: 1,
+                comment: "string",
+                pqrsId: 1,
+            },
         },
         UpdateEncuesta: {
             type: "object",
@@ -301,6 +495,15 @@ const doc = {
                 comment: { type: "string" },
                 pqrsId: { type: "integer" },
             },
+            example: {
+                q1Clarity: 1,
+                q2Timeliness: 1,
+                q3Quality: 1,
+                q4Attention: 1,
+                q5Overall: 1,
+                comment: "string",
+                pqrsId: 1,
+            },
         },
         CreateRespuesta: {
             type: "object",
@@ -311,6 +514,14 @@ const doc = {
                 documentId: { type: "integer" },
                 pqrsId: { type: "integer" },
                 responsibleId: { type: "integer" },
+            },
+            example: {
+                content: "string",
+                channel: 1,
+                sentAt: "2025-01-01T00:00:00Z",
+                documentId: 1,
+                pqrsId: 1,
+                responsibleId: 1,
             },
         },
         UpdateRespuesta: {
@@ -323,6 +534,14 @@ const doc = {
                 pqrsId: { type: "integer" },
                 responsibleId: { type: "integer" },
             },
+            example: {
+                content: "string",
+                channel: 1,
+                sentAt: "2025-01-01T00:00:00Z",
+                documentId: 1,
+                pqrsId: 1,
+                responsibleId: 1,
+            },
         },
         AuthRegister: {
             type: "object",
@@ -333,9 +552,9 @@ const doc = {
             },
             required: ["email", "password"],
             example: {
-                name: "Juan Perez",
-                email: "juan.perez@campuslands.com",
-                password: "Test1234",
+                name: "string",
+                email: "string",
+                password: "string",
             },
         },
         AuthLogin: {
@@ -346,8 +565,8 @@ const doc = {
             },
             required: ["email", "password"],
             example: {
-                email: "juan.perez@campuslands.com",
-                password: "Test1234",
+                email: "string",
+                password: "string",
             },
         },
         AuthRequestReset: {
@@ -358,8 +577,8 @@ const doc = {
             },
             required: ["email"],
             example: {
-                email: "juan.perez@campuslands.com",
-                redirectTo: "http://localhost:5173/reset",
+                email: "string",
+                redirectTo: "string",
             },
         },
         AuthReset: {
@@ -370,8 +589,8 @@ const doc = {
             },
             required: ["token", "newPassword"],
             example: {
-                token: "reset-token-here",
-                newPassword: "Test1234",
+                token: "string",
+                newPassword: "string",
             },
         },
     },

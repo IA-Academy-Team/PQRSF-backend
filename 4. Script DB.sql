@@ -391,7 +391,7 @@ INSERT INTO accounts (
 (
   'credential',
   'juan.perez@campuslands.com',
-  NULL,
+  '$2b$10$xKgXgWL17p3iAx4ydjaXq.3WOvjrIVQaMbCbvPPSA/wr7C9PNIdvi',
   NULL,
   NULL,
   NULL,
@@ -405,7 +405,7 @@ INSERT INTO accounts (
 (
   'credential',
   'admin.alvarez@campuslands.com',
-  NULL,
+  '$2b$10$joQMs64TpveisyjTlU0BhOvmDev2ZImr4IMoyTGtFsdOzQjnELxjm',
   NULL,
   NULL,
   NULL,

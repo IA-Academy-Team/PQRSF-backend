@@ -1,4 +1,4 @@
-import { CreateAnalisisDTO, DeleteAnalisisDTO, UpdateAnalisisDTO } from "../DTOs/analisis.dto";
+import { CreateAnalisisDTO, DeleteAnalisisDTO, UpdateAnalisisDTO } from "../schemas/analisis.schema";
 import { IAnalisis } from "../models/analisis.model";
 import { AnalisisRepository } from "../repositories/analisis.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";

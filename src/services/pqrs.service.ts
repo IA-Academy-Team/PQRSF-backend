@@ -1,5 +1,5 @@
 import { AppError } from "../middlewares/error.middleware";
-import { CreatePqrsDTO, DeletePqrsDTO, UpdatePqrsDTO } from "../DTOs/pqrs.dto";
+import { CreatePqrsDTO, DeletePqrsDTO, UpdatePqrsDTO } from "../schemas/pqrs.schema";
 import { IPqrs } from "../models/pqrs.model";
 import { PqrsRepository, PqrsFilters } from "../repositories/pqrs.repository";
 import { AreaRepository } from "../repositories/area.repository";

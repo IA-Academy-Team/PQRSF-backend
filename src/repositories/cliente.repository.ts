@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ICliente } from "../models/cliente.model";
-import { CreateClienteDTO, UpdateClienteDTO, DeleteClienteDTO } from "../DTOs/cliente.dto";
+import { CreateClienteDTO, UpdateClienteDTO, DeleteClienteDTO } from "../schemas/cliente.schema";
 
 export class ClienteRepository {
   private readonly table = "client";

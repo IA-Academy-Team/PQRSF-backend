@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IUsuario } from "../models/usuario.model";
-import { CreateUsuarioDTO, UpdateUsuarioDTO, DeleteUsuarioDTO } from "../DTOs/usuario.dto";
+import { CreateUsuarioDTO, UpdateUsuarioDTO, DeleteUsuarioDTO } from "../schemas/usuario.schema";
 
 export class UsuarioRepository {
   private readonly table = "users";

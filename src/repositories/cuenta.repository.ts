@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ICuenta } from "../models/cuenta.model";
-import { CreateCuentaDTO, UpdateCuentaDTO, DeleteCuentaDTO } from "../DTOs/cuenta.dto";
+import { CreateCuentaDTO, UpdateCuentaDTO, DeleteCuentaDTO } from "../schemas/cuenta.schema";
 
 export class CuentaRepository {
   private readonly table = "accounts";

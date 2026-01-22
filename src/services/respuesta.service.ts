@@ -1,4 +1,4 @@
-import { CreateRespuestaDTO, DeleteRespuestaDTO, UpdateRespuestaDTO } from "../DTOs/respuesta.dto";
+import { CreateRespuestaDTO, DeleteRespuestaDTO, UpdateRespuestaDTO } from "../schemas/respuesta.schema";
 import { IRespuesta } from "../models/respuesta.model";
 import { RespuestaRepository } from "../repositories/respuesta.repository";
 import { DocumentoRepository } from "../repositories/documento.repository";

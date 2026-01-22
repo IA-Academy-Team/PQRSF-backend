@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IMensaje } from "../models/mensaje.model";
-import { CreateMensajeDTO, UpdateMensajeDTO, DeleteMensajeDTO } from "../DTOs/mensaje.dto";
+import { CreateMensajeDTO, UpdateMensajeDTO, DeleteMensajeDTO } from "../schemas/mensaje.schema";
 
 export class MensajeRepository {
   private readonly table = "message";

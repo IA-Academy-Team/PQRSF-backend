@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ISesion } from "../models/sesion.model";
-import { CreateSesionDTO, UpdateSesionDTO, DeleteSesionDTO } from "../DTOs/sesion.dto";
+import { CreateSesionDTO, UpdateSesionDTO, DeleteSesionDTO } from "../schemas/sesion.schema";
 
 export class SesionRepository {
   private readonly table = "sessions";

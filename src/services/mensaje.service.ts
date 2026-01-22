@@ -1,4 +1,4 @@
-import { CreateMensajeDTO, DeleteMensajeDTO, UpdateMensajeDTO } from "../DTOs/mensaje.dto";
+import { CreateMensajeDTO, DeleteMensajeDTO, UpdateMensajeDTO } from "../schemas/mensaje.schema";
 import { IMensaje } from "../models/mensaje.model";
 import { MensajeRepository } from "../repositories/mensaje.repository";
 import { ChatRepository } from "../repositories/chat.repository";

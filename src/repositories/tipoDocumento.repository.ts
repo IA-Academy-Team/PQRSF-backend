@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ITipoDocumento } from "../models/tipoDocumento.model";
-import { CreateTipoDocumentoDTO, UpdateTipoDocumentoDTO, DeleteTipoDocumentoDTO } from "../DTOs/tipoDocumento.dto";
+import { CreateTipoDocumentoDTO, UpdateTipoDocumentoDTO, DeleteTipoDocumentoDTO } from "../schemas/tipoDocumento.schema";
 
 export class TipoDocumentoRepository {
   private readonly table = "type_document";

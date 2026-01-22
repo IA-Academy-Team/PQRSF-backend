@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { ITipoPqrs } from "../models/tipoPqrs.model";
-import { CreateTipoPqrsDTO, UpdateTipoPqrsDTO, DeleteTipoPqrsDTO } from "../DTOs/tipoPqrs.dto";
+import { CreateTipoPqrsDTO, UpdateTipoPqrsDTO, DeleteTipoPqrsDTO } from "../schemas/tipoPqrs.schema";
 
 export class TipoPqrsRepository {
   private readonly table = "type_pqrs";

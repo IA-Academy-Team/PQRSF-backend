@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IArea } from "../models/area.model";
-import { CreateAreaDTO, UpdateAreaDTO, DeleteAreaDTO } from "../DTOs/area.dto";
+import { CreateAreaDTO, UpdateAreaDTO, DeleteAreaDTO } from "../schemas/area.schema";
 
 export class AreaRepository {
   private readonly table = "area";

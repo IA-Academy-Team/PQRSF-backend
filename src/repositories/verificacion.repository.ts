@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IVerificacion } from "../models/verificacion.model";
-import { CreateVerificacionDTO, UpdateVerificacionDTO, DeleteVerificacionDTO } from "../DTOs/verificacion.dto";
+import { CreateVerificacionDTO, UpdateVerificacionDTO, DeleteVerificacionDTO } from "../schemas/verificacion.schema";
 
 export class VerificacionRepository {
   private readonly table = "verifications";

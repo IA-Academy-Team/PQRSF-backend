@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { INotificacion } from "../models/notificacion.model";
-import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../DTOs/notificacion.dto";
+import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../schemas/notificacion.schema";
 
 export class NotificacionRepository {
   private readonly table = "notification";

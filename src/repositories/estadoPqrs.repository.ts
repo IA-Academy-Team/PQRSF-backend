@@ -1,7 +1,7 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
 import { IEstadoPqrs } from "../models/estado.model";
-import { CreateEstadoPqrsDTO, UpdateEstadoPqrsDTO, DeleteEstadoPqrsDTO } from "../DTOs/estadoPqrs.dto";
+import { CreateEstadoPqrsDTO, UpdateEstadoPqrsDTO, DeleteEstadoPqrsDTO } from "../schemas/estadoPqrs.schema";
 
 export class EstadoPqrsRepository {
   private readonly table = "pqrs_status";

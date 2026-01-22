@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from "express";
+import { ZodError } from "zod";
 
 export type ErrorDetails = Record<string, unknown>;
 
@@ -65,6 +66,21 @@ export const errorHandler = (
         code: err.code,
         message: err.message,
         details: err.details,
+      },
+    });
+  }
+
+  if (err instanceof ZodError) {
+    return res.status(400).json({
+      error: {
+        code: "VALIDATION_ERROR",
+        message: "Validation failed",
+        details: {
+          issues: err.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: issue.message,
+          })),
+        },
       },
     });
   }

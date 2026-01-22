@@ -29,7 +29,7 @@ este es un ejemplo de como se podria dividir la aplicación en diferentes compon
 │   ├── controllers
 │   │   └── user.controller.ts
 │   ├── dtos
-│   │   └── user.dto.ts
+│   │   └── user.schema.ts
 │   ├── index.ts
 │   ├── middlewares
 │   │   └── user.middleware.ts
@@ -47,7 +47,7 @@ este es un ejemplo de como se podria dividir la aplicación en diferentes compon
 
 ## DOCUMENTACION DE LA API
 
-## Instalación
+### Instalación
 
 Para instalar el proyecto, sigue estos pasos:
 
@@ -56,20 +56,4 @@ Para instalar el proyecto, sigue estos pasos:
 3. Ejecuta el comando `npm install` para instalar las dependencias del proyecto.
 4. Configura la base de datos PostgreSQL y actualiza la configuración de la base de datos en el archivo `config.ts` creando tu .env en la raiz del proyecto.
 5. Ejecuta el comando `npm run dev` para iniciar el servidor.
-
-## Uso
-
-Para usar el proyecto, sigue estos pasos:
-
-1. Abre tu navegador web y navega hasta la dirección `http://localhost:3000`.
-2. Inicia sesión con tus credenciales de usuario.
-3. Utiliza la interfaz de usuario web para realizar consultas y crear peticiones de recambio de servicios.
-
-## Contribución
-
-Si deseas contribuir al proyecto, sigue estos pasos:
-
-1. Haz un fork del repositorio.
-2. Crea una nueva rama para tu contribución.
-3. Realiza tus cambios y asegúrate de que el código sea limpio y bien documentado.
-4. Envía una solicitud de
+6. Entra a la ruta `http://localhost:3000/api-docs` para ver la documentación de la API con Swagger.
