@@ -4,7 +4,9 @@ import { asyncHandler } from "../utils/controller.utils";
 import {
   createUsuarioSchema,
   deleteUsuarioSchema,
+  getUsuarioByEmailSchema,
   updateUsuarioSchema,
+  usuarioStatusSchema,
 } from "../schemas/usuario.schema";
 
 const service = new UsuarioService();
@@ -21,6 +23,17 @@ export const getUsuarioById = asyncHandler(async (req: Request, res: Response) =
   res.json(result);
 });
 
+export const listUsuarios = asyncHandler(async (_req: Request, res: Response) => {
+  const result = await service.list();
+  res.json(result);
+});
+
+export const getUsuarioByEmail = asyncHandler(async (req: Request, res: Response) => {
+  const { email } = getUsuarioByEmailSchema.parse(req.params);
+  const result = await service.findByEmail(email);
+  res.json(result);
+});
+
 export const updateUsuario = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteUsuarioSchema.parse(req.params);
   const body = updateUsuarioSchema.parse(req.body);
@@ -29,13 +42,15 @@ export const updateUsuario = asyncHandler(async (req: Request, res: Response) =>
   res.json(result);
 });
 
+export const updateUsuarioStatus = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = deleteUsuarioSchema.parse(req.params);
+  const body = usuarioStatusSchema.parse(req.body);
+  const result = await service.updateStatus(id, body.isActive);
+  res.json(result);
+});
+
 export const deleteUsuario = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteUsuarioSchema.parse(req.params);
   const result = await service.delete({ id });
   res.json({ deleted: result });
-});
-
-export const listUsuarios = asyncHandler(async (_req: Request, res: Response) => {
-  const result = await service.list();
-  res.json(result);
 });

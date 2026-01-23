@@ -531,6 +531,100 @@ const doc = {
                 responsibleId: 1,
             },
         },
+        CreateRol: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                description: { type: "string" },
+            },
+            example: {
+                name: "string",
+                description: "string",
+            },
+        },
+        UpdateRol: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                description: { type: "string" },
+            },
+            example: {
+                name: "string",
+                description: "string",
+            },
+        },
+        CreateTipoPqrs: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        UpdateTipoPqrs: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        CreateEstadoPqrs: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        UpdateEstadoPqrs: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        CreateTipoDocumento: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        UpdateTipoDocumento: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        CreateTipoPersona: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        UpdateTipoPersona: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
         AuthRegister: {
             type: "object",
             properties: {
@@ -579,6 +673,41 @@ const doc = {
             example: {
                 token: "string",
                 newPassword: "string",
+            },
+        },
+        AuthRefresh: {
+            type: "object",
+            properties: {
+                providerId: { type: "string" },
+                accountId: { type: "string" },
+                userId: { type: "string" },
+            },
+            required: ["providerId"],
+            example: {
+                providerId: "credentials",
+                accountId: "string",
+                userId: "string",
+            },
+        },
+        AuthVerifyEmail: {
+            type: "object",
+            properties: {
+                token: { type: "string" },
+                callbackURL: { type: "string" },
+            },
+            required: ["token"],
+            example: {
+                token: "string",
+                callbackURL: "string",
+            },
+        },
+        UsuarioStatus: {
+            type: "object",
+            properties: {
+                isActive: { type: "boolean" },
+            },
+            example: {
+                isActive: true,
             },
         },
     },

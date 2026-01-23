@@ -53,6 +53,11 @@ export class UsuarioService {
     return this.repo.findAll();
   }
 
+  async findByEmail(email: string): Promise<IUsuario> {
+    const user = await this.repo.findByEmail(requireEmail(email, "email"));
+    return ensureFound("User", user, { email });
+  }
+
   async update(data: UpdateUsuarioDTO): Promise<IUsuario> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(
@@ -112,6 +117,17 @@ export class UsuarioService {
       roleId: data.roleId !== undefined ? optionalPositiveInt(data.roleId, "roleId") : undefined,
     });
     return ensureFound("User", updated, { id });
+  }
+
+  async updateStatus(id: number, isActive?: boolean): Promise<IUsuario> {
+    const userId = requirePositiveInt(id, "id");
+    const current = await this.findById(userId);
+    const nextStatus = isActive !== undefined ? isActive : !current.isActive;
+    const updated = await this.repo.update({
+      id: userId,
+      isActive: nextStatus,
+    });
+    return ensureFound("User", updated, { id: userId });
   }
 
   async delete(data: DeleteUsuarioDTO): Promise<boolean> {

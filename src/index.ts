@@ -47,8 +47,29 @@ app.get('/health', async (req, res) => {
 });
 
 const HEALTH_CHECK_TTL_MS = 5_000;
+const REQUIRED_ENV_VARS = ["DB_USER", "DB_HOST", "DB_NAME", "DB_PASSWORD", "DB_PORT"] as const;
 let lastHealthCheckAt = 0;
 let lastHealthStatus = false;
+
+function hasCriticalEnvVars(): boolean {
+  return REQUIRED_ENV_VARS.every((key) => {
+    const value = process.env[key];
+    return typeof value === "string" && value.trim().length > 0;
+  });
+}
+
+async function checkCriticalDependencies(): Promise<boolean> {
+  if (!hasCriticalEnvVars()) {
+    return false;
+  }
+
+  try {
+    await pool.query("SELECT 1");
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function isAppHealthy(): Promise<boolean> {
   const now = Date.now();
@@ -56,14 +77,8 @@ async function isAppHealthy(): Promise<boolean> {
     return lastHealthStatus;
   }
 
-  try {
-    await pool.query("SELECT 1");
-    lastHealthStatus = true;
-  } catch {
-    lastHealthStatus = false;
-  } finally {
-    lastHealthCheckAt = now;
-  }
+  lastHealthStatus = await checkCriticalDependencies();
+  lastHealthCheckAt = now;
 
   return lastHealthStatus;
 }

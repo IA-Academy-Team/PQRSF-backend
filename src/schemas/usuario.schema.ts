@@ -45,6 +45,18 @@ export const deleteUsuarioSchema = z
   })
   .strict();
 
+export const getUsuarioByEmailSchema = z
+  .object({
+    email: emailSchema,
+  })
+  .strict();
+
+export const usuarioStatusSchema = z
+  .object({
+    isActive: optionalBooleanSchema,
+  })
+  .strict();
+
 export type CreateUsuarioDTO = z.infer<typeof createUsuarioSchema>;
 export type UpdateUsuarioDTO = z.infer<typeof updateUsuarioSchema> & { id: number };
 export type DeleteUsuarioDTO = z.infer<typeof deleteUsuarioSchema>;

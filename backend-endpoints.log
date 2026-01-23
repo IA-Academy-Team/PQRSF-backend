@@ -1,5 +1,5 @@
 # Backend endpoints necesarios (frontend PQRSF)
-# Fuente: servicios en src/services, vistas en src/views, auth-context, y modelo en temp.sql
+# Fuente: servicios en src/services, vistas en src/views, auth-context
 # Objetivo: eliminar toda mock data y conectar el frontend al backend.
 
 BASE: /api  (segun src/lib/api.ts)
@@ -10,9 +10,6 @@ POST   /auth/refresh               -> renovar token (si aplica)
 POST   /auth/verify-email          -> verificar correo con codigo (verifications)
 
 == Usuarios / Roles / Cargos ==
-POST   /users                       -> crear usuario
-PUT    /users/{id}                  -> actualizar usuario
-DELETE /users/{id}                  -> eliminar usuario
 GET    /users/email/{email}         -> buscar por email
 PATCH  /users/{id}/status           -> activar/inactivar (toggle en Usuarios)
 
@@ -21,30 +18,24 @@ POST   /roles                       -> crear rol
 PUT    /roles/{id}                  -> actualizar rol
 DELETE /roles/{id}                  -> eliminar rol
 
-GET    /cargos                      -> listar cargos (UI Gestion de Cargos)
-POST   /cargos                      -> crear cargo
-PUT    /cargos/{id}                 -> actualizar cargo
-DELETE /cargos/{id}                 -> eliminar cargo
-PATCH  /cargos/{id}/status          -> activar/inactivar cargo
-
 == Catalogos ==
-GET    /catalog/type-pqrsf          -> listar tipos PQRS (type_pqrs)
-POST   /catalog/type-pqrsf          -> crear tipo
-GET    /catalog/type-pqrsf/{id}     -> obtener tipo
-PUT    /catalog/type-pqrsf/{id}     -> actualizar tipo
-DELETE /catalog/type-pqrsf/{id}     -> eliminar tipo
+GET    /type-pqrsf          -> listar tipos PQRS (type_pqrs)
+POST   /type-pqrsf          -> crear tipo
+GET    /type-pqrsf/{id}     -> obtener tipo
+PUT    /type-pqrsf/{id}     -> actualizar tipo
+DELETE /type-pqrsf/{id}     -> eliminar tipo
 
-GET    /catalog/pqrs-status         -> listar estados PQRS (pqrs_status)
-POST   /catalog/pqrs-status         -> crear estado
-GET    /catalog/pqrs-status/{id}    -> obtener estado
-PUT    /catalog/pqrs-status/{id}    -> actualizar estado
-DELETE /catalog/pqrs-status/{id}    -> eliminar estado
+GET    /pqrs-status         -> listar estados PQRS (pqrs_status)
+POST   /pqrs-status         -> crear estado
+GET    /pqrs-status/{id}    -> obtener estado
+PUT    /pqrs-status/{id}    -> actualizar estado
+DELETE /pqrs-status/{id}    -> eliminar estado
 
-GET    /catalog/type-document       -> listar tipos de documento (type_document)
-POST   /catalog/type-document       -> crear tipo de documento
-GET    /catalog/type-document/{id}  -> obtener tipo
-PUT    /catalog/type-document/{id}  -> actualizar tipo
-DELETE /catalog/type-document/{id}  -> eliminar tipo
+GET    /type-document       -> listar tipos de documento (type_document)
+POST   /type-document       -> crear tipo de documento
+GET    /type-document/{id}  -> obtener tipo
+PUT    /type-document/{id}  -> actualizar tipo
+DELETE /type-document/{id}  -> eliminar tipo
 
 == Personas / Stakeholders ==
 GET    /users/type-person           -> listar tipo de persona (type_person)
@@ -53,11 +44,11 @@ GET    /users/type-person/{id}      -> obtener tipo
 PUT    /users/type-person/{id}      -> actualizar tipo
 DELETE /users/type-person/{id}      -> eliminar tipo
 
-GET    /users/state-holder          -> listar stakeholders (stakeholder)
-POST   /users/state-holder          -> crear stakeholder
-GET    /users/state-holder/{id}     -> obtener stakeholder
-PUT    /users/state-holder/{id}     -> actualizar stakeholder
-DELETE /users/state-holder/{id}     -> eliminar stakeholder
+GET    /users/stake-holder          -> listar stakeholders (stakeholder)
+POST   /users/stake-holder          -> crear stakeholder
+GET    /users/stake-holder/{id}     -> obtener stakeholder
+PUT    /users/stake-holder/{id}     -> actualizar stakeholder
+DELETE /users/stake-holder/{id}     -> eliminar stakeholder
 
 == Areas / Responsables ==
 GET    /area                         -> listar areas
@@ -75,17 +66,8 @@ GET    /area/{areaId}/responsible    -> responsables por area
 
 == Clientes (solicitantes) ==
 GET    /clients                      -> listar clientes
-POST   /clients                      -> crear cliente
-GET    /clients/{id}                 -> obtener cliente
-PUT    /clients/{id}                 -> actualizar cliente
-DELETE /clients/{id}                 -> eliminar cliente
 
 == PQRSF (core) ==
-GET    /pqrsf                         -> listar PQRSF
-POST   /pqrsf                         -> crear PQRSF
-GET    /pqrsf/{id}                    -> obtener PQRSF
-PUT    /pqrsf/{id}                    -> actualizar PQRSF
-DELETE /pqrsf/{id}                    -> eliminar PQRSF
 GET    /pqrsf/radicado/{code}         -> buscar por radicado
 GET    /pqrsf/status/{statusId}       -> filtrar por estado
 GET    /pqrsf/type/{typeId}           -> filtrar por tipo
@@ -137,15 +119,6 @@ POST   /chat/messages                  -> enviar mensaje
 PUT    /chat/messages/{id}             -> editar mensaje
 DELETE /chat/messages/{id}             -> eliminar mensaje
 
-GET    /chat/message-storage/{id}      -> obtener almacenamiento de mensajes
-POST   /chat/message-storage           -> crear almacenamiento
-PUT    /chat/message-storage/{id}      -> actualizar almacenamiento
-
-GET    /chat/{chatId}/summary          -> obtener resumen
-POST   /chat/summary                   -> crear resumen
-PUT    /chat/summary/{id}              -> actualizar resumen
-DELETE /chat/summary/{id}              -> eliminar resumen
-
 == Seguimiento / Apelaciones / Cierre ==
 POST   /pqrsf/{pqrsfId}/finalize       -> cerrar PQRSF (estado cerrada)
 POST   /pqrsf/{pqrsfId}/appeal         -> enviar a apelacion
@@ -161,6 +134,5 @@ GET    /dashboard/area/{areaId}/pending-> pendientes de respuesta
 GET    /dashboard/area/{areaId}/appeals-> apelaciones recientes
 
 Notas:
-- Algunas entidades en frontend no aparecen en temp.sql (message_storage, summary, cargos). Crear tablas o ajustar modelos si se van a usar.
 - Ajustar nombres de rutas si el backend ya tiene convenciones distintas, pero la funcionalidad es requerida para eliminar mocks.
 - Para adjuntos (documentos/evidencias) usar endpoints con multipart y guardar url en document.url.

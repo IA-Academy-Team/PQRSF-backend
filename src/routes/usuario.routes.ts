@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createUsuario,
   deleteUsuario,
+  getUsuarioByEmail,
   getUsuarioById,
   listUsuarios,
   updateUsuario,
@@ -16,6 +17,7 @@ router.post(
 );
 router.get("/", listUsuarios);
 router.get("/:id", getUsuarioById);
+router.get("/email/:email", getUsuarioByEmail);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateUsuario' } } */
