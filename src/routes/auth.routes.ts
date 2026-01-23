@@ -40,12 +40,12 @@ router.post(
   logout
 );
 router.post(
-  "/password/request",
+  "/forgot-password",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthRequestReset' } } */
   requestPasswordReset
 );
 router.post(
-  "/password/reset",
+  "/reset-password",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/AuthReset' } } */
   resetPassword
 );
