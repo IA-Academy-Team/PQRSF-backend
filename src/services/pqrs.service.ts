@@ -180,6 +180,14 @@ export class PqrsService {
     return this.repo.findSeguimientoDetailed();
   }
 
+  async listApelacionesDetailed() {
+    return this.repo.findApelacionesDetailed();
+  }
+
+  async listCerradasDetailed() {
+    return this.repo.findCerradasDetailed();
+  }
+
   async findByTicketNumber(ticketNumber: string): Promise<IPqrs> {
     const code = requireString(ticketNumber, "ticketNumber");
     const pqrs = await this.repo.findByTicketNumber(code);

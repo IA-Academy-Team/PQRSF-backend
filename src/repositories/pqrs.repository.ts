@@ -136,6 +136,76 @@ export class PqrsRepository {
     return result.rows;
   }
 
+  async findApelacionesDetailed() {
+    const result = await pool.query(
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.created_at AS "createdAt",
+              p.pqrs_status_id AS "statusId",
+              s.name AS "statusName",
+              t.name AS "typeName",
+              a.name AS "areaName",
+              c.name AS "clientName",
+              r.content AS "responseContent",
+              r.sent_at AS "responseSentAt",
+              sv.comment AS "surveyComment"
+       FROM pqrs p
+       JOIN pqrs_status s ON s.id = p.pqrs_status_id
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       LEFT JOIN LATERAL (
+         SELECT content, sent_at
+         FROM response
+         WHERE pqrs_id = p.id
+         ORDER BY sent_at DESC
+         LIMIT 1
+       ) r ON true
+       LEFT JOIN survey sv ON sv.pqrs_id = p.id
+       WHERE p.pqrs_status_id = 3
+       ORDER BY p.created_at DESC`
+    );
+    return result.rows;
+  }
+
+  async findCerradasDetailed() {
+    const result = await pool.query(
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.created_at AS "createdAt",
+              p.updated_at AS "updatedAt",
+              p.pqrs_status_id AS "statusId",
+              s.name AS "statusName",
+              t.name AS "typeName",
+              a.name AS "areaName",
+              c.name AS "clientName",
+              r.content AS "responseContent",
+              r.sent_at AS "responseSentAt",
+              sv.q1_clarity AS "q1Clarity",
+              sv.q2_timeliness AS "q2Timeliness",
+              sv.q3_quality AS "q3Quality",
+              sv.q4_attention AS "q4Attention",
+              sv.q5_overall AS "q5Overall",
+              sv.comment AS "surveyComment"
+       FROM pqrs p
+       JOIN pqrs_status s ON s.id = p.pqrs_status_id
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       LEFT JOIN LATERAL (
+         SELECT content, sent_at
+         FROM response
+         WHERE pqrs_id = p.id
+         ORDER BY sent_at DESC
+         LIMIT 1
+       ) r ON true
+       LEFT JOIN survey sv ON sv.pqrs_id = p.id
+       WHERE p.pqrs_status_id = 4
+       ORDER BY p.updated_at DESC`
+    );
+    return result.rows;
+  }
+
   async findAllDetailed(filters: PqrsDetailedFilters) {
     const conditions: string[] = [];
     const values: unknown[] = [];

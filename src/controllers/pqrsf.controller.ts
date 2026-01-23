@@ -181,11 +181,11 @@ export const listSeguimiento = asyncHandler(async (_req: Request, res: Response)
 });
 
 export const listApelaciones = asyncHandler(async (_req: Request, res: Response) => {
-  const result = await pqrsService.list({ pqrsStatusId: 3 });
+  const result = await pqrsService.listApelacionesDetailed();
   res.json(result);
 });
 
 export const listCerradas = asyncHandler(async (_req: Request, res: Response) => {
-  const result = await pqrsService.list({ pqrsStatusId: 4 });
+  const result = await pqrsService.listCerradasDetailed();
   res.json(result);
 });
