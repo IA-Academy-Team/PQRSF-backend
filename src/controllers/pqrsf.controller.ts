@@ -6,7 +6,7 @@ import { RespuestaService } from "../services/respuesta.service";
 import { DocumentoService } from "../services/documento.service";
 import { EncuestaService } from "../services/encuesta.service";
 import { asyncHandler } from "../utils/controller.utils";
-import { pqrsListQuerySchema } from "../schemas/pqrs.schema";
+import { pqrsListDetailedQuerySchema, pqrsListQuerySchema } from "../schemas/pqrs.schema";
 import { createAnalisisSchema, updateAnalisisSchema } from "../schemas/analisis.schema";
 import { createReanalisisSchema, updateReanalisisSchema } from "../schemas/reanalisis.schema";
 import { createRespuestaSchema, updateRespuestaSchema } from "../schemas/respuesta.schema";
@@ -46,6 +46,12 @@ export const listPqrsByUser = asyncHandler(async (req: Request, res: Response) =
 export const listPqrsByArea = asyncHandler(async (req: Request, res: Response) => {
   const areaId = Number(req.params.areaId);
   const result = await pqrsService.list({ areaId });
+  res.json(result);
+});
+
+export const listPqrsDetailed = asyncHandler(async (req: Request, res: Response) => {
+  const filters = pqrsListDetailedQuerySchema.parse(req.query);
+  const result = await pqrsService.listDetailed(filters);
   res.json(result);
 });
 

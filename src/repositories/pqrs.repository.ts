@@ -13,6 +13,11 @@ export interface PqrsFilters {
   toDate?: Date;
 }
 
+export interface PqrsDetailedFilters extends PqrsFilters {
+  q?: string;
+  sort?: "recent" | "oldest" | "ticket";
+}
+
 export class PqrsRepository {
   private readonly table = "pqrs";
 
@@ -89,6 +94,92 @@ export class PqrsRepository {
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const result = await pool.query(
       `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ${where} ORDER BY id`,
+      normalizeValues(values)
+    );
+    return result.rows;
+  }
+
+  async findAllDetailed(filters: PqrsDetailedFilters) {
+    const conditions: string[] = [];
+    const values: unknown[] = [];
+    let index = 1;
+
+    if (filters.pqrsStatusId !== undefined) {
+      conditions.push(`p.pqrs_status_id = $${index}`);
+      values.push(filters.pqrsStatusId);
+      index += 1;
+    }
+    if (filters.areaId !== undefined) {
+      conditions.push(`p.area_id = $${index}`);
+      values.push(filters.areaId);
+      index += 1;
+    }
+    if (filters.typePqrsId !== undefined) {
+      conditions.push(`p.type_pqrs_id = $${index}`);
+      values.push(filters.typePqrsId);
+      index += 1;
+    }
+    if (filters.clientId !== undefined) {
+      conditions.push(`p.client_id = $${index}`);
+      values.push(filters.clientId);
+      index += 1;
+    }
+    if (filters.ticketNumber !== undefined) {
+      conditions.push(`p.ticket_number = $${index}`);
+      values.push(filters.ticketNumber);
+      index += 1;
+    }
+    if (filters.fromDate !== undefined) {
+      conditions.push(`p.created_at >= $${index}`);
+      values.push(filters.fromDate);
+      index += 1;
+    }
+    if (filters.toDate !== undefined) {
+      conditions.push(`p.created_at <= $${index}`);
+      values.push(filters.toDate);
+      index += 1;
+    }
+    if (filters.q !== undefined) {
+      conditions.push(
+        `(p.ticket_number ILIKE $${index} OR p.description ILIKE $${index} OR c.name ILIKE $${index} OR c.email ILIKE $${index})`
+      );
+      values.push(`%${filters.q}%`);
+      index += 1;
+    }
+
+    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+    const orderBy = (() => {
+      switch (filters.sort) {
+        case "oldest":
+          return "p.created_at ASC";
+        case "ticket":
+          return "p.ticket_number ASC";
+        default:
+          return "p.created_at DESC";
+      }
+    })();
+
+    const result = await pool.query(
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.description,
+              p.created_at AS "createdAt",
+              s.id AS "statusId",
+              s.name AS "statusName",
+              t.id AS "typeId",
+              t.name AS "typeName",
+              a.id AS "areaId",
+              a.name AS "areaName",
+              c.id AS "clientId",
+              c.name AS "clientName",
+              c.email AS "clientEmail"
+       FROM pqrs p
+       JOIN pqrs_status s ON s.id = p.pqrs_status_id
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       ${where}
+       ORDER BY ${orderBy}`,
       normalizeValues(values)
     );
     return result.rows;

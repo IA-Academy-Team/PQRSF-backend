@@ -1,7 +1,7 @@
 import { AppError } from "../middlewares/error.middleware";
 import { CreatePqrsDTO, DeletePqrsDTO, UpdatePqrsDTO } from "../schemas/pqrs.schema";
 import { IPqrs } from "../models/pqrs.model";
-import { PqrsRepository, PqrsFilters } from "../repositories/pqrs.repository";
+import { PqrsRepository, PqrsDetailedFilters, PqrsFilters } from "../repositories/pqrs.repository";
 import { AreaRepository } from "../repositories/area.repository";
 import { TipoPqrsRepository } from "../repositories/tipoPqrs.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
@@ -14,6 +14,7 @@ import {
   optionalDate,
   optionalPositiveInt,
   optionalString,
+  ensureEnum,
   requireBigInt,
   requireDate,
   requirePositiveInt,
@@ -151,6 +152,28 @@ export class PqrsService {
       toDate: optionalDate(filters.toDate, "toDate") ?? undefined,
     };
     return this.repo.findAllWithFilters(validated);
+  }
+
+  async listDetailed(filters: PqrsDetailedFilters) {
+    const sort =
+      filters.sort !== undefined
+        ? ensureEnum(filters.sort, "sort", ["recent", "oldest", "ticket"])
+        : undefined;
+
+    const validated: PqrsDetailedFilters = {
+      pqrsStatusId: optionalPositiveInt(filters.pqrsStatusId, "pqrsStatusId"),
+      areaId: optionalPositiveInt(filters.areaId, "areaId"),
+      typePqrsId: optionalPositiveInt(filters.typePqrsId, "typePqrsId"),
+      clientId:
+        filters.clientId !== undefined ? requireBigInt(filters.clientId, "clientId") : undefined,
+      ticketNumber: optionalString(filters.ticketNumber, "ticketNumber") ?? undefined,
+      fromDate: optionalDate(filters.fromDate, "fromDate") ?? undefined,
+      toDate: optionalDate(filters.toDate, "toDate") ?? undefined,
+      q: optionalString(filters.q, "q") ?? undefined,
+      sort,
+    };
+
+    return this.repo.findAllDetailed(validated);
   }
 
   async findByTicketNumber(ticketNumber: string): Promise<IPqrs> {
