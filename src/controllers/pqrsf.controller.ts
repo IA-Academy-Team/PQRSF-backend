@@ -176,7 +176,7 @@ export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const listSeguimiento = asyncHandler(async (_req: Request, res: Response) => {
-  const result = await pqrsService.list({ pqrsStatusId: 2 });
+  const result = await pqrsService.listSeguimientoDetailed();
   res.json(result);
 });
 

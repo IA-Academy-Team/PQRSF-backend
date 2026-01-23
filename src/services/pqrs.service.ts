@@ -176,6 +176,10 @@ export class PqrsService {
     return this.repo.findAllDetailed(validated);
   }
 
+  async listSeguimientoDetailed() {
+    return this.repo.findSeguimientoDetailed();
+  }
+
   async findByTicketNumber(ticketNumber: string): Promise<IPqrs> {
     const code = requireString(ticketNumber, "ticketNumber");
     const pqrs = await this.repo.findByTicketNumber(code);
