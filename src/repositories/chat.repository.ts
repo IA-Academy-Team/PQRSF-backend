@@ -1,6 +1,6 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IChat } from "../models/chat.model";
+import { IChat, IChatSummary } from "../models/chat.model";
 import { CreateChatDTO, UpdateChatDTO, DeleteChatDTO } from "../schemas/chat.schema";
 
 export class ChatRepository {
@@ -24,6 +24,29 @@ export class ChatRepository {
 
   async findAll(): Promise<IChat[]> {
     const result = await pool.query(`SELECT id, mode, client_id AS "clientId" FROM chat ORDER BY id`);
+    return result.rows;
+  }
+
+  async findAllSummaries(): Promise<IChatSummary[]> {
+    const result = await pool.query(
+      `SELECT chat.id,
+              chat.mode,
+              chat.client_id AS "clientId",
+              client.name AS "clientName",
+              client.phone_number AS "clientPhone",
+              last_message.content AS "lastMessage",
+              last_message.created_at AS "lastMessageAt"
+       FROM chat
+       LEFT JOIN client ON client.id = chat.client_id
+       LEFT JOIN LATERAL (
+         SELECT content, created_at
+         FROM message
+         WHERE chat_id = chat.id
+         ORDER BY created_at DESC
+         LIMIT 1
+       ) last_message ON true
+       ORDER BY last_message.created_at DESC NULLS LAST, chat.id DESC`
+    );
     return result.rows;
   }
 

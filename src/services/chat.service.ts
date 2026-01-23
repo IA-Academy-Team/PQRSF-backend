@@ -1,5 +1,5 @@
 import { CreateChatDTO, DeleteChatDTO, UpdateChatDTO } from "../schemas/chat.schema";
-import { IChat } from "../models/chat.model";
+import { IChat, IChatSummary } from "../models/chat.model";
 import { ChatRepository } from "../repositories/chat.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
 import { AppError } from "../middlewares/error.middleware";
@@ -44,6 +44,10 @@ export class ChatService {
 
   async list(): Promise<IChat[]> {
     return this.repo.findAll();
+  }
+
+  async listSummaries(): Promise<IChatSummary[]> {
+    return this.repo.findAllSummaries();
   }
 
   async findByClientId(clientId: bigint): Promise<IChat> {

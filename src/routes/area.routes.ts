@@ -10,6 +10,7 @@ import {
   createResponsable,
   deleteResponsable,
   getAllResponsables,
+  getAllResponsablesDetailed,
   getResponsableById,
   getResponsablesByArea,
   updateResponsable,
@@ -18,6 +19,7 @@ import {
 const router = Router();
 
 router.get("/responsible", getAllResponsables);
+router.get("/responsible/summary", getAllResponsablesDetailed);
 router.get("/:areaId/responsible", getResponsablesByArea);
 router.post(
   "/responsible",

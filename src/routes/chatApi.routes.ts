@@ -6,6 +6,7 @@ import {
   listChatByArea,
   listChatByUser,
   listChats,
+  listChatSummaries,
   updateChat,
 } from "../controllers/chat.controller";
 import {
@@ -18,6 +19,7 @@ import {
 const router = Router();
 
 router.get("/", listChats);
+router.get("/summary", listChatSummaries);
 router.post(
   "/",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateChat' } } */

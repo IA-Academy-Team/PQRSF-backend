@@ -90,10 +90,43 @@ export class DashboardService {
 
   async getAreaPending(areaId: number) {
     const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"
-       FROM pqrs
-       WHERE area_id = $1 AND pqrs_status_id != 4
-       ORDER BY id`,
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.description,
+              p.is_auto_resolved AS "isAutoResolved",
+              p.due_date AS "dueDate",
+              p.created_at AS "createdAt",
+              p.updated_at AS "updatedAt",
+              p.pqrs_status_id AS "pqrsStatusId",
+              p.client_id AS "clientId",
+              c.name AS "clientName",
+              p.type_pqrs_id AS "typePqrsId",
+              t.name AS "typeName",
+              p.area_id AS "areaId",
+              a.name AS "areaName",
+              analysis.answer AS "analysisAnswer",
+              response.content AS "responseContent",
+              response.sent_at AS "responseSentAt"
+       FROM pqrs p
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       LEFT JOIN client c ON c.id = p.client_id
+       LEFT JOIN LATERAL (
+         SELECT answer
+         FROM analysis
+         WHERE pqrs_id = p.id
+         ORDER BY created_at DESC
+         LIMIT 1
+       ) analysis ON true
+       LEFT JOIN LATERAL (
+         SELECT content, sent_at
+         FROM response
+         WHERE pqrs_id = p.id
+         ORDER BY sent_at DESC
+         LIMIT 1
+       ) response ON true
+       WHERE p.area_id = $1 AND p.pqrs_status_id != 4
+       ORDER BY p.created_at DESC`,
       normalizeValues([areaId])
     );
     return result.rows;
@@ -101,10 +134,43 @@ export class DashboardService {
 
   async getAreaAppeals(areaId: number) {
     const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"
-       FROM pqrs
-       WHERE area_id = $1 AND pqrs_status_id = 3
-       ORDER BY id`,
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.description,
+              p.is_auto_resolved AS "isAutoResolved",
+              p.due_date AS "dueDate",
+              p.created_at AS "createdAt",
+              p.updated_at AS "updatedAt",
+              p.pqrs_status_id AS "pqrsStatusId",
+              p.client_id AS "clientId",
+              c.name AS "clientName",
+              p.type_pqrs_id AS "typePqrsId",
+              t.name AS "typeName",
+              p.area_id AS "areaId",
+              a.name AS "areaName",
+              analysis.answer AS "analysisAnswer",
+              response.content AS "responseContent",
+              response.sent_at AS "responseSentAt"
+       FROM pqrs p
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       LEFT JOIN client c ON c.id = p.client_id
+       LEFT JOIN LATERAL (
+         SELECT answer
+         FROM analysis
+         WHERE pqrs_id = p.id
+         ORDER BY created_at DESC
+         LIMIT 1
+       ) analysis ON true
+       LEFT JOIN LATERAL (
+         SELECT content, sent_at
+         FROM response
+         WHERE pqrs_id = p.id
+         ORDER BY sent_at DESC
+         LIMIT 1
+       ) response ON true
+       WHERE p.area_id = $1 AND p.pqrs_status_id = 3
+       ORDER BY p.created_at DESC`,
       normalizeValues([areaId])
     );
     return result.rows;

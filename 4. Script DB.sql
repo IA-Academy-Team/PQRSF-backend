@@ -59,7 +59,8 @@ CREATE TABLE pqrs_status (
 CREATE TABLE area (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    code VARCHAR(10) UNIQUE
+    code VARCHAR(10) UNIQUE,
+    description TEXT
 );
 
 CREATE TABLE type_document (
@@ -404,21 +405,22 @@ INSERT INTO pqrs_status (name) VALUES
 ('Cerrado');
 
 -- area
-INSERT INTO area (name, code) VALUES
-('Formación', 'FOR'),
-('Empleabilidad', 'EMP'),
-('Administración', 'ADM'),
-('Coworking Hubux', 'HUB'),
-('Talento Humano – Prexxa', 'THP'),
-('Talent Up', 'TUP'),
-('Full Services', 'FUS'),
-('Red Campus', 'RED'),
-('Camper Star', 'CST'),
-('Expansión Global', 'EXP'),
-('Bienestar (Psicología)', 'BIE'),
-('IA Academy', 'IAA'),
-('Clon AI', 'CLA'),
-('CampusDev', 'CDV');
+INSERT INTO area (name, code, description) VALUES
+('Formación', 'FOR', 'Formación de campuslands'),
+('Empleabilidad', 'EMP', 'Empleabilidad de campuslands'),
+('Administración', 'ADM', 'Administración de campuslands'),
+('Coworking Hubux', 'HUB', 'Coworking Hubux'),
+('Talento Humano – Prexxa', 'THP', 'Talento Humano – Prexxa'),
+('Talent Up', 'TUP', 'Talent Up'),
+('Full Services', 'FUS', 'Full Services'),
+('Red Campus', 'RED', 'Red Campus'),
+('Camper Star', 'CST', 'Camper Star'),
+('Expansión Global', 'EXP', 'Expansión Global'),
+('Bienestar (Psicología)', 'BIE', 'Bienestar (Psicología)'),
+('IA Academy', 'IAA', 'IA Academy'),
+('Clon AI', 'CLA', 'Clon AI'),
+('CampusDev', 'CDV', 'CampusDev');
+
 
 -- type_person
 INSERT INTO type_person (name) VALUES

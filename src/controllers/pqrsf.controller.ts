@@ -55,6 +55,12 @@ export const listPqrsDetailed = asyncHandler(async (req: Request, res: Response)
   res.json(result);
 });
 
+export const getPqrsDetailedById = asyncHandler(async (req: Request, res: Response) => {
+  const id = Number(req.params.pqrsfId);
+  const result = await pqrsService.findDetailedById(id);
+  res.json(result);
+});
+
 export const searchPqrs = asyncHandler(async (req: Request, res: Response) => {
   const filters = pqrsListQuerySchema.parse(req.query);
   const result = await pqrsService.list(filters);

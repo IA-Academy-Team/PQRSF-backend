@@ -16,6 +16,7 @@ import {
   listApelaciones,
   listCerradas,
   listPqrsDetailed,
+  getPqrsDetailedById,
   listDocumentsByPqrs,
   listPqrsByArea,
   listPqrsByStatus,
@@ -32,6 +33,7 @@ import {
 const router = Router();
 
 router.get("/", listPqrsDetailed);
+router.get("/:pqrsfId/detail", getPqrsDetailedById);
 router.get("/radicado/:code", getPqrsByRadicado);
 router.get("/status/:statusId", listPqrsByStatus);
 router.get("/type/:typeId", listPqrsByType);

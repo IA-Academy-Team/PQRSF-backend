@@ -1,5 +1,5 @@
 import { CreateResponsableDTO, DeleteResponsableDTO, UpdateResponsableDTO } from "../schemas/responsable.schema";
-import { IResponsable } from "../models/responsable.model";
+import { IResponsable, IResponsableSummary } from "../models/responsable.model";
 import { ResponsableRepository } from "../repositories/responsable.repository";
 import { AreaRepository } from "../repositories/area.repository";
 import { UsuarioRepository } from "../repositories/usuario.repository";
@@ -50,8 +50,18 @@ export class ResponsableService {
     return ensureFound("Responsable", responsable, { id });
   }
 
+  async findByUserId(userId: number): Promise<IResponsable> {
+    const id = requirePositiveInt(userId, "userId");
+    const responsable = await this.repo.findByUserId(id);
+    return ensureFound("Responsable", responsable, { userId: id });
+  }
+
   async findAll(): Promise<IResponsable[]> {
     return this.repo.findAll();
+  }
+
+  async findAllDetailed(): Promise<IResponsableSummary[]> {
+    return this.repo.findAllDetailed();
   }
 
   async findByAreaId(areaId: number): Promise<IResponsable[]> {

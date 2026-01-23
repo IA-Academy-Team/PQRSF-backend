@@ -2,6 +2,7 @@ import { Router } from "express";
 import {
   createResponsable,
   deleteResponsable,
+  getResponsableByUserId,
   getResponsableById,
   updateResponsable,
   getAllResponsables
@@ -14,6 +15,7 @@ router.post(
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateResponsable' } } */
   createResponsable
 );
+router.get("/user/:userId", getResponsableByUserId);
 router.get("/:id", getResponsableById);
 router.get("/", getAllResponsables);
 router.patch(

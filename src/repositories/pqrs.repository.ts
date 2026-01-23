@@ -292,6 +292,80 @@ export class PqrsRepository {
     return result.rows;
   }
 
+  async findDetailedById(id: number) {
+    const result = await pool.query(
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.description,
+              p.is_auto_resolved AS "isAutoResolved",
+              p.due_date AS "dueDate",
+              p.created_at AS "createdAt",
+              p.updated_at AS "updatedAt",
+              s.id AS "statusId",
+              s.name AS "statusName",
+              t.id AS "typeId",
+              t.name AS "typeName",
+              a.id AS "areaId",
+              a.name AS "areaName",
+              c.id AS "clientId",
+              c.name AS "clientName",
+              c.email AS "clientEmail",
+              c.document AS "clientDocument",
+              c.phone_number AS "clientPhone",
+              tp.id AS "typePersonId",
+              tp.name AS "typePersonName",
+              sh.id AS "stakeholderId",
+              sh.name AS "stakeholderName"
+       FROM pqrs p
+       JOIN pqrs_status s ON s.id = p.pqrs_status_id
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       LEFT JOIN type_person tp ON tp.id = c.type_person_id
+       LEFT JOIN stakeholder sh ON sh.id = c.stakeholder_id
+       WHERE p.id = $1`,
+      normalizeValues([id])
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async findDetailedByTicketNumber(ticketNumber: string) {
+    const result = await pool.query(
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.description,
+              p.is_auto_resolved AS "isAutoResolved",
+              p.due_date AS "dueDate",
+              p.created_at AS "createdAt",
+              p.updated_at AS "updatedAt",
+              s.id AS "statusId",
+              s.name AS "statusName",
+              t.id AS "typeId",
+              t.name AS "typeName",
+              a.id AS "areaId",
+              a.name AS "areaName",
+              c.id AS "clientId",
+              c.name AS "clientName",
+              c.email AS "clientEmail",
+              c.document AS "clientDocument",
+              c.phone_number AS "clientPhone",
+              tp.id AS "typePersonId",
+              tp.name AS "typePersonName",
+              sh.id AS "stakeholderId",
+              sh.name AS "stakeholderName"
+       FROM pqrs p
+       JOIN pqrs_status s ON s.id = p.pqrs_status_id
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       LEFT JOIN type_person tp ON tp.id = c.type_person_id
+       LEFT JOIN stakeholder sh ON sh.id = c.stakeholder_id
+       WHERE p.ticket_number = $1`,
+      normalizeValues([ticketNumber])
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(data: UpdatePqrsDTO): Promise<IPqrs | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

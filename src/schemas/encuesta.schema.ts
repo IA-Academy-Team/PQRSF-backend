@@ -21,6 +21,17 @@ export const createEncuestaSchema = z
   })
   .strict();
 
+export const createPublicEncuestaSchema = z
+  .object({
+    q1Clarity: optionalNullableScoreSchema,
+    q2Timeliness: optionalNullableScoreSchema,
+    q3Quality: optionalNullableScoreSchema,
+    q4Attention: optionalNullableScoreSchema,
+    q5Overall: optionalNullableScoreSchema,
+    comment: optionalNullableStringSchema,
+  })
+  .strict();
+
 export const updateEncuestaSchema = z
   .object({
     q1Clarity: optionalNullableScoreSchema,
@@ -41,5 +52,6 @@ export const deleteEncuestaSchema = z
   .strict();
 
 export type CreateEncuestaDTO = z.infer<typeof createEncuestaSchema>;
+export type CreatePublicEncuestaDTO = z.infer<typeof createPublicEncuestaSchema>;
 export type UpdateEncuestaDTO = z.infer<typeof updateEncuestaSchema> & { id: number };
 export type DeleteEncuestaDTO = z.infer<typeof deleteEncuestaSchema>;

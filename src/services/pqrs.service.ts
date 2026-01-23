@@ -141,6 +141,11 @@ export class PqrsService {
     return ensureFound("PQRS", pqrs, { id });
   }
 
+  async findDetailedById(id: number) {
+    const pqrs = await this.repo.findDetailedById(requirePositiveInt(id, "id"));
+    return ensureFound("PQRS", pqrs, { id });
+  }
+
   async list(filters: PqrsFilters): Promise<IPqrs[]> {
     const validated: PqrsFilters = {
       pqrsStatusId: optionalPositiveInt(filters.pqrsStatusId, "pqrsStatusId"),
@@ -191,6 +196,12 @@ export class PqrsService {
   async findByTicketNumber(ticketNumber: string): Promise<IPqrs> {
     const code = requireString(ticketNumber, "ticketNumber");
     const pqrs = await this.repo.findByTicketNumber(code);
+    return ensureFound("PQRS", pqrs, { ticketNumber: code });
+  }
+
+  async findDetailedByTicketNumber(ticketNumber: string) {
+    const code = requireString(ticketNumber, "ticketNumber");
+    const pqrs = await this.repo.findDetailedByTicketNumber(code);
     return ensureFound("PQRS", pqrs, { ticketNumber: code });
   }
 

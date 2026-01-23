@@ -28,6 +28,11 @@ export const listChats = asyncHandler(async (_req: Request, res: Response) => {
   res.json(result);
 });
 
+export const listChatSummaries = asyncHandler(async (_req: Request, res: Response) => {
+  const result = await service.listSummaries();
+  res.json(result);
+});
+
 export const listChatByClient = asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = chatClientParamSchema.parse(req.params);
   const result = await service.findByClientId(clientId);

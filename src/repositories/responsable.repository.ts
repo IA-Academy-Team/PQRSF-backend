@@ -1,6 +1,6 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IResponsable } from "../models/responsable.model";
+import { IResponsable, IResponsableSummary } from "../models/responsable.model";
 import { CreateResponsableDTO, UpdateResponsableDTO, DeleteResponsableDTO } from "../schemas/responsable.schema";
 
 export class ResponsableRepository {
@@ -25,6 +25,25 @@ export class ResponsableRepository {
   async findAll(): Promise<IResponsable[]> {
     const result = await pool.query(
       `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible ORDER BY id`
+    );
+    return result.rows;
+  }
+
+  async findAllDetailed(): Promise<IResponsableSummary[]> {
+    const result = await pool.query(
+      `SELECT r.id,
+              r.user_id AS "userId",
+              r.area_id AS "areaId",
+              u.name AS "userName",
+              u.email AS "userEmail",
+              u.is_active AS "userIsActive",
+              u.role_id AS "roleId",
+              a.name AS "areaName",
+              a.code AS "areaCode"
+       FROM responsible r
+       JOIN users u ON u.id = r.user_id
+       LEFT JOIN area a ON a.id = r.area_id
+       ORDER BY r.id`
     );
     return result.rows;
   }
