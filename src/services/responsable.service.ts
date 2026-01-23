@@ -54,6 +54,12 @@ export class ResponsableService {
     return this.repo.findAll();
   }
 
+  async findByAreaId(areaId: number): Promise<IResponsable[]> {
+    const id = requirePositiveInt(areaId, "areaId");
+    ensureFound("Area", await this.areaRepo.findById(id), { areaId: id });
+    return this.repo.findByAreaId(id);
+  }
+
   async update(data: UpdateResponsableDTO): Promise<IResponsable> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(

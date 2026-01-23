@@ -5,6 +5,7 @@ import {
   optionalBooleanSchema,
   optionalNullableDateSchema,
   optionalPositiveIntSchema,
+  optionalPositiveBigIntSchema,
   positiveBigIntSchema,
   positiveIntSchema,
 } from "./core/common.schema";
@@ -45,6 +46,8 @@ export const pqrsListQuerySchema = z
   .object({
     pqrsStatusId: optionalPositiveIntSchema,
     areaId: optionalPositiveIntSchema,
+    typePqrsId: optionalPositiveIntSchema,
+    clientId: optionalPositiveBigIntSchema,
     ticketNumber: nonEmptyStringSchema.optional(),
     fromDate: optionalDateSchema,
     toDate: optionalDateSchema,

@@ -144,11 +144,19 @@ export class PqrsService {
     const validated: PqrsFilters = {
       pqrsStatusId: optionalPositiveInt(filters.pqrsStatusId, "pqrsStatusId"),
       areaId: optionalPositiveInt(filters.areaId, "areaId"),
+      typePqrsId: optionalPositiveInt(filters.typePqrsId, "typePqrsId"),
+      clientId: filters.clientId !== undefined ? requireBigInt(filters.clientId, "clientId") : undefined,
       ticketNumber: optionalString(filters.ticketNumber, "ticketNumber") ?? undefined,
       fromDate: optionalDate(filters.fromDate, "fromDate") ?? undefined,
       toDate: optionalDate(filters.toDate, "toDate") ?? undefined,
     };
     return this.repo.findAllWithFilters(validated);
+  }
+
+  async findByTicketNumber(ticketNumber: string): Promise<IPqrs> {
+    const code = requireString(ticketNumber, "ticketNumber");
+    const pqrs = await this.repo.findByTicketNumber(code);
+    return ensureFound("PQRS", pqrs, { ticketNumber: code });
   }
 
   async update(data: UpdatePqrsDTO): Promise<IPqrs> {
@@ -230,5 +238,25 @@ export class PqrsService {
     const id = requirePositiveInt(data.id, "id");
     await this.findById(id);
     return this.repo.delete({ id });
+  }
+
+  async finalize(id: number): Promise<IPqrs> {
+    const pqrs = await this.findById(requirePositiveInt(id, "id"));
+    this.validateTransition(pqrs.pqrsStatusId, PQRS_STATUS.CERRADO, pqrs.isAutoResolved);
+    const updated = await this.repo.update({
+      id: pqrs.id,
+      pqrsStatusId: PQRS_STATUS.CERRADO,
+    });
+    return ensureFound("PQRS", updated, { id: pqrs.id });
+  }
+
+  async appeal(id: number): Promise<IPqrs> {
+    const pqrs = await this.findById(requirePositiveInt(id, "id"));
+    this.validateTransition(pqrs.pqrsStatusId, PQRS_STATUS.REANALISIS, pqrs.isAutoResolved);
+    const updated = await this.repo.update({
+      id: pqrs.id,
+      pqrsStatusId: PQRS_STATUS.REANALISIS,
+    });
+    return ensureFound("PQRS", updated, { id: pqrs.id });
   }
 }

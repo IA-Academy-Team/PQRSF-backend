@@ -261,6 +261,46 @@ const doc = {
                 areaId: 1,
             },
         },
+        CreateStakeholder: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        UpdateStakeholder: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+            },
+            example: {
+                name: "string",
+            },
+        },
+        CreateArea: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                code: { type: "string" },
+            },
+            example: {
+                name: "string",
+                code: "string",
+            },
+        },
+        UpdateArea: {
+            type: "object",
+            properties: {
+                name: { type: "string" },
+                code: { type: "string" },
+            },
+            example: {
+                name: "string",
+                code: "string",
+            },
+        },
         CreateUsuario: {
             type: "object",
             properties: {

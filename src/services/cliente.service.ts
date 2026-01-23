@@ -91,6 +91,10 @@ export class ClienteService {
     return ensureFound("Client", client, { id });
   }
 
+  async list(): Promise<ICliente[]> {
+    return this.repo.findAll();
+  }
+
   async update(data: UpdateClienteDTO): Promise<ICliente> {
     const id = requireBigInt(data.id, "id");
     ensureUpdates(

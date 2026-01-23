@@ -6,6 +6,8 @@ import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../schemas/pqrs.sch
 export interface PqrsFilters {
   pqrsStatusId?: number;
   areaId?: number;
+  typePqrsId?: number;
+  clientId?: bigint;
   ticketNumber?: string;
   fromDate?: Date;
   toDate?: Date;
@@ -56,6 +58,16 @@ export class PqrsRepository {
     if (filters.areaId !== undefined) {
       conditions.push(`area_id = $${index}`);
       values.push(filters.areaId);
+      index += 1;
+    }
+    if (filters.typePqrsId !== undefined) {
+      conditions.push(`type_pqrs_id = $${index}`);
+      values.push(filters.typePqrsId);
+      index += 1;
+    }
+    if (filters.clientId !== undefined) {
+      conditions.push(`client_id = $${index}`);
+      values.push(filters.clientId);
       index += 1;
     }
     if (filters.ticketNumber !== undefined) {

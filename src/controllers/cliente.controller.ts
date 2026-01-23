@@ -34,3 +34,8 @@ export const deleteCliente = asyncHandler(async (req: Request, res: Response) =>
   const result = await service.delete({ id });
   res.json({ deleted: result });
 });
+
+export const listClientes = asyncHandler(async (_req: Request, res: Response) => {
+  const items = await service.list();
+  res.json(items);
+});

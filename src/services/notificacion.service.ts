@@ -74,6 +74,16 @@ export class NotificacionService {
     return this.repo.markAsRead(ids);
   }
 
+  async markAsReadById(id: number): Promise<number> {
+    const notificationId = requirePositiveInt(id, "id");
+    return this.repo.markAsRead([notificationId]);
+  }
+
+  async markAllAsReadByResponsible(responsibleId: number): Promise<number> {
+    const id = requirePositiveInt(responsibleId, "responsibleId");
+    return this.repo.markAllAsReadByResponsible(id);
+  }
+
   async update(data: UpdateNotificacionDTO): Promise<INotificacion> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(data as Record<string, unknown>, ["message", "status"], "Notification");

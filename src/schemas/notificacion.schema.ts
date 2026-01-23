@@ -50,6 +50,12 @@ export const notificacionResponsibleParamSchema = z
   })
   .strict();
 
+export const notificacionMarkAllReadSchema = z
+  .object({
+    responsibleId: positiveIntSchema,
+  })
+  .strict();
+
 export type CreateNotificacionDTO = z.infer<typeof createNotificacionSchema>;
 export type UpdateNotificacionDTO = z.infer<typeof updateNotificacionSchema> & { id: number };
 export type DeleteNotificacionDTO = z.infer<typeof deleteNotificacionSchema>;

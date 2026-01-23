@@ -30,6 +30,11 @@ export class DocumentoService {
     return ensureFound("Document", doc, { id });
   }
 
+  async listByPqrsId(pqrsId: number): Promise<IDocumento[]> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    return this.repo.findByPqrsId(id);
+  }
+
   async update(data: UpdateDocumentoDTO): Promise<IDocumento> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(data as Record<string, unknown>, ["url", "typeDocumentId", "pqrsId"], "Document");

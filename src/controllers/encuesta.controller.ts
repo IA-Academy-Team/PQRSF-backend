@@ -21,6 +21,12 @@ export const getEncuestaById = asyncHandler(async (req: Request, res: Response) 
   res.json(result);
 });
 
+export const getEncuestaByPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = Number(req.params.pqrsfId);
+  const result = await service.findByPqrsId(pqrsId);
+  res.json(result);
+});
+
 export const updateEncuesta = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteEncuestaSchema.parse(req.params);
   const body = updateEncuestaSchema.parse(req.body);

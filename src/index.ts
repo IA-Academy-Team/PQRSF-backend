@@ -77,6 +77,7 @@ async function isAppHealthy(): Promise<boolean> {
     return lastHealthStatus;
   }
 
+  // verificar si hay dependencias críticas como la base de datos
   lastHealthStatus = await checkCriticalDependencies();
   lastHealthCheckAt = now;
 

@@ -35,6 +35,18 @@ export class ChatRepository {
     return result.rows[0] ?? null;
   }
 
+  async findByAreaId(areaId: number): Promise<IChat[]> {
+    const result = await pool.query(
+      `SELECT DISTINCT chat.id, chat.mode, chat.client_id AS "clientId"
+       FROM chat
+       JOIN pqrs ON pqrs.client_id = chat.client_id
+       WHERE pqrs.area_id = $1
+       ORDER BY chat.id`,
+      normalizeValues([areaId])
+    );
+    return result.rows;
+  }
+
   async update(data: UpdateChatDTO): Promise<IChat | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

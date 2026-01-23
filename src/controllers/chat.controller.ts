@@ -23,9 +23,26 @@ export const getChatById = asyncHandler(async (req: Request, res: Response) => {
   res.json(result);
 });
 
+export const listChats = asyncHandler(async (_req: Request, res: Response) => {
+  const result = await service.list();
+  res.json(result);
+});
+
 export const listChatByClient = asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = chatClientParamSchema.parse(req.params);
   const result = await service.findByClientId(clientId);
+  res.json(result);
+});
+
+export const listChatByUser = asyncHandler(async (req: Request, res: Response) => {
+  const { clientId } = chatClientParamSchema.parse({ clientId: req.params.userId });
+  const result = await service.listByClientId(clientId);
+  res.json(result);
+});
+
+export const listChatByArea = asyncHandler(async (req: Request, res: Response) => {
+  const areaId = Number(req.params.areaId);
+  const result = await service.listByAreaId(areaId);
   res.json(result);
 });
 

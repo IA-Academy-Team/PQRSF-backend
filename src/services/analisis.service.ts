@@ -87,6 +87,12 @@ export class AnalisisService {
     return ensureFound("Analysis", analysis, { id });
   }
 
+  async listByPqrsId(pqrsId: number): Promise<IAnalisis[]> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    const analysis = await this.repo.findByPqrsId(id);
+    return analysis ? [analysis] : [];
+  }
+
   async update(data: UpdateAnalisisDTO): Promise<IAnalisis> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(data as Record<string, unknown>, ["answer", "actionTaken"], "Analysis");

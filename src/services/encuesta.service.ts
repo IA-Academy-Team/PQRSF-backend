@@ -71,6 +71,12 @@ export class EncuestaService {
     return ensureFound("Survey", survey, { id });
   }
 
+  async findByPqrsId(pqrsId: number): Promise<IEncuesta> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    const survey = await this.repo.findByPqrsId(id);
+    return ensureFound("Survey", survey, { pqrsId: id });
+  }
+
   async update(data: UpdateEncuestaDTO): Promise<IEncuesta> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(

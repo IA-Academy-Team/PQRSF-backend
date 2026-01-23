@@ -21,6 +21,19 @@ export const getRespuestaById = asyncHandler(async (req: Request, res: Response)
   res.json(result);
 });
 
+export const listRespuestasByPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = Number(req.params.pqrsfId);
+  const result = await service.listByPqrsId(pqrsId);
+  res.json(result);
+});
+
+export const createRespuestaForPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = Number(req.params.pqrsfId);
+  const body = createRespuestaSchema.parse({ ...req.body, pqrsId });
+  const result = await service.create(body);
+  res.status(201).json(result);
+});
+
 export const updateRespuesta = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteRespuestaSchema.parse(req.params);
   const body = updateRespuestaSchema.parse(req.body);

@@ -1,8 +1,8 @@
 import cors from 'cors'
-import { CORS_ORIGIN } from '../config/env.config'
+import { FRONTEND_URL } from '../config/env.config'
 
 const corsOptions = {
-  origin: CORS_ORIGIN || 'http://localhost:5173',
+  origin: FRONTEND_URL || 'http://localhost:5173',
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH'],
   credentials: true,
   optionsSuccessStatus: 200

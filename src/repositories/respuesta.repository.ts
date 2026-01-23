@@ -27,6 +27,14 @@ export class RespuestaRepository {
     return result.rows;
   }
 
+  async findByPqrsId(pqrsId: number): Promise<IRespuesta[]> {
+    const result = await pool.query(
+      `SELECT id, content, channel, sent_at AS "sentAt", document_id AS "documentId", pqrs_id AS "pqrsId", responsible_id AS "responsibleId" FROM response WHERE pqrs_id = $1 ORDER BY id`,
+      normalizeValues([pqrsId])
+    );
+    return result.rows;
+  }
+
   async update(data: UpdateRespuestaDTO): Promise<IRespuesta | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

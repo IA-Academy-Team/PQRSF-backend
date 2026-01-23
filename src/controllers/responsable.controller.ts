@@ -39,3 +39,9 @@ export const getAllResponsables = asyncHandler(async (req: Request, res: Respons
   const responsables = await service.findAll();
   res.json(responsables);
 });
+
+export const getResponsablesByArea = asyncHandler(async (req: Request, res: Response) => {
+  const areaId = Number(req.params.areaId);
+  const responsables = await service.findByAreaId(areaId);
+  res.json(responsables);
+});
