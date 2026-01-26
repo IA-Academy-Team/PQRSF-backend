@@ -1,6 +1,6 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IEncuesta } from "../models/encuesta.model";
+import { IEncuesta, IEncuestaDetailed } from "../models/encuesta.model";
 import { CreateEncuestaDTO, UpdateEncuestaDTO, DeleteEncuestaDTO } from "../schemas/encuesta.schema";
 
 export class EncuestaRepository {
@@ -33,6 +33,43 @@ export class EncuestaRepository {
       normalizeValues([pqrsId])
     );
     return result.rows[0] ?? null;
+  }
+
+  async findAllDetailed(): Promise<IEncuestaDetailed[]> {
+    const result = await pool.query(
+      `SELECT s.id,
+              s.q1_clarity AS "q1Clarity",
+              s.q2_timeliness AS "q2Timeliness",
+              s.q3_quality AS "q3Quality",
+              s.q4_attention AS "q4Attention",
+              s.q5_overall AS "q5Overall",
+              s.comment,
+              s.pqrs_id AS "pqrsId",
+              s.created_at AS "createdAt",
+              p.ticket_number AS "ticketNumber",
+              p.description AS "pqrsDescription",
+              p.created_at AS "pqrsCreatedAt",
+              p.updated_at AS "pqrsUpdatedAt",
+              st.id AS "statusId",
+              st.name AS "statusName",
+              tp.id AS "typeId",
+              tp.name AS "typeName",
+              a.id AS "areaId",
+              a.name AS "areaName",
+              c.id AS "clientId",
+              c.name AS "clientName",
+              c.email AS "clientEmail",
+              c.document AS "clientDocument",
+              c.phone_number AS "clientPhone"
+       FROM survey s
+       JOIN pqrs p ON p.id = s.pqrs_id
+       JOIN pqrs_status st ON st.id = p.pqrs_status_id
+       JOIN type_pqrs tp ON tp.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       ORDER BY s.created_at DESC`
+    );
+    return result.rows;
   }
 
   async update(data: UpdateEncuestaDTO): Promise<IEncuesta | null> {

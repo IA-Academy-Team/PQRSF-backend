@@ -59,12 +59,71 @@ CREATE TABLE pqrs_status (
 CREATE TABLE area (
     id SERIAL PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
-    code VARCHAR(10) UNIQUE
+    code VARCHAR(10) UNIQUE,
+    description TEXT
 );
 
 CREATE TABLE type_document (
     id SERIAL PRIMARY KEY,
     name VARCHAR(50) NOT NULL
+);
+
+
+-- ==============================
+-- Auth
+-- ==============================
+
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    name VARCHAR(50) NOT NULL UNIQUE,
+    description VARCHAR(255),
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    email VARCHAR(255) UNIQUE NOT NULL, -- Solo @campuslands.com
+    name VARCHAR(255),                 -- Nombre completo (OAuth-friendly)
+    image TEXT,                         -- Avatar (Google, GitHub, etc.)
+    phone_number VARCHAR(20) UNIQUE,
+    is_active BOOLEAN DEFAULT true,
+    email_verified BOOLEAN DEFAULT false,
+    two_factor_enabled BOOLEAN DEFAULT false,
+    last_login TIMESTAMPTZ,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    role_id INTEGER NOT NULL DEFAULT 1,
+    FOREIGN KEY (role_id) REFERENCES roles(id)
+);
+
+CREATE TABLE sessions (
+    id SERIAL PRIMARY KEY,
+    token TEXT NOT NULL UNIQUE,
+    expires_at TIMESTAMPTZ NOT NULL,
+    ip_address TEXT,
+    user_agent TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+CREATE TABLE accounts (
+    id SERIAL PRIMARY KEY,
+    provider_id TEXT NOT NULL,          -- google, github, credential
+    provider_account_id TEXT NOT NULL,  -- sub / accountId / email
+    password TEXT,                      -- SOLO para provider 'credentials' cuando el usuario ingrea por contraseña
+    access_token TEXT,
+    refresh_token TEXT,
+    id_token TEXT,
+    access_token_expires_at TIMESTAMPTZ,
+    refresh_token_expires_at TIMESTAMPTZ,
+    scope TEXT,
+    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMPTZ NOT NULL,
+    user_id INT NOT NULL,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
+    UNIQUE (provider_id, provider_account_id)
 );
 
 -- ==============================
@@ -73,12 +132,10 @@ CREATE TABLE type_document (
 
 CREATE TABLE responsible (
     id SERIAL PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    email VARCHAR(100) NOT NULL UNIQUE,
-    password VARCHAR(100) NOT NULL,
-    phone_number VARCHAR(100) NOT NULL,
+    user_id INT NOT NULL,
     area_id INT,
-    FOREIGN KEY (area_id) REFERENCES Area(id)
+    FOREIGN KEY (area_id) REFERENCES Area(id),
+    FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
 CREATE TABLE client (
@@ -201,63 +258,6 @@ CREATE TABLE notification (
     FOREIGN KEY (pqrs_id) REFERENCES pqrs(id)
 );
 
--- ==============================
--- Auth
--- ==============================
-
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(50) NOT NULL UNIQUE,
-    description VARCHAR(255),
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
-);
-
-CREATE TABLE users (
-    id SERIAL PRIMARY KEY,
-    email VARCHAR(255) UNIQUE NOT NULL, -- Solo @campuslands.com
-    name VARCHAR(255),                 -- Nombre completo (OAuth-friendly)
-    image TEXT,                         -- Avatar (Google, GitHub, etc.)
-    phone_number VARCHAR(20) UNIQUE,
-    is_active BOOLEAN DEFAULT true,
-    email_verified BOOLEAN DEFAULT false,
-    two_factor_enabled BOOLEAN DEFAULT false,
-    last_login TIMESTAMPTZ,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    role_id INTEGER NOT NULL DEFAULT 1,
-    FOREIGN KEY (role_id) REFERENCES roles(id)
-);
-
-CREATE TABLE sessions (
-    id SERIAL PRIMARY KEY,
-    token TEXT NOT NULL UNIQUE,
-    expires_at TIMESTAMPTZ NOT NULL,
-    ip_address TEXT,
-    user_agent TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL,
-    user_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
-CREATE TABLE accounts (
-    id SERIAL PRIMARY KEY,
-    provider_id TEXT NOT NULL,          -- google, github, credential
-    provider_account_id TEXT NOT NULL,  -- sub / accountId / email
-    password TEXT,                      -- SOLO para provider 'credentials' cuando el usuario ingrea por contraseña
-    access_token TEXT,
-    refresh_token TEXT,
-    id_token TEXT,
-    access_token_expires_at TIMESTAMPTZ,
-    refresh_token_expires_at TIMESTAMPTZ,
-    scope TEXT,
-    created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMPTZ NOT NULL,
-    user_id INT NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
-    UNIQUE (provider_id, provider_account_id)
-);
-
 -- * esta tabla se encarga de tener una boveda temporal de pruebas de identidad con better auth, no tiene relacion alguna con ninguna tabla de la base de datos
 CREATE TABLE verifications (
     id SERIAL PRIMARY KEY,
@@ -275,67 +275,6 @@ COMMENT ON COLUMN notification.status IS '1 = NO LEIDO, 2 = LEIDO';
 -- DML: Insertar datos iniciales
 -- ==============================
 
--- ==============================
--- Tablas sin dependencias
--- ==============================
-
--- stakeholder
-INSERT INTO stakeholder (name) VALUES
-('Camper'),
-('Padre de familia'),
-('Empresa de empleabilidad'),
-('Trainer'),
-('Aliado estratégico'),
-('Patrocinador'),
-('Administrativo'),
-('Empresa en Coworking'),
-('Público en general'),
-('Área interna de Campuslands');
-
--- type_pqrs
-INSERT INTO type_pqrs (name) VALUES
-('Petición'),
-('Queja'),
-('Reclamo'),
-('Sugerencia'),
-('Felicitación');
-
--- pqrs_status
-INSERT INTO pqrs_status (name) VALUES
-('Radicado'),
-('Analisis'),
-('Reanálisis'),
-('Cerrado');
-
--- area
-INSERT INTO area (name, code) VALUES
-('Formación', 'FOR'),
-('Empleabilidad', 'EMP'),
-('Administración', 'ADM'),
-('Coworking Hubux', 'HUB'),
-('Talento Humano – Prexxa', 'THP'),
-('Talent Up', 'TUP'),
-('Full Services', 'FUS'),
-('Red Campus', 'RED'),
-('Camper Star', 'CST'),
-('Expansión Global', 'EXP'),
-('Bienestar (Psicología)', 'BIE'),
-('IA Academy', 'IAA'),
-('Clon AI', 'CLA'),
-('CampusDev', 'CDV');
-
--- type_person
-INSERT INTO type_person (name) VALUES
-('Persona Natural'),
-('Persona Jurídica'),
-('Anónimo');
-
-INSERT INTO type_document (name) VALUES
-('Solicitud'),
-('Análisis'),
-('Respuesta'),
-('Evidencia'),
-('Otro');
 
 -- ==============================
 -- Auth
@@ -344,7 +283,6 @@ INSERT INTO type_document (name) VALUES
 INSERT INTO roles (name) VALUES
 ('responsable'),
 ('admin');
-
 
 -- USERS
 -- Test1234 y Admin1234 son las contraseñas de los usuarios de prueba
@@ -417,8 +355,6 @@ INSERT INTO accounts (
   2
 );
 
-
-
 -- VERFICIATIONS
 INSERT INTO verifications (
     identifier,
@@ -435,5 +371,68 @@ INSERT INTO verifications (
     '654321',
     '2022-12-31T23:59:59.999Z'
 );  
+
+-- ==============================
+-- Tablas sin dependencias
+-- ==============================
+
+-- stakeholder
+INSERT INTO stakeholder (name) VALUES
+('Camper'),
+('Padre de familia'),
+('Empresa de empleabilidad'),
+('Trainer'),
+('Aliado estratégico'),
+('Patrocinador'),
+('Administrativo'),
+('Empresa en Coworking'),
+('Público en general'),
+('Área interna de Campuslands');
+
+-- type_pqrs
+INSERT INTO type_pqrs (name) VALUES
+('Petición'),
+('Queja'),
+('Reclamo'),
+('Sugerencia'),
+('Felicitación');
+
+-- pqrs_status
+INSERT INTO pqrs_status (name) VALUES
+('Radicado'),
+('Analisis'),
+('Reanálisis'),
+('Cerrado');
+
+-- area
+INSERT INTO area (name, code, description) VALUES
+('Formación', 'FOR', 'Formación de campuslands'),
+('Empleabilidad', 'EMP', 'Empleabilidad de campuslands'),
+('Administración', 'ADM', 'Administración de campuslands'),
+('Coworking Hubux', 'HUB', 'Coworking Hubux'),
+('Talento Humano – Prexxa', 'THP', 'Talento Humano – Prexxa'),
+('Talent Up', 'TUP', 'Talent Up'),
+('Full Services', 'FUS', 'Full Services'),
+('Red Campus', 'RED', 'Red Campus'),
+('Camper Star', 'CST', 'Camper Star'),
+('Expansión Global', 'EXP', 'Expansión Global'),
+('Bienestar (Psicología)', 'BIE', 'Bienestar (Psicología)'),
+('IA Academy', 'IAA', 'IA Academy'),
+('Clon AI', 'CLA', 'Clon AI'),
+('CampusDev', 'CDV', 'CampusDev');
+
+
+-- type_person
+INSERT INTO type_person (name) VALUES
+('Persona Natural'),
+('Persona Jurídica'),
+('Anónimo');
+
+INSERT INTO type_document (name) VALUES
+('Solicitud'),
+('Análisis'),
+('Respuesta'),
+('Evidencia'),
+('Otro');
 
 \dt

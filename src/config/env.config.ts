@@ -18,4 +18,6 @@ export const SMTP_PASS = process.env.SMTP_PASS || '';
 export const MAIL_FROM = process.env.MAIL_FROM || '';
 
 // CORS
-export const CORS_ORIGIN = process.env.CORS_ORIGIN || 'http://localhost:5173';
+export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
+
+// TELEGRAM

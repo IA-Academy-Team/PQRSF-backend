@@ -6,7 +6,7 @@ import {
   optionalNullableDateSchema,
   optionalNullableStringSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createSesionSchema = z
   .object({

@@ -1,9 +1,9 @@
 import { CreateChatDTO, DeleteChatDTO, UpdateChatDTO } from "../schemas/chat.schema";
-import { IChat } from "../models/chat.model";
+import { IChat, IChatSummary } from "../models/chat.model";
 import { ChatRepository } from "../repositories/chat.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
 import { AppError } from "../middlewares/error.middleware";
-import { ensureFound, ensureUpdates, optionalPositiveInt, requireBigInt } from "../utils/validation.utils";
+import { ensureFound, ensureUpdates, optionalPositiveInt, requireBigInt, requirePositiveInt } from "../utils/validation.utils";
 
 export class ChatService {
   constructor(
@@ -42,10 +42,29 @@ export class ChatService {
     return ensureFound("Chat", chat, { id });
   }
 
+  async list(): Promise<IChat[]> {
+    return this.repo.findAll();
+  }
+
+  async listSummaries(): Promise<IChatSummary[]> {
+    return this.repo.findAllSummaries();
+  }
+
   async findByClientId(clientId: bigint): Promise<IChat> {
     const id = requireBigInt(clientId, "clientId");
     const chat = await this.repo.findByClientId(id);
     return ensureFound("Chat", chat, { clientId: id });
+  }
+
+  async listByClientId(clientId: bigint): Promise<IChat[]> {
+    const id = requireBigInt(clientId, "clientId");
+    const chat = await this.repo.findByClientId(id);
+    return chat ? [chat] : [];
+  }
+
+  async listByAreaId(areaId: number): Promise<IChat[]> {
+    const id = requirePositiveInt(areaId, "areaId");
+    return this.repo.findByAreaId(id);
   }
 
   async update(data: UpdateChatDTO): Promise<IChat> {

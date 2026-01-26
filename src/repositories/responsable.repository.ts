@@ -1,6 +1,6 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IResponsable } from "../models/responsable.model";
+import { IResponsable, IResponsableSummary } from "../models/responsable.model";
 import { CreateResponsableDTO, UpdateResponsableDTO, DeleteResponsableDTO } from "../schemas/responsable.schema";
 
 export class ResponsableRepository {
@@ -8,36 +8,57 @@ export class ResponsableRepository {
 
   async create(data: CreateResponsableDTO): Promise<IResponsable> {
     const result = await pool.query(
-      `INSERT INTO responsible (name, email, password, phone_number, area_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId"`,
-      normalizeValues([data.name, data.email, data.password, data.phoneNumber, data.areaId])
+      `INSERT INTO responsible (user_id, area_id) VALUES ($1, $2) RETURNING id, user_id AS "userId", area_id AS "areaId"`,
+      normalizeValues([data.userId, data.areaId])
     );
     return result.rows[0];
   }
 
   async findById(id: number): Promise<IResponsable | null> {
     const result = await pool.query(
-      `SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible WHERE id = $1`,
+      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible WHERE id = $1`,
       normalizeValues([id])
     );
     return result.rows[0] ?? null;
   }
 
   async findAll(): Promise<IResponsable[]> {
-    const result = await pool.query(`SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible ORDER BY id`);
+    const result = await pool.query(
+      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible ORDER BY id`
+    );
     return result.rows;
   }
 
-  async findByEmail(email: string): Promise<IResponsable | null> {
+  async findAllDetailed(): Promise<IResponsableSummary[]> {
     const result = await pool.query(
-      `SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible WHERE email = $1`,
-      normalizeValues([email])
+      `SELECT r.id,
+              r.user_id AS "userId",
+              r.area_id AS "areaId",
+              u.name AS "userName",
+              u.email AS "userEmail",
+              u.is_active AS "userIsActive",
+              u.role_id AS "roleId",
+              a.name AS "areaName",
+              a.code AS "areaCode"
+       FROM responsible r
+       JOIN users u ON u.id = r.user_id
+       LEFT JOIN area a ON a.id = r.area_id
+       ORDER BY r.id`
+    );
+    return result.rows;
+  }
+
+  async findByUserId(userId: number): Promise<IResponsable | null> {
+    const result = await pool.query(
+      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible WHERE user_id = $1`,
+      normalizeValues([userId])
     );
     return result.rows[0] ?? null;
   }
 
   async findByAreaId(areaId: number): Promise<IResponsable[]> {
     const result = await pool.query(
-      `SELECT id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId" FROM responsible WHERE area_id = $1 ORDER BY id`,
+      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible WHERE area_id = $1 ORDER BY id`,
       normalizeValues([areaId])
     );
     return result.rows;
@@ -47,24 +68,9 @@ export class ResponsableRepository {
     const fields: string[] = [];
     const values: unknown[] = [];
     let index = 1;
-    if (data.name !== undefined) {
-      fields.push(`name = $${index}`);
-      values.push(data.name);
-      index += 1;
-    }
-    if (data.email !== undefined) {
-      fields.push(`email = $${index}`);
-      values.push(data.email);
-      index += 1;
-    }
-    if (data.password !== undefined) {
-      fields.push(`password = $${index}`);
-      values.push(data.password);
-      index += 1;
-    }
-    if (data.phoneNumber !== undefined) {
-      fields.push(`phone_number = $${index}`);
-      values.push(data.phoneNumber);
+    if (data.userId !== undefined) {
+      fields.push(`user_id = $${index}`);
+      values.push(data.userId);
       index += 1;
     }
     if (data.areaId !== undefined) {
@@ -77,7 +83,7 @@ export class ResponsableRepository {
     }
     values.push(data.id);
     const result = await pool.query(
-      `UPDATE responsible SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name, email, password, phone_number AS "phoneNumber", area_id AS "areaId"`,
+      `UPDATE responsible SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, user_id AS "userId", area_id AS "areaId"`,
       normalizeValues(values)
     );
     return result.rows[0] ?? null;

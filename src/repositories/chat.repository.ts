@@ -1,6 +1,6 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IChat } from "../models/chat.model";
+import { IChat, IChatSummary } from "../models/chat.model";
 import { CreateChatDTO, UpdateChatDTO, DeleteChatDTO } from "../schemas/chat.schema";
 
 export class ChatRepository {
@@ -27,12 +27,47 @@ export class ChatRepository {
     return result.rows;
   }
 
+  async findAllSummaries(): Promise<IChatSummary[]> {
+    const result = await pool.query(
+      `SELECT chat.id,
+              chat.mode,
+              chat.client_id AS "clientId",
+              client.name AS "clientName",
+              client.phone_number AS "clientPhone",
+              last_message.content AS "lastMessage",
+              last_message.created_at AS "lastMessageAt"
+       FROM chat
+       LEFT JOIN client ON client.id = chat.client_id
+       LEFT JOIN LATERAL (
+         SELECT content, created_at
+         FROM message
+         WHERE chat_id = chat.id
+         ORDER BY created_at DESC
+         LIMIT 1
+       ) last_message ON true
+       ORDER BY last_message.created_at DESC NULLS LAST, chat.id DESC`
+    );
+    return result.rows;
+  }
+
   async findByClientId(clientId: bigint): Promise<IChat | null> {
     const result = await pool.query(
       `SELECT id, mode, client_id AS "clientId" FROM chat WHERE client_id = $1`,
       normalizeValues([clientId])
     );
     return result.rows[0] ?? null;
+  }
+
+  async findByAreaId(areaId: number): Promise<IChat[]> {
+    const result = await pool.query(
+      `SELECT DISTINCT chat.id, chat.mode, chat.client_id AS "clientId"
+       FROM chat
+       JOIN pqrs ON pqrs.client_id = chat.client_id
+       WHERE pqrs.area_id = $1
+       ORDER BY chat.id`,
+      normalizeValues([areaId])
+    );
+    return result.rows;
   }
 
   async update(data: UpdateChatDTO): Promise<IChat | null> {

@@ -4,7 +4,7 @@ import {
   optionalNullablePositiveIntSchema,
   optionalNullableStringSchema,
   positiveBigIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createClienteSchema = z
   .object({

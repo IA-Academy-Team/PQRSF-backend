@@ -1,5 +1,5 @@
 import { CreateEncuestaDTO, DeleteEncuestaDTO, UpdateEncuestaDTO } from "../schemas/encuesta.schema";
-import { IEncuesta } from "../models/encuesta.model";
+import { IEncuesta, IEncuestaDetailed } from "../models/encuesta.model";
 import { EncuestaRepository } from "../repositories/encuesta.repository";
 import { PqrsRepository } from "../repositories/pqrs.repository";
 import { AppError } from "../middlewares/error.middleware";
@@ -40,7 +40,7 @@ export class EncuestaService {
       throw new AppError(
         "Survey can only be created for closed PQRS",
         409,
-        "BUSINESS_RULE_VIOLATION",
+        "SURVEY_NOT_AVAILABLE",
         { pqrsId, status: pqrs.pqrsStatusId }
       );
     }
@@ -50,7 +50,7 @@ export class EncuestaService {
       throw new AppError(
         "Survey already exists for this PQRS",
         409,
-        "CONFLICT",
+        "SURVEY_ALREADY_SUBMITTED",
         { pqrsId }
       );
     }
@@ -69,6 +69,21 @@ export class EncuestaService {
   async findById(id: number): Promise<IEncuesta> {
     const survey = await this.repo.findById(requirePositiveInt(id, "id"));
     return ensureFound("Survey", survey, { id });
+  }
+
+  async findByPqrsId(pqrsId: number): Promise<IEncuesta> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    const survey = await this.repo.findByPqrsId(id);
+    return ensureFound("Survey", survey, { pqrsId: id });
+  }
+
+  async findOptionalByPqrsId(pqrsId: number): Promise<IEncuesta | null> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    return this.repo.findByPqrsId(id);
+  }
+
+  async listDetailed(): Promise<IEncuestaDetailed[]> {
+    return this.repo.findAllDetailed();
   }
 
   async update(data: UpdateEncuestaDTO): Promise<IEncuesta> {

@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import dotenv from "dotenv";
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
@@ -10,11 +11,13 @@ import path from "node:path";
 import { rateLimiter } from "./middlewares/rateLimit.middleware";
 import { corsMiddleware } from "./middlewares/cors.middleware";
 import pool from "./config/db.config";
+import { initWebsocket } from "./config/websocket.config";
 
 dotenv.config();
 
 // define app con express
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 
@@ -47,8 +50,29 @@ app.get('/health', async (req, res) => {
 });
 
 const HEALTH_CHECK_TTL_MS = 5_000;
+const REQUIRED_ENV_VARS = ["DB_USER", "DB_HOST", "DB_NAME", "DB_PASSWORD", "DB_PORT"] as const;
 let lastHealthCheckAt = 0;
 let lastHealthStatus = false;
+
+function hasCriticalEnvVars(): boolean {
+  return REQUIRED_ENV_VARS.every((key) => {
+    const value = process.env[key];
+    return typeof value === "string" && value.trim().length > 0;
+  });
+}
+
+async function checkCriticalDependencies(): Promise<boolean> {
+  if (!hasCriticalEnvVars()) {
+    return false;
+  }
+
+  try {
+    await pool.query("SELECT 1");
+    return true;
+  } catch {
+    return false;
+  }
+}
 
 async function isAppHealthy(): Promise<boolean> {
   const now = Date.now();
@@ -56,14 +80,9 @@ async function isAppHealthy(): Promise<boolean> {
     return lastHealthStatus;
   }
 
-  try {
-    await pool.query("SELECT 1");
-    lastHealthStatus = true;
-  } catch {
-    lastHealthStatus = false;
-  } finally {
-    lastHealthCheckAt = now;
-  }
+  // verificar si hay dependencias críticas como la base de datos
+  lastHealthStatus = await checkCriticalDependencies();
+  lastHealthCheckAt = now;
 
   return lastHealthStatus;
 }
@@ -78,7 +97,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 // usar middleware de errores
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+initWebsocket(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${PORT}`)
   console.log(`📘 Documentación Swagger: http://localhost:${PORT}/api-docs`)
 })

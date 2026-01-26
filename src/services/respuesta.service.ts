@@ -53,6 +53,11 @@ export class RespuestaService {
     return ensureFound("Response", response, { id });
   }
 
+  async listByPqrsId(pqrsId: number): Promise<IRespuesta[]> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    return this.repo.findByPqrsId(id);
+  }
+
   async update(data: UpdateRespuestaDTO): Promise<IRespuesta> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(

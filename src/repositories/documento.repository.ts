@@ -27,6 +27,14 @@ export class DocumentoRepository {
     return result.rows;
   }
 
+  async findByPqrsId(pqrsId: number): Promise<IDocumento[]> {
+    const result = await pool.query(
+      `SELECT id, url, type_document_id AS "typeDocumentId", pqrs_id AS "pqrsId" FROM document WHERE pqrs_id = $1 ORDER BY id`,
+      normalizeValues([pqrsId])
+    );
+    return result.rows;
+  }
+
   async update(data: UpdateDocumentoDTO): Promise<IDocumento | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

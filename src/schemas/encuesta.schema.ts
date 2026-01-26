@@ -4,7 +4,7 @@ import {
   optionalNullableStringSchema,
   optionalPositiveIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 const scoreSchema = z.coerce.number().int().min(1).max(5);
 const optionalNullableScoreSchema = scoreSchema.nullable().optional();
@@ -18,6 +18,17 @@ export const createEncuestaSchema = z
     q5Overall: optionalNullableScoreSchema,
     comment: optionalNullableStringSchema,
     pqrsId: positiveIntSchema,
+  })
+  .strict();
+
+export const createPublicEncuestaSchema = z
+  .object({
+    q1Clarity: optionalNullableScoreSchema,
+    q2Timeliness: optionalNullableScoreSchema,
+    q3Quality: optionalNullableScoreSchema,
+    q4Attention: optionalNullableScoreSchema,
+    q5Overall: optionalNullableScoreSchema,
+    comment: optionalNullableStringSchema,
   })
   .strict();
 
@@ -41,5 +52,6 @@ export const deleteEncuestaSchema = z
   .strict();
 
 export type CreateEncuestaDTO = z.infer<typeof createEncuestaSchema>;
+export type CreatePublicEncuestaDTO = z.infer<typeof createPublicEncuestaSchema>;
 export type UpdateEncuestaDTO = z.infer<typeof updateEncuestaSchema> & { id: number };
 export type DeleteEncuestaDTO = z.infer<typeof deleteEncuestaSchema>;

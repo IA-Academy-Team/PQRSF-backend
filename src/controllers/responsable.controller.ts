@@ -21,6 +21,12 @@ export const getResponsableById = asyncHandler(async (req: Request, res: Respons
   res.json(result);
 });
 
+export const getResponsableByUserId = asyncHandler(async (req: Request, res: Response) => {
+  const userId = Number(req.params.userId);
+  const result = await service.findByUserId(userId);
+  res.json(result);
+});
+
 export const updateResponsable = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteResponsableSchema.parse(req.params);
   const body = updateResponsableSchema.parse(req.body);
@@ -33,4 +39,20 @@ export const deleteResponsable = asyncHandler(async (req: Request, res: Response
   const { id } = deleteResponsableSchema.parse(req.params);
   const result = await service.delete({ id });
   res.json({ deleted: result });
+});
+
+export const getAllResponsables = asyncHandler(async (req: Request, res: Response) => {
+  const responsables = await service.findAll();
+  res.json(responsables);
+});
+
+export const getAllResponsablesDetailed = asyncHandler(async (_req: Request, res: Response) => {
+  const responsables = await service.findAllDetailed();
+  res.json(responsables);
+});
+
+export const getResponsablesByArea = asyncHandler(async (req: Request, res: Response) => {
+  const areaId = Number(req.params.areaId);
+  const responsables = await service.findByAreaId(areaId);
+  res.json(responsables);
 });

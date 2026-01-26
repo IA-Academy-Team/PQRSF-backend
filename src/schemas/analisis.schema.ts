@@ -4,7 +4,7 @@ import {
   optionalNullableStringSchema,
   optionalPositiveIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createAnalisisSchema = z
   .object({

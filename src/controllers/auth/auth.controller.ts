@@ -8,9 +8,11 @@ import {
 } from "../../utils/validation.utils";
 import {
   authLoginSchema,
+  authRefreshSchema,
   authRegisterSchema,
   authRequestResetSchema,
   authResetSchema,
+  authVerifyEmailSchema,
 } from "../../schemas/auth.schema";
 
 const ensurePassword = (value: unknown, field: string) => {
@@ -92,7 +94,23 @@ export const logout = asyncHandler(async (req: Request, res: Response) => {
   await auth.api.signOut({
     headers: req.headers as Record<string, string>,
   });
-  res.status(204).send();
+  res.status(200).json({ status: "ok" });
+});
+
+export const me = asyncHandler(async (req: Request, res: Response) => {
+  const data = await (auth.api as any).getSession({
+    headers: req.headers as Record<string, string>,
+  });
+  res.json(data);
+});
+
+export const refresh = asyncHandler(async (req: Request, res: Response) => {
+  const payload = authRefreshSchema.parse(req.body);
+  const data = await (auth.api as any).refreshToken({
+    body: payload,
+    headers: req.headers as Record<string, string>,
+  });
+  res.json(data);
 });
 
 export const requestPasswordReset = asyncHandler(
@@ -120,6 +138,15 @@ export const resetPassword = asyncHandler(async (req: Request, res: Response) =>
       token,
       newPassword,
     },
+  });
+  res.json(data);
+});
+
+export const verifyEmail = asyncHandler(async (req: Request, res: Response) => {
+  const payload = authVerifyEmailSchema.parse(req.body);
+  const data = await (auth.api as any).verifyEmail({
+    query: payload,
+    headers: req.headers as Record<string, string>,
   });
   res.json(data);
 });

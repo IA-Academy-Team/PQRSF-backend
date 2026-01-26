@@ -5,7 +5,7 @@ import {
   optionalNullableStringSchema,
   optionalPositiveIntSchema,
   positiveIntSchema,
-} from "./common.schema";
+} from "./core/common.schema";
 
 export const createNotificacionSchema = z
   .object({
@@ -45,6 +45,12 @@ export const notificacionListQuerySchema = z
   .strict();
 
 export const notificacionResponsibleParamSchema = z
+  .object({
+    responsibleId: positiveIntSchema,
+  })
+  .strict();
+
+export const notificacionMarkAllReadSchema = z
   .object({
     responsibleId: positiveIntSchema,
   })

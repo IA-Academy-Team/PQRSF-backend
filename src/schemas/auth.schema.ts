@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { emailSchema, nonEmptyStringSchema, optionalStringSchema } from "./common.schema";
+import { emailSchema, nonEmptyStringSchema, optionalStringSchema } from "./core/common.schema";
 
 export const authRegisterSchema = z
   .object({
@@ -30,7 +30,24 @@ export const authResetSchema = z
   })
   .strict();
 
+export const authRefreshSchema = z
+  .object({
+    providerId: nonEmptyStringSchema,
+    accountId: optionalStringSchema,
+    userId: optionalStringSchema,
+  })
+  .strict();
+
+export const authVerifyEmailSchema = z
+  .object({
+    token: nonEmptyStringSchema,
+    callbackURL: optionalStringSchema,
+  })
+  .strict();
+
 export type AuthRegisterDTO = z.infer<typeof authRegisterSchema>;
 export type AuthLoginDTO = z.infer<typeof authLoginSchema>;
 export type AuthRequestResetDTO = z.infer<typeof authRequestResetSchema>;
 export type AuthResetDTO = z.infer<typeof authResetSchema>;
+export type AuthRefreshDTO = z.infer<typeof authRefreshSchema>;
+export type AuthVerifyEmailDTO = z.infer<typeof authVerifyEmailSchema>;

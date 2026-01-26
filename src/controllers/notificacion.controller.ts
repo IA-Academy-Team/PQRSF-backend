@@ -6,6 +6,7 @@ import {
   deleteNotificacionSchema,
   markNotificacionesAsReadSchema,
   notificacionListQuerySchema,
+  notificacionMarkAllReadSchema,
   notificacionResponsibleParamSchema,
   updateNotificacionSchema,
 } from "../schemas/notificacion.schema";
@@ -47,6 +48,18 @@ export const markNotificacionesAsRead = asyncHandler(
     res.json({ updated });
   }
 );
+
+export const markNotificacionAsRead = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = deleteNotificacionSchema.parse(req.params);
+  const updated = await service.markAsReadById(id);
+  res.json({ updated });
+});
+
+export const markAllNotificacionesAsRead = asyncHandler(async (req: Request, res: Response) => {
+  const { responsibleId } = notificacionMarkAllReadSchema.parse(req.body);
+  const updated = await service.markAllAsReadByResponsible(responsibleId);
+  res.json({ updated });
+});
 
 export const updateNotificacion = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteNotificacionSchema.parse(req.params);

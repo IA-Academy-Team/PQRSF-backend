@@ -11,6 +11,11 @@ import {
 
 const router = Router();
 
+router.post(
+  "/",
+  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateNotificacion' } } */
+  createNotificacion
+);
 router.get("/responsable/:responsibleId/count", countNotificacionesNoLeidas);
 router.post(
   "/mark-read",
@@ -19,11 +24,6 @@ router.post(
 );
 router.get("/", listNotificacionesByResponsable);
 router.get("/:id", getNotificacionById);
-router.post(
-  "/",
-  /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateNotificacion' } } */
-  createNotificacion
-);
 router.patch(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateNotificacion' } } */

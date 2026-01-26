@@ -54,6 +54,14 @@ export class NotificacionRepository {
     return result.rowCount ?? 0;
   }
 
+  async markAllAsReadByResponsible(responsibleId: number): Promise<number> {
+    const result = await pool.query(
+      `UPDATE notification SET status = 2 WHERE responsible_id = $1 AND status = 1`,
+      normalizeValues([responsibleId])
+    );
+    return result.rowCount ?? 0;
+  }
+
   async update(data: UpdateNotificacionDTO): Promise<INotificacion | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

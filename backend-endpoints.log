@@ -1,0 +1,5 @@
+Duplicados/legacy: /usuarios vs /users, /clientes vs /clients, /chats vs /chat, /mensajes vs /chat/.../messages, /notificaciones vs /notifications, /respuestas vs /responses, /pqrs vs /pqrsf (backend tiene ambos).
+
+
+
+CRUDs separados que el frontend no llama: /documentos, /analisis, /reanalisis, /encuestas, /sesiones, /cuentas, /verificaciones, /roles, /type-document.
