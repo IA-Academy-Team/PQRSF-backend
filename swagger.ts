@@ -226,6 +226,19 @@ const doc = {
                 chatId: 1,
             },
         },
+        SendChatMessage: {
+            type: "object",
+            properties: {
+                chatId: { type: "integer", format: "int64" },
+                content: { type: "string" },
+                channel: { type: "string", enum: ["whatsapp", "telegram"] },
+            },
+            example: {
+                chatId: 5070488751,
+                content: "hola, mensaje de prueba",
+                channel: "whatsapp",
+            },
+        },
         UpdateMensaje: {
             type: "object",
             properties: {

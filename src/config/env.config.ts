@@ -21,3 +21,15 @@ export const MAIL_FROM = process.env.MAIL_FROM || '';
 export const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:5173';
 
 // TELEGRAM
+export const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN || '';
+
+// WHATSAPP
+export const WHATSAPP_PHONE_ID = process.env.WHATSAPP_PHONE_ID || '';
+export const WHATSAPP_ACCESS_TOKEN = process.env.WHATSAPP_ACCESS_TOKEN || '';
+export const WHATSAPP_VERIFY_TOKEN = process.env.WHATSAPP_VERIFY_TOKEN || '';
+
+// N8N
+export const N8N_WEBHOOK_URL = process.env.N8N_WEBHOOK_URL || '';
+
+// CHAT PROVIDER (whatsapp | telegram | stub)
+export const CHAT_PROVIDER = process.env.CHAT_PROVIDER || 'whatsapp';

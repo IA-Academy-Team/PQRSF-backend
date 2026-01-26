@@ -8,8 +8,11 @@ import {
   updateMensajeSchema,
 } from "../schemas/mensaje.schema";
 import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.config";
+import { sendChatMessageSchema } from "../schemas/chatIntegration.schema";
+import { ChatIntegrationService } from "../services/chat-integration.service";
 
 const service = new MensajeService();
+const integrationService = new ChatIntegrationService();
 
 export const createMensaje = asyncHandler(async (req: Request, res: Response) => {
   const data = createMensajeSchema.parse(req.body);
@@ -23,6 +26,12 @@ export const createMensaje = asyncHandler(async (req: Request, res: Response) =>
       lastMessageAt: result.createdAt ?? null,
     });
   }
+  res.status(201).json(result);
+});
+
+export const sendChatMessage = asyncHandler(async (req: Request, res: Response) => {
+  const data = sendChatMessageSchema.parse(req.body);
+  const result = await integrationService.sendAdminMessage(data);
   res.status(201).json(result);
 });
 
