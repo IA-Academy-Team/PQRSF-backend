@@ -5,6 +5,7 @@ export const createAreaSchema = z
   .object({
     name: nonEmptyStringSchema,
     code: optionalNullableStringSchema,
+    description: optionalNullableStringSchema,
   })
   .strict();
 
@@ -12,6 +13,7 @@ export const updateAreaSchema = z
   .object({
     name: nonEmptyStringSchema.optional(),
     code: optionalNullableStringSchema,
+    description: optionalNullableStringSchema,
   })
   .strict();
 
