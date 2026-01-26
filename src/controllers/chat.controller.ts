@@ -8,6 +8,7 @@ import {
   deleteChatSchema,
   updateChatSchema,
 } from "../schemas/chat.schema";
+import { broadcastChatMode, broadcastChatSummary } from "../config/websocket.config";
 
 const service = new ChatService();
 
@@ -56,6 +57,11 @@ export const updateChat = asyncHandler(async (req: Request, res: Response) => {
   const body = updateChatSchema.parse(req.body);
   const data = { ...body, id };
   const result = await service.update(data);
+  const chatId = Number(result.id);
+  if (Number.isFinite(chatId)) {
+    broadcastChatMode(chatId, result.mode ?? null);
+    broadcastChatSummary({ chatId, mode: result.mode ?? null });
+  }
   res.json(result);
 });
 

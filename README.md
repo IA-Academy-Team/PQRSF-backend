@@ -148,4 +148,13 @@ Las rutas estan prefijadas con `/api` (ver `indexRoutes.ts`). A continuacion se 
 - `PATCH /notifications/:id`: marca notificacion como leida.
 - `PATCH /notifications/mark-all-read`: marca todas como leidas.
 
+#### Encuestas (`/encuestas`)
+- `GET /encuestas`: lista encuestas.
+- `GET /encuestas/:id`: lista encuestas especifica
+- `POST /encuestas`: crea encuesta.
+- `PUT /encuestas/:id`: actualiza encuesta.
+- `DELETE /encuestas/:id`: elimina encuesta.
+- `GET /public/:ticketNumber`: encuesta publica.
+
+
 > Nota: Existen rutas CRUD adicionales (analisis, reanalisis, documentos, respuestas, clientes, etc.) que soportan procesos internos. Se mantienen para integraciones futuras y pruebas, aunque el frontend actual concentra el flujo en los endpoints agrupados en `/pqrsf` y `/dashboard`.

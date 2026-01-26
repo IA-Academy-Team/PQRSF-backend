@@ -7,12 +7,22 @@ import {
   mensajeChatParamSchema,
   updateMensajeSchema,
 } from "../schemas/mensaje.schema";
+import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.config";
 
 const service = new MensajeService();
 
 export const createMensaje = asyncHandler(async (req: Request, res: Response) => {
   const data = createMensajeSchema.parse(req.body);
   const result = await service.create(data);
+  const chatId = Number(result.chatId);
+  if (Number.isFinite(chatId)) {
+    broadcastChatMessage(chatId, result);
+    broadcastChatSummary({
+      chatId,
+      lastMessage: result.content ?? "",
+      lastMessageAt: result.createdAt ?? null,
+    });
+  }
   res.status(201).json(result);
 });
 

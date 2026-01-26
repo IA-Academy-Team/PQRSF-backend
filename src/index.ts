@@ -1,4 +1,5 @@
 import express from "express";
+import http from "http";
 import dotenv from "dotenv";
 import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
@@ -10,11 +11,13 @@ import path from "node:path";
 import { rateLimiter } from "./middlewares/rateLimit.middleware";
 import { corsMiddleware } from "./middlewares/cors.middleware";
 import pool from "./config/db.config";
+import { initWebsocket } from "./config/websocket.config";
 
 dotenv.config();
 
 // define app con express
 const app = express();
+const server = http.createServer(app);
 const PORT = process.env.PORT || 3000;
 
 
@@ -94,7 +97,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerFile));
 // usar middleware de errores
 app.use(errorHandler);
 
-app.listen(PORT, () => {
+initWebsocket(server);
+
+server.listen(PORT, () => {
   console.log(`🚀 Servidor corriendo en: http://localhost:${PORT}`)
   console.log(`📘 Documentación Swagger: http://localhost:${PORT}/api-docs`)
 })
