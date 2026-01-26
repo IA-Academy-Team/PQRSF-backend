@@ -26,12 +26,11 @@ import tipoDocumentoRoutes from "./tipoDocumento.routes";
 import tipoPersonaRoutes from "./tipoPersona.routes";
 import stakeholderRoutes from "./stakeholder.routes";
 import areaRoutes from "./area.routes";
-import clientsRoutes from "./clients.routes";
 import pqrsfRoutes from "./pqrsf.routes";
 import notificationsRoutes from "./notifications.routes";
-import chatApiRoutes from "./chatApi.routes";
 import dashboardRoutes from "./dashboard.routes";
 import responsesRoutes from "./responses.routes";
+import webhooksRoutes from "./webhooks.routes";
 
 const router = Router();
 
@@ -44,15 +43,15 @@ router.use("/type-pqrsf", tipoPqrsRoutes);
 router.use("/pqrs-status", estadoPqrsRoutes);
 router.use("/type-document", tipoDocumentoRoutes);
 router.use("/area", areaRoutes);
-router.use("/clients", clientsRoutes);
 router.use("/pqrsf", pqrsfRoutes);
 router.use("/notifications", notificationsRoutes);
-router.use("/chat", chatApiRoutes);
 router.use("/dashboard", dashboardRoutes);
 router.use("/responses", responsesRoutes);
+router.use("/webhooks", webhooksRoutes);
 router.use("/responsables", responsableRoutes);
 router.use("/clientes", clienteRoutes);
 router.use("/chats", chatRoutes);
+router.use("/chat", chatRoutes);
 router.use("/mensajes", mensajeRoutes);
 router.use("/pqrs", pqrsRoutes);
 router.use("/analisis", analisisRoutes);
@@ -69,3 +68,4 @@ router.use("/cuentas", cuentaRoutes);
 router.use("/verificaciones", verificacionRoutes);
 
 export default router;
+

@@ -8,22 +8,22 @@ export class AreaRepository {
 
   async create(data: CreateAreaDTO): Promise<IArea> {
     const result = await pool.query(
-      `INSERT INTO area (name, code) VALUES ($1, $2) RETURNING id, name, code`,
-      normalizeValues([data.name, data.code])
+      `INSERT INTO area (name, code, description) VALUES ($1, $2, $3) RETURNING id, name, code, description`,
+      normalizeValues([data.name, data.code, data.description])
     );
     return result.rows[0];
   }
 
   async findById(id: number): Promise<IArea | null> {
     const result = await pool.query(
-      `SELECT id, name, code FROM area WHERE id = $1`,
+      `SELECT id, name, code, description FROM area WHERE id = $1`,
       normalizeValues([id])
     );
     return result.rows[0] ?? null;
   }
 
   async findAll(): Promise<IArea[]> {
-    const result = await pool.query(`SELECT id, name, code FROM area ORDER BY id`);
+    const result = await pool.query(`SELECT id, name, code, description FROM area ORDER BY id`);
     return result.rows;
   }
 
@@ -41,12 +41,17 @@ export class AreaRepository {
       values.push(data.code);
       index += 1;
     }
+    if (data.description !== undefined) {
+      fields.push(`description = $${index}`);
+      values.push(data.description);
+      index += 1;
+    }
     if (fields.length === 0) {
       return this.findById(data.id as number);
     }
     values.push(data.id);
     const result = await pool.query(
-      `UPDATE area SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name, code`,
+      `UPDATE area SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name, code, description`,
       normalizeValues(values)
     );
     return result.rows[0] ?? null;
