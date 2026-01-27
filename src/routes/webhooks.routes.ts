@@ -1,6 +1,5 @@
 import { Router } from "express";
 import {
-  receiveTelegramWebhook,
   receiveWhatsappWebhook,
   verifyWhatsappWebhook,
 } from "../controllers/webhook.controller";
@@ -8,10 +7,10 @@ import {
 const router = Router();
 
 // UNUSED (frontend)
-router.get("/whatsapp", verifyWhatsappWebhook);
+router.get("/webhook", verifyWhatsappWebhook);
 // UNUSED (frontend)
-router.post("/whatsapp", receiveWhatsappWebhook);
+router.post("/webhook", receiveWhatsappWebhook);
 // UNUSED (frontend)
-router.post("/telegram", receiveTelegramWebhook);
+// router.post("/telegram", receiveTelegramWebhook);
 
 export default router;

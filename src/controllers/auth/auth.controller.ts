@@ -33,13 +33,17 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
   const password = ensurePassword(payload.password, "password");
   const name =
     payload.name !== undefined ? requireString(payload.name, "name") : undefined;
+  const phoneNumber =
+    payload.phoneNumber !== undefined
+      ? requireString(payload.phoneNumber, "phoneNumber")
+      : undefined;
 
   const data = await auth.api.signUpEmail({
     body: {
       email,
       password,
       name: name ?? email.split("@")[0],
-      phone_number: "",
+      phone_number: phoneNumber ?? "",
       role_id: 1,
       is_active: true,
     },

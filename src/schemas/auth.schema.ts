@@ -6,6 +6,7 @@ export const authRegisterSchema = z
     name: optionalStringSchema,
     email: emailSchema,
     password: nonEmptyStringSchema.min(8),
+    phoneNumber: optionalStringSchema,
   })
   .strict();
 
