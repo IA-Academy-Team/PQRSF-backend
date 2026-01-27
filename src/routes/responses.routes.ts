@@ -3,6 +3,7 @@ import { updateResponse } from "../controllers/pqrsf.controller";
 
 const router = Router();
 
+// UNUSED (frontend)
 router.put(
   "/:id",
   /* #swagger.parameters['body'] = { in: 'body', schema: { $ref: '#/definitions/UpdateRespuesta' } } */

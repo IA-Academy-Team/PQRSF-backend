@@ -158,3 +158,35 @@ Las rutas estan prefijadas con `/api` (ver `indexRoutes.ts`). A continuacion se 
 
 
 > Nota: Existen rutas CRUD adicionales (analisis, reanalisis, documentos, respuestas, clientes, etc.) que soportan procesos internos. Se mantienen para integraciones futuras y pruebas, aunque el frontend actual concentra el flujo en los endpoints agrupados en `/pqrsf` y `/dashboard`.
+
+
+# Endpoints sin uso en el frontend (actual)
+
+Basado en las rutas consumidas desde `PQRSF-frontend/src/services/*`.
+
+## Grupos completos sin uso en el frontend
+
+- `/roles/*` (roles)
+- `/notifications/*` (notifications)
+- `/responses/*` (responses)
+- `/clientes/*` (clientes)
+- `/mensajes/*` (mensajes)
+- `/pqrs/*` (pqrs)
+- `/analisis/*` (analisis)
+- `/reanalisis/*` (reanalisis)
+- `/documentos/*` (documentos)
+- `/respuestas/*` (respuestas)
+- `/notificaciones/*` (notificaciones)
+- `/usuarios/*` (usuarios)
+- `/sesiones/*` (sesiones)
+- `/cuentas/*` (cuentas)
+- `/verificaciones/*` (verificaciones)
+- `/users/stake-holder/*` (stakeholder)
+- `/webhooks/*` (integraciones externas, no UI)
+
+## Notas
+
+- El frontend usa `/pqrsf/*` para los flujos principales de PQRSF.
+- El frontend usa `/chats/*` y `/chat/*` para chats.
+- El frontend usa `/users/*` para gestión de usuarios (incluye `/users/email/:email`).
+- Si luego habilitas nuevas pantallas, revisa esta lista antes de eliminar rutas.
