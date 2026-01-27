@@ -6,6 +6,7 @@ import { RespuestaService } from "../services/respuesta.service";
 import { DocumentoService } from "../services/documento.service";
 import { EncuestaService } from "../services/encuesta.service";
 import { asyncHandler } from "../utils/controller.utils";
+import { requirePositiveInt } from "../utils/validation.utils";
 import { pqrsListDetailedQuerySchema, pqrsListQuerySchema } from "../schemas/pqrs.schema";
 import { createAnalisisSchema, updateAnalisisSchema } from "../schemas/analisis.schema";
 import { createReanalisisSchema, updateReanalisisSchema } from "../schemas/reanalisis.schema";
@@ -204,6 +205,31 @@ const splitActions = (value: string | null | undefined): string[] => {
     .filter((item) => item.length > 0);
 };
 
+const formatDateEs = (value: string | Date | null | undefined): string => {
+  if (!value) return "";
+  const date = value instanceof Date ? value : new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  return date.toLocaleDateString("es-CO", {
+    day: "2-digit",
+    month: "long",
+    year: "numeric",
+  });
+};
+
+const resolveSolicitante = (data: {
+  clientName: string | null;
+  typePersonName: string | null;
+}) => {
+  const isAnon =
+    data.typePersonName?.toLowerCase() === "anónimo" ||
+    data.typePersonName?.toLowerCase() === "anonimo" ||
+    !data.clientName;
+  return {
+    nombre: isAnon ? "Anónimo" : data.clientName ?? "Anónimo",
+    es_anonimo: isAnon,
+  };
+};
+
 export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res: Response) => {
   const ticketNumber = req.params.ticketNumber as string;
   const data = await pqrsService.findBotResponseByTicketNumber(ticketNumber);
@@ -218,20 +244,61 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
 
   const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;
   const actions = splitActions(actionsSource);
-  const clientName = data.clientName ?? "Anónimo";
-  const isAnon = data.typePersonName?.toLowerCase() === "anónimo" || data.clientName === null;
+  const solicitante = resolveSolicitante({
+    clientName: data.clientName ?? null,
+    typePersonName: data.typePersonName ?? null,
+  });
 
   res.json({
     respuesta_pqrs: {
       ticket_number: data.ticketNumber,
-      fecha_respuesta: data.responseSentAt ?? data.updatedAt ?? null,
+      fecha_respuesta: formatDateEs(data.responseSentAt ?? data.updatedAt ?? null),
       tipo_pqrs: data.typeName,
       area: data.areaName,
       estado: data.statusName,
-      solicitante: {
-        nombre: clientName,
-        es_anonimo: isAnon,
+      solicitante,
+      descripcion_original: data.description,
+      respuesta: data.responseContent,
+      acciones: actions,
+      responsable: {
+        nombre: data.responsibleName ?? "Responsable",
+        cargo: data.responsibleAreaName ?? "Responsable",
+        email: data.responsibleEmail ?? "",
       },
+      canal_respuesta: {
+        chat_id: data.chatId ? String(data.chatId) : "",
+      },
+    },
+  });
+});
+
+export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = requirePositiveInt(req.body?.pqrsId, "pqrsId");
+  const data = await pqrsService.findBotResponseByPqrsId(pqrsId);
+
+  if (!data.responseContent) {
+    res.status(404).json({
+      error: "Response not available",
+      details: { pqrsId },
+    });
+    return;
+  }
+
+  const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;
+  const actions = splitActions(actionsSource);
+  const solicitante = resolveSolicitante({
+    clientName: data.clientName ?? null,
+    typePersonName: data.typePersonName ?? null,
+  });
+
+  res.json({
+    respuesta_pqrs: {
+      ticket_number: data.ticketNumber,
+      fecha_respuesta: formatDateEs(data.responseSentAt ?? data.updatedAt ?? null),
+      tipo_pqrs: data.typeName,
+      area: data.areaName,
+      estado: data.statusName,
+      solicitante,
       descripcion_original: data.description,
       respuesta: data.responseContent,
       acciones: actions,

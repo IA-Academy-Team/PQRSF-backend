@@ -425,6 +425,65 @@ export class PqrsRepository {
     return result.rows[0] ?? null;
   }
 
+  async findBotResponseByPqrsId(pqrsId: number) {
+    const result = await pool.query(
+      `SELECT p.id,
+              p.ticket_number AS "ticketNumber",
+              p.description,
+              p.updated_at AS "updatedAt",
+              s.name AS "statusName",
+              t.name AS "typeName",
+              a.name AS "areaName",
+              c.name AS "clientName",
+              tp.name AS "typePersonName",
+              resp.content AS "responseContent",
+              resp.sent_at AS "responseSentAt",
+              resp.channel AS "responseChannel",
+              resp.responsible_id AS "responseResponsibleId",
+              resp_user.name AS "responsibleName",
+              resp_user.email AS "responsibleEmail",
+              resp_area.name AS "responsibleAreaName",
+              chat.id AS "chatId",
+              analysis.id AS "analysisId",
+              analysis.action_taken AS "analysisActionTaken",
+              reanalysis.action_taken AS "reanalysisActionTaken"
+       FROM pqrs p
+       JOIN pqrs_status s ON s.id = p.pqrs_status_id
+       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+       JOIN area a ON a.id = p.area_id
+       JOIN client c ON c.id = p.client_id
+       LEFT JOIN type_person tp ON tp.id = c.type_person_id
+       LEFT JOIN LATERAL (
+         SELECT content, sent_at, channel, responsible_id
+         FROM response
+         WHERE pqrs_id = p.id
+         ORDER BY sent_at DESC NULLS LAST, id DESC
+         LIMIT 1
+       ) resp ON true
+       LEFT JOIN responsible r ON r.id = resp.responsible_id
+       LEFT JOIN users resp_user ON resp_user.id = r.user_id
+       LEFT JOIN area resp_area ON resp_area.id = r.area_id
+       LEFT JOIN LATERAL (
+         SELECT id, action_taken
+         FROM analysis
+         WHERE pqrs_id = p.id
+         ORDER BY created_at DESC NULLS LAST, id DESC
+         LIMIT 1
+       ) analysis ON true
+       LEFT JOIN LATERAL (
+         SELECT action_taken
+         FROM reanalysis
+         WHERE analysis_id = analysis.id
+         ORDER BY created_at DESC NULLS LAST, id DESC
+         LIMIT 1
+       ) reanalysis ON true
+       LEFT JOIN chat ON chat.client_id = p.client_id
+       WHERE p.id = $1`,
+      normalizeValues([pqrsId])
+    );
+    return result.rows[0] ?? null;
+  }
+
   async update(data: UpdatePqrsDTO): Promise<IPqrs | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

@@ -10,6 +10,7 @@ import {
   downloadDocument,
   finalizePqrs,
   getPqrsByRadicado,
+  getPqrsBotResponse,
   getPqrsBotResponseByTicket,
   getReanalisisById,
   getSurveyByPqrs,
@@ -34,14 +35,21 @@ import {
 const router = Router();
 
 router.get("/", listPqrsDetailed);
+router.post(
+  "/bot-response",
+  // #swagger.tags = ['Bot_pqrs']
+  // #swagger.description = 'Returns PQRS response payload formatted for the WhatsApp bot.'
+  // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { pqrsId: { type: 'integer' } }, example: { pqrsId: 1 } } }
+  getPqrsBotResponse
+);
+router.get("/:pqrsfId/detail", getPqrsDetailedById);
 router.get(
   "/bot-response/:ticketNumber",
-  // #swagger.tags = ['Webhooks']
-  // #swagger.description = 'Returns PQRS response payload formatted for the WhatsApp bot.'
+  // #swagger.tags = ['Bot_pqrs']
+  // #swagger.description = 'Deprecated: use POST /pqrsf/bot-response.'
   // #swagger.parameters['ticketNumber'] = { in: 'path', required: true, type: 'string' }
   getPqrsBotResponseByTicket
 );
-router.get("/:pqrsfId/detail", getPqrsDetailedById);
 router.get("/radicado/:code", getPqrsByRadicado);
 router.get("/status/:statusId", listPqrsByStatus);
 router.get("/type/:typeId", listPqrsByType);
