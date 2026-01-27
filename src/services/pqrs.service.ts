@@ -205,6 +205,12 @@ export class PqrsService {
     return ensureFound("PQRS", pqrs, { ticketNumber: code });
   }
 
+  async findBotResponseByTicketNumber(ticketNumber: string) {
+    const code = requireString(ticketNumber, "ticketNumber");
+    const pqrs = await this.repo.findBotResponseByTicketNumber(code);
+    return ensureFound("PQRS", pqrs, { ticketNumber: code });
+  }
+
   async update(data: UpdatePqrsDTO): Promise<IPqrs> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(data as Record<string, unknown>, [

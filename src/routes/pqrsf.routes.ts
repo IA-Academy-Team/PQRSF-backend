@@ -10,6 +10,7 @@ import {
   downloadDocument,
   finalizePqrs,
   getPqrsByRadicado,
+  getPqrsBotResponseByTicket,
   getReanalisisById,
   getSurveyByPqrs,
   listAnalisisByPqrs,
@@ -33,6 +34,13 @@ import {
 const router = Router();
 
 router.get("/", listPqrsDetailed);
+router.get(
+  "/bot-response/:ticketNumber",
+  // #swagger.tags = ['Webhooks']
+  // #swagger.description = 'Returns PQRS response payload formatted for the WhatsApp bot.'
+  // #swagger.parameters['ticketNumber'] = { in: 'path', required: true, type: 'string' }
+  getPqrsBotResponseByTicket
+);
 router.get("/:pqrsfId/detail", getPqrsDetailedById);
 router.get("/radicado/:code", getPqrsByRadicado);
 router.get("/status/:statusId", listPqrsByStatus);

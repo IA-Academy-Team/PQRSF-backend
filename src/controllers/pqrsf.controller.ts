@@ -195,3 +195,54 @@ export const listCerradas = asyncHandler(async (_req: Request, res: Response) =>
   const result = await pqrsService.listCerradasDetailed();
   res.json(result);
 });
+
+const splitActions = (value: string | null | undefined): string[] => {
+  if (!value) return [];
+  return value
+    .split(/\r?\n|;|•|- /g)
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0);
+};
+
+export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res: Response) => {
+  const ticketNumber = req.params.ticketNumber as string;
+  const data = await pqrsService.findBotResponseByTicketNumber(ticketNumber);
+
+  if (!data.responseContent) {
+    res.status(404).json({
+      error: "Response not available",
+      details: { ticketNumber },
+    });
+    return;
+  }
+
+  const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;
+  const actions = splitActions(actionsSource);
+  const clientName = data.clientName ?? "Anónimo";
+  const isAnon = data.typePersonName?.toLowerCase() === "anónimo" || data.clientName === null;
+
+  res.json({
+    respuesta_pqrs: {
+      ticket_number: data.ticketNumber,
+      fecha_respuesta: data.responseSentAt ?? data.updatedAt ?? null,
+      tipo_pqrs: data.typeName,
+      area: data.areaName,
+      estado: data.statusName,
+      solicitante: {
+        nombre: clientName,
+        es_anonimo: isAnon,
+      },
+      descripcion_original: data.description,
+      respuesta: data.responseContent,
+      acciones: actions,
+      responsable: {
+        nombre: data.responsibleName ?? "Responsable",
+        cargo: data.responsibleAreaName ?? "Responsable",
+        email: data.responsibleEmail ?? "",
+      },
+      canal_respuesta: {
+        chat_id: data.chatId ? String(data.chatId) : "",
+      },
+    },
+  });
+});

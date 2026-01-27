@@ -1,4 +1,5 @@
 import swaggerAutogen from 'swagger-autogen';
+import path from 'path';
 
 const doc = {
     info: {
@@ -250,6 +251,75 @@ const doc = {
                 content: "string",
                 type: 1,
                 chatId: 1,
+            },
+        },
+        WhatsappWebhookPayload: {
+            type: "object",
+            properties: {
+                entry: {
+                    type: "array",
+                    items: {
+                        type: "object",
+                        properties: {
+                            changes: {
+                                type: "array",
+                                items: {
+                                    type: "object",
+                                    properties: {
+                                        value: {
+                                            type: "object",
+                                            properties: {
+                                                messages: {
+                                                    type: "array",
+                                                    items: {
+                                                        type: "object",
+                                                        properties: {
+                                                            from: { type: "string" },
+                                                            text: {
+                                                                type: "object",
+                                                                properties: {
+                                                                    body: { type: "string" },
+                                                                },
+                                                            },
+                                                        },
+                                                    },
+                                                },
+                                                contacts: {
+                                                    type: "array",
+                                                    items: {
+                                                        type: "object",
+                                                        properties: {
+                                                            wa_id: { type: "string" },
+                                                        },
+                                                    },
+                                                },
+                                            },
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                },
+            },
+            example: {
+                entry: [
+                    {
+                        changes: [
+                            {
+                                value: {
+                                    messages: [
+                                        {
+                                            from: "573001112233",
+                                            text: { body: "Hola" },
+                                        },
+                                    ],
+                                    contacts: [{ wa_id: "573001112233" }],
+                                },
+                            },
+                        ],
+                    },
+                ],
             },
         },
         CreateResponsable: {
@@ -684,12 +754,14 @@ const doc = {
                 name: { type: "string" },
                 email: { type: "string" },
                 password: { type: "string" },
+                phoneNumber: { type: "string" },
             },
             required: ["email", "password"],
             example: {
                 name: "string",
                 email: "string",
                 password: "string",
+                phoneNumber: "3001112233",
             },
         },
         AuthLogin: {
@@ -766,7 +838,7 @@ const doc = {
     },
 };
 
-const outputFile = './swagger_output.json';
+const outputFile = path.resolve(process.cwd(), 'swagger_output.json');
 const endpointsFiles = ['./src/index.ts']; 
 
 swaggerAutogen()(outputFile, endpointsFiles, doc);

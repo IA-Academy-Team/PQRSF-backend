@@ -96,6 +96,38 @@ export class ChatIntegrationService {
     private readonly mensajeService = new MensajeService()
   ) {}
 
+  private normalizeChatId(value: unknown): bigint {
+    if (typeof value === "bigint") {
+      if (value > 0n) return value;
+      throw new AppError("Chat id must be positive", 400, "VALIDATION_ERROR", { chatId: value });
+    }
+
+    if (typeof value === "number" && Number.isFinite(value)) {
+      const normalized = BigInt(Math.trunc(value));
+      if (normalized > 0n) return normalized;
+    }
+
+    if (typeof value === "string") {
+      const digits = value.trim().replace(/\D/g, "");
+      if (digits) {
+        const normalized = BigInt(digits);
+        if (normalized > 0n) return normalized;
+      }
+    }
+
+    if (value && typeof value === "object") {
+      const digits = String(value).replace(/\D/g, "");
+      if (digits) {
+        const normalized = BigInt(digits);
+        if (normalized > 0n) return normalized;
+      }
+    }
+
+    throw new AppError("Chat id could not be resolved", 500, "CHAT_ID_MISSING", {
+      rawChatId: value,
+    });
+  }
+
   private async getOrCreateClientByPhone(phone: string) {
     const normalized = optionalString(phone, "phone") ?? "";
     if (!normalized) {
@@ -188,13 +220,15 @@ export class ChatIntegrationService {
     const client = await this.getOrCreateClientByPhone(payload.from);
     const chat = await this.getOrCreateChat(client.id);
 
+    const rawChatId: unknown = chat?.id ?? chat?.clientId ?? client?.id;
+    const chatId = this.normalizeChatId(rawChatId);
     const message = await this.mensajeService.create({
-      chatId: chat.id,
+      chatId,
       content: payload.content,
       type: 1,
     });
 
-    const numericChatId = Number(chat.id);
+    const numericChatId = Number(chatId);
     if (Number.isFinite(numericChatId)) {
       broadcastChatMessage(numericChatId, message);
       broadcastChatSummary({
@@ -206,7 +240,7 @@ export class ChatIntegrationService {
 
     if ((chat.mode ?? 1) === 1) {
       await notifyN8n({
-        chatId: String(chat.id),
+        chatId: String(chatId),
         clientId: String(client.id),
         phoneNumber: client.phoneNumber,
         content: payload.content,
