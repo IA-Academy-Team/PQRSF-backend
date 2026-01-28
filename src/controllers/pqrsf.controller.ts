@@ -7,6 +7,7 @@ import { DocumentoService } from "../services/documento.service";
 import { EncuestaService } from "../services/encuesta.service";
 import { asyncHandler } from "../utils/controller.utils";
 import { requirePositiveInt } from "../utils/validation.utils";
+import { AppError } from "../middlewares/error.middleware";
 import { pqrsListDetailedQuerySchema, pqrsListQuerySchema } from "../schemas/pqrs.schema";
 import { notifyN8n } from "../services/chat-integration.service";
 import { createAnalisisSchema, updateAnalisisSchema } from "../schemas/analisis.schema";
@@ -236,11 +237,7 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
   const data = await pqrsService.findBotResponseByTicketNumber(ticketNumber);
 
   if (!data.responseContent) {
-    res.status(404).json({
-      error: "Response not available",
-      details: { ticketNumber },
-    });
-    return;
+    throw new AppError("Response not available", 404, "NOT_FOUND", { ticketNumber });
   }
 
   const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;
@@ -281,11 +278,7 @@ export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Respons
   const data = await pqrsService.findBotResponseByPqrsId(pqrsId);
 
   if (!data.responseContent) {
-    res.status(404).json({
-      error: "Response not available",
-      details: { pqrsId },
-    });
-    return;
+    throw new AppError("Response not available", 404, "NOT_FOUND", { pqrsId });
   }
 
   const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;

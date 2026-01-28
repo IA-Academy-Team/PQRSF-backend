@@ -54,9 +54,33 @@ Para instalar el proyecto, sigue estos pasos:
 1. Clona el repositorio en tu máquina local.
 2. Abre una terminal y navega hasta la carpeta del proyecto.
 3. Ejecuta el comando `npm install` para instalar las dependencias del proyecto.
-4. Configura la base de datos PostgreSQL y actualiza la configuración de la base de datos en el archivo `config.ts` creando tu .env en la raiz del proyecto.
+4. Configura la base de datos PostgreSQL y crea tu `.env` en la raíz del backend con las variables necesarias.
 5. Ejecuta el comando `npm run dev` para iniciar el servidor.
 6. Entra a la ruta `http://localhost:3000/api-docs` para ver la documentación de la API con Swagger.
+
+### Variables de entorno (backend)
+
+Ejemplo mínimo:
+```env
+DB_HOST=localhost
+DB_PORT=5432
+DB_USER=postgres
+DB_PASSWORD=postgres
+DB_NAME=pqrs
+
+FRONTEND_URL=http://localhost:5173
+DEV_HOST=http://localhost:5173
+PROD_HOST=https://tu-dominio.com
+LANDING_HOST=https://tu-landing.com
+PORT=3000
+
+WHATSAPP_PHONE_ID=...
+WHATSAPP_ACCESS_TOKEN=...
+WHATSAPP_VERIFY_TOKEN=...
+
+N8N_WEBHOOK_URL_DEV=http://localhost:5678/webhook/xxxx
+N8N_WEBHOOK_URL_PROD=https://n8n.tudominio.com/webhook/xxxx
+```
 
 ### Funcionalidades de cada ruta
 
@@ -89,6 +113,8 @@ Las rutas estan prefijadas con `/api` (ver `indexRoutes.ts`). A continuacion se 
 - `GET /pqrsf/seguimiento`: items de seguimiento para admin.
 - `GET /pqrsf/apelaciones`: items en apelacion para admin.
 - `GET /pqrsf/cerradas`: items cerrados para admin.
+- `POST /pqrsf/bot-response`: genera JSON para el bot (n8n) a partir de `pqrsId`.
+- `GET /pqrsf/bot-response/:ticketNumber`: **deprecated** (solo soporte temporal).
 - `POST /pqrsf/:pqrsfId/finalize`: marca como cerrada.
 - `POST /pqrsf/:pqrsfId/appeal`: marca como en apelacion.
 - `GET /pqrsf/:pqrsfId/analysis`: lista analisis por PQRSF.
@@ -98,9 +124,9 @@ Las rutas estan prefijadas con `/api` (ver `indexRoutes.ts`). A continuacion se 
 - `POST /pqrsf/reanalysis`: crea reanalisis.
 - `PUT /pqrsf/reanalysis/:id`: actualiza reanalisis.
 - `GET /pqrsf/:pqrsfId/responses`: respuestas enviadas al cliente.
-- `POST /pqrsf/responses`: crea respuesta.
+- `POST /pqrsf/:pqrsfId/responses`: crea respuesta.
 - `GET /pqrsf/:pqrsfId/documents`: documentos asociados.
-- `POST /pqrsf/documents`: crea documento.
+- `POST /pqrsf/:pqrsfId/documents`: crea documento.
 - `DELETE /pqrsf/documents/:id`: elimina documento.
 - `GET /pqrsf/documents/:id/download`: descarga documento.
 - `GET /pqrsf/:pqrsfId/survey`: encuesta asociada.
@@ -155,6 +181,10 @@ Las rutas estan prefijadas con `/api` (ver `indexRoutes.ts`). A continuacion se 
 - `PUT /encuestas/:id`: actualiza encuesta.
 - `DELETE /encuestas/:id`: elimina encuesta.
 - `GET /public/:ticketNumber`: encuesta publica.
+
+#### Webhooks e integraciones (`/whatsapp`)
+- `GET /whatsapp/webhook`: verificación del webhook (WhatsApp Cloud API).
+- `POST /whatsapp/webhook`: recepción de mensajes entrantes (WhatsApp).
 
 
 > Nota: Existen rutas CRUD adicionales (analisis, reanalisis, documentos, respuestas, clientes, etc.) que soportan procesos internos. Se mantienen para integraciones futuras y pruebas, aunque el frontend actual concentra el flujo en los endpoints agrupados en `/pqrsf` y `/dashboard`.
