@@ -34,7 +34,7 @@ export const IS_LOCALHOST = detectLocalhost(FRONTEND_URL) || detectLocalhost(DEV
 export const FRONTEND_ORIGIN = IS_LOCALHOST ? (DEV_HOST || FRONTEND_URL) : (PROD_HOST || FRONTEND_URL);
 
 // WHATSAPP
-export const WHATSAPP_PHONE_NUMBER_ID = normalize(process.env.WHATSAPP_PHONE_NUMBER_ID);
+export const WHATSAPP_PHONE_ID = normalize(process.env.WHATSAPP_PHONE_ID);
 export const WHATSAPP_ACCESS_TOKEN = normalize(process.env.WHATSAPP_ACCESS_TOKEN);
 export const WHATSAPP_VERIFY_TOKEN = normalize(process.env.WHATSAPP_VERIFY_TOKEN);
 
@@ -42,3 +42,9 @@ export const WHATSAPP_VERIFY_TOKEN = normalize(process.env.WHATSAPP_VERIFY_TOKEN
 export const N8N_WEBHOOK_URL_DEV = normalize(process.env.N8N_WEBHOOK_URL_DEV);
 export const N8N_WEBHOOK_URL_PROD = normalize(process.env.N8N_WEBHOOK_URL_PROD);
 export const N8N_WEBHOOK_URL = IS_LOCALHOST ? N8N_WEBHOOK_URL_DEV : N8N_WEBHOOK_URL_PROD;
+
+// S3 backend
+export const AWS_KEY = normalize(process.env.AWS_KEY);
+export const AWS_SECRET = normalize(process.env.AWS_SECRET);
+export const AWS_BUCKET = normalize(process.env.AWS_BUCKET);
+export const AWS_REGION = normalize(process.env.AWS_REGION);

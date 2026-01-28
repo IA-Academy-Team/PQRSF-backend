@@ -6,7 +6,7 @@ import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.
 import {
   N8N_WEBHOOK_URL,
   WHATSAPP_ACCESS_TOKEN,
-  WHATSAPP_PHONE_NUMBER_ID,
+  WHATSAPP_PHONE_ID,
 } from "../config/env.config";
 import type { SendChatMessageDTO } from "../schemas/chatIntegration.schema";
 import { optionalString, requireBigInt } from "../utils/validation.utils";
@@ -21,11 +21,11 @@ type InboundPayload = {
 const WHATSAPP_API_BASE = "https://graph.facebook.com/v20.0";
 
 const sendWhatsappMessage = async (to: string, text: string) => {
-  if (!WHATSAPP_PHONE_NUMBER_ID || !WHATSAPP_ACCESS_TOKEN) {
+  if (!WHATSAPP_PHONE_ID || !WHATSAPP_ACCESS_TOKEN) {
     throw new AppError("WhatsApp credentials not configured", 500, "WHATSAPP_NOT_CONFIGURED");
   }
 
-  const response = await fetch(`${WHATSAPP_API_BASE}/${WHATSAPP_PHONE_NUMBER_ID}/messages`, {
+  const response = await fetch(`${WHATSAPP_API_BASE}/${WHATSAPP_PHONE_ID}/messages`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
