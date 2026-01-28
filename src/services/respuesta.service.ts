@@ -33,17 +33,32 @@ export class RespuestaService {
         { channel }
       );
     }
-    const documentId = requirePositiveInt(data.documentId, "documentId");
+    const documentId =
+      data.documentId === undefined || data.documentId === null
+        ? null
+        : requirePositiveInt(data.documentId, "documentId");
     const pqrsId = requirePositiveInt(data.pqrsId, "pqrsId");
     const responsibleId = requirePositiveInt(data.responsibleId, "responsibleId");
 
-    ensureFound("Document", await this.documentoRepo.findById(documentId), { documentId });
-    ensureFound("PQRS", await this.pqrsRepo.findById(pqrsId), { pqrsId });
+    if (documentId !== null) {
+      ensureFound("Document", await this.documentoRepo.findById(documentId), { documentId });
+    }
+    const pqrs = ensureFound("PQRS", await this.pqrsRepo.findById(pqrsId), { pqrsId });
     ensureFound(
       "Responsable",
       await this.responsableRepo.findById(responsibleId),
       { responsibleId }
     );
+
+    const existingResponses = await this.repo.findByPqrsId(pqrsId);
+    if (existingResponses.length > 0 && pqrs.pqrsStatusId !== 3) {
+      throw new AppError(
+        "Response already exists for this PQRS unless it is in reanalysis",
+        409,
+        "BUSINESS_RULE_VIOLATION",
+        { pqrsId, statusId: pqrs.pqrsStatusId }
+      );
+    }
 
     return this.repo.create({ content, channel, documentId, pqrsId, responsibleId });
   }
@@ -78,7 +93,7 @@ export class RespuestaService {
       }
     }
 
-    if (data.documentId !== undefined) {
+    if (data.documentId !== undefined && data.documentId !== null) {
       const documentId = requirePositiveInt(data.documentId, "documentId");
       ensureFound("Document", await this.documentoRepo.findById(documentId), { documentId });
     }
@@ -100,9 +115,11 @@ export class RespuestaService {
       content: data.content !== undefined ? requireString(data.content, "content") : undefined,
       channel: data.channel !== undefined ? optionalPositiveInt(data.channel, "channel") : undefined,
       documentId:
-        data.documentId !== undefined
-          ? requirePositiveInt(data.documentId, "documentId")
-          : undefined,
+        data.documentId === undefined
+          ? undefined
+          : data.documentId === null
+            ? null
+            : requirePositiveInt(data.documentId, "documentId"),
       pqrsId: data.pqrsId !== undefined ? requirePositiveInt(data.pqrsId, "pqrsId") : undefined,
       responsibleId:
         data.responsibleId !== undefined

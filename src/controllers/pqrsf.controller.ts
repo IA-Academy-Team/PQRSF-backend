@@ -15,6 +15,7 @@ import { createReanalisisSchema, updateReanalisisSchema } from "../schemas/reana
 import { createRespuestaSchema, updateRespuestaSchema } from "../schemas/respuesta.schema";
 import { createDocumentoSchema } from "../schemas/documento.schema";
 import { createEncuestaSchema, updateEncuestaSchema } from "../schemas/encuesta.schema";
+import { uploadToS3 } from "../services/s3.service";
 
 const pqrsService = new PqrsService();
 const analisisService = new AnalisisService();
@@ -139,6 +140,37 @@ export const createDocumentForPqrs = asyncHandler(async (req: Request, res: Resp
   const body = createDocumentoSchema.parse({ ...req.body, pqrsId });
   const result = await documentoService.create(body);
   res.status(201).json(result);
+});
+
+export const uploadDocumentsForPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = requirePositiveInt(req.params.pqrsfId, "pqrsId");
+  const typeDocumentId = requirePositiveInt(req.body?.typeDocumentId, "typeDocumentId");
+  const files = (req as Request & { files?: Express.Multer.File[] }).files ?? [];
+
+  if (!files.length) {
+    throw new AppError("No files received", 400, "VALIDATION_ERROR", { field: "files" });
+  }
+
+  const { ticketNumber, areaCode } = await pqrsService.findTicketAndAreaCode(pqrsId);
+  const prefix = areaCode ? `${areaCode}/${ticketNumber}` : `${ticketNumber}`;
+
+  const created: unknown[] = [];
+  for (const file of files) {
+    const key = `pqrs/${prefix}/${Date.now()}_${file.originalname}`;
+    const url = await uploadToS3({
+      key,
+      body: file.buffer,
+      contentType: file.mimetype,
+    });
+    const doc = await documentoService.create({
+      url,
+      typeDocumentId,
+      pqrsId,
+    });
+    created.push(doc);
+  }
+
+  res.status(201).json(created);
 });
 
 export const deleteDocument = asyncHandler(async (req: Request, res: Response) => {

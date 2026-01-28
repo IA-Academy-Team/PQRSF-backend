@@ -307,6 +307,7 @@ export class PqrsRepository {
               t.name AS "typeName",
               a.id AS "areaId",
               a.name AS "areaName",
+              a.code AS "areaCode",
               c.id AS "clientId",
               c.name AS "clientName",
               c.email AS "clientEmail",
@@ -325,6 +326,18 @@ export class PqrsRepository {
        LEFT JOIN stakeholder sh ON sh.id = c.stakeholder_id
        WHERE p.id = $1`,
       normalizeValues([id])
+    );
+    return result.rows[0] ?? null;
+  }
+
+  async findTicketAndAreaCode(pqrsId: number) {
+    const result = await pool.query(
+      `SELECT p.ticket_number AS "ticketNumber",
+              a.code AS "areaCode"
+       FROM pqrs p
+       JOIN area a ON a.id = p.area_id
+       WHERE p.id = $1`,
+      normalizeValues([pqrsId])
     );
     return result.rows[0] ?? null;
   }

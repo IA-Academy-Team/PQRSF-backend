@@ -3,6 +3,7 @@ import {
   appealPqrs,
   createAnalisis,
   createDocumentForPqrs,
+  uploadDocumentsForPqrs,
   createReanalisis,
   createResponseForPqrs,
   createSurvey,
@@ -31,6 +32,12 @@ import {
   updateReanalisis,
   updateSurvey,
 } from "../controllers/pqrsf.controller";
+import multer from "multer";
+
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 const router = Router();
 
@@ -89,6 +96,11 @@ router.post(
 );
 
 router.get("/:pqrsfId/documents", listDocumentsByPqrs);
+router.post(
+  "/:pqrsfId/documents/upload",
+  upload.array("files"),
+  uploadDocumentsForPqrs
+);
 router.post(
   "/:pqrsfId/documents",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateDocumento' } } */

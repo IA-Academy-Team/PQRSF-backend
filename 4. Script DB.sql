@@ -224,7 +224,7 @@ CREATE TABLE response (
     content TEXT NOT NULL,
     channel SMALLINT NOT NULL, -- "1 EMAIL, 2 WHATSAPP, 3 WEB"
     sent_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    document_id INT NOT NULL,
+    document_id INT,
     pqrs_id INT NOT NULL,
     responsible_id INT NOT NULL,
     FOREIGN KEY (document_id) REFERENCES document(id), 

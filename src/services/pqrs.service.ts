@@ -146,6 +146,12 @@ export class PqrsService {
     return ensureFound("PQRS", pqrs, { id });
   }
 
+  async findTicketAndAreaCode(pqrsId: number) {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    const data = await this.repo.findTicketAndAreaCode(id);
+    return ensureFound("PQRS", data, { pqrsId: id });
+  }
+
   async list(filters: PqrsFilters): Promise<IPqrs[]> {
     const validated: PqrsFilters = {
       pqrsStatusId: optionalPositiveInt(filters.pqrsStatusId, "pqrsStatusId"),

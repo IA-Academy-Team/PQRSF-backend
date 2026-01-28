@@ -41,7 +41,8 @@ export const WHATSAPP_VERIFY_TOKEN = normalize(process.env.WHATSAPP_VERIFY_TOKEN
 // N8N (webhook)
 export const N8N_WEBHOOK_URL_DEV = normalize(process.env.N8N_WEBHOOK_URL_DEV);
 export const N8N_WEBHOOK_URL_PROD = normalize(process.env.N8N_WEBHOOK_URL_PROD);
-export const N8N_WEBHOOK_URL = IS_LOCALHOST ? N8N_WEBHOOK_URL_DEV : N8N_WEBHOOK_URL_PROD;
+// export const N8N_WEBHOOK_URL = IS_LOCALHOST ? N8N_WEBHOOK_URL_DEV : N8N_WEBHOOK_URL_PROD;
+export const N8N_WEBHOOK_URL = N8N_WEBHOOK_URL_PROD;
 
 // S3 backend
 export const AWS_KEY = normalize(process.env.AWS_KEY);

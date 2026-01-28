@@ -2,6 +2,7 @@ import { z } from "zod";
 import {
   nonEmptyStringSchema,
   optionalDateSchema,
+  optionalNullablePositiveIntSchema,
   optionalPositiveIntSchema,
   positiveIntSchema,
 } from "./core/common.schema";
@@ -10,7 +11,7 @@ export const createRespuestaSchema = z
   .object({
     content: nonEmptyStringSchema,
     channel: optionalPositiveIntSchema,
-    documentId: positiveIntSchema,
+    documentId: optionalNullablePositiveIntSchema,
     pqrsId: positiveIntSchema,
     responsibleId: positiveIntSchema,
   })
@@ -20,7 +21,7 @@ export const updateRespuestaSchema = z
   .object({
     content: nonEmptyStringSchema.optional(),
     channel: optionalPositiveIntSchema,
-    documentId: positiveIntSchema.optional(),
+    documentId: optionalNullablePositiveIntSchema,
     pqrsId: positiveIntSchema.optional(),
     responsibleId: positiveIntSchema.optional(),
     sentAt: optionalDateSchema,

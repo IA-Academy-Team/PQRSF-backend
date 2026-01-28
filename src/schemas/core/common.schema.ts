@@ -17,7 +17,10 @@ export const optionalNullableEmailSchema = emailSchema.nullable().optional();
 export const positiveIntSchema = z.coerce.number().int().positive();
 export const optionalPositiveIntSchema = positiveIntSchema.optional();
 export const nullablePositiveIntSchema = positiveIntSchema.nullable();
-export const optionalNullablePositiveIntSchema = positiveIntSchema.nullable().optional();
+export const optionalNullablePositiveIntSchema = z.preprocess(
+  (value) => (value === undefined || value === "" ? undefined : value === null ? null : value),
+  positiveIntSchema.nullable().optional()
+);
 
 export const booleanSchema = z.boolean();
 export const optionalBooleanSchema = booleanSchema.optional();
