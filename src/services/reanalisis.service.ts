@@ -90,6 +90,18 @@ export class ReanalisisService {
     return ensureFound("Reanalysis", reanalysis, { id });
   }
 
+  async findByAnalysisId(analysisId: number): Promise<IReanalisis | null> {
+    const id = requirePositiveInt(analysisId, "analysisId");
+    return this.repo.findByAnalysisId(id);
+  }
+
+  async findByPqrsId(pqrsId: number): Promise<IReanalisis | null> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    const analysis = await this.analisisRepo.findByPqrsId(id);
+    if (!analysis) return null;
+    return this.repo.findByAnalysisId(analysis.id);
+  }
+
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(

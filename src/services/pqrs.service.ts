@@ -316,6 +316,9 @@ export class PqrsService {
 
   async appeal(id: number): Promise<IPqrs> {
     const pqrs = await this.findById(requirePositiveInt(id, "id"));
+    if (pqrs.pqrsStatusId === PQRS_STATUS.REANALISIS) {
+      return pqrs;
+    }
     this.validateTransition(pqrs.pqrsStatusId, PQRS_STATUS.REANALISIS, pqrs.isAutoResolved);
     const updated = await this.repo.update({
       id: pqrs.id,

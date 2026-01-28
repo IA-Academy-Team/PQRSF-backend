@@ -402,7 +402,8 @@ INSERT INTO pqrs_status (name) VALUES
 ('Radicado'),
 ('Analisis'),
 ('Reanálisis'),
-('Cerrado');
+('Cerrado'),
+('Devuelto');
 
 -- area
 INSERT INTO area (name, code, description) VALUES

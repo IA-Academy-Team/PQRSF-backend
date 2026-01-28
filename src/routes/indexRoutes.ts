@@ -55,7 +55,7 @@ router.use("/chat", chatRoutes);
 // router.use("/mensajes", mensajeRoutes); // UNUSED (frontend)
 // router.use("/pqrs", pqrsRoutes); // UNUSED (frontend) - frontend uses /pqrsf
 // router.use("/analisis", analisisRoutes); // UNUSED (frontend) - frontend uses /pqrsf/analysis
-// router.use("/reanalisis", reanalisisRoutes); // UNUSED (frontend) - frontend uses /pqrsf/reanalysis
+router.use("/reanalisis", reanalisisRoutes); // UNUSED (frontend) - frontend uses /pqrsf/reanalysis
 // router.use("/documentos", documentoRoutes); // UNUSED (frontend) - frontend uses /pqrsf/documents
 // router.use("/respuestas", respuestaRoutes); // UNUSED (frontend) - frontend uses /pqrsf/responses
 router.use("/encuestas", encuestaRoutes);

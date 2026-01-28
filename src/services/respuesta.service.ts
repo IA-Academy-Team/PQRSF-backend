@@ -60,7 +60,13 @@ export class RespuestaService {
       );
     }
 
-    return this.repo.create({ content, channel, documentId, pqrsId, responsibleId });
+    const created = await this.repo.create({ content, channel, documentId, pqrsId, responsibleId });
+
+    if (pqrs.pqrsStatusId === 1) {
+      await this.pqrsRepo.update({ id: pqrsId, pqrsStatusId: 2 });
+    }
+
+    return created;
   }
 
   async findById(id: number): Promise<IRespuesta> {

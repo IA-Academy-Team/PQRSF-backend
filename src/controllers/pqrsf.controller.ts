@@ -10,6 +10,7 @@ import { requirePositiveInt } from "../utils/validation.utils";
 import { AppError } from "../middlewares/error.middleware";
 import { pqrsListDetailedQuerySchema, pqrsListQuerySchema } from "../schemas/pqrs.schema";
 import { notifyN8n } from "../services/chat-integration.service";
+import { FRONTEND_URL } from "../config/env.config";
 import { createAnalisisSchema, updateAnalisisSchema } from "../schemas/analisis.schema";
 import { createReanalisisSchema, updateReanalisisSchema } from "../schemas/reanalisis.schema";
 import { createRespuestaSchema, updateRespuestaSchema } from "../schemas/respuesta.schema";
@@ -96,6 +97,15 @@ export const getReanalisisById = asyncHandler(async (req: Request, res: Response
   res.json(result);
 });
 
+export const getReanalisisByPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = Number(req.params.pqrsfId);
+  const result = await reanalisisService.findByPqrsId(pqrsId);
+  if (!result) {
+    throw new AppError("Reanalysis not found", 404, "NOT_FOUND", { pqrsId });
+  }
+  res.json(result);
+});
+
 export const createReanalisis = asyncHandler(async (req: Request, res: Response) => {
   const data = createReanalisisSchema.parse(req.body);
   const result = await reanalisisService.create(data);
@@ -143,8 +153,9 @@ export const createDocumentForPqrs = asyncHandler(async (req: Request, res: Resp
 });
 
 export const uploadDocumentsForPqrs = asyncHandler(async (req: Request, res: Response) => {
-  const pqrsId = requirePositiveInt(req.params.pqrsfId, "pqrsId");
-  const typeDocumentId = requirePositiveInt(req.body?.typeDocumentId, "typeDocumentId");
+  const pqrsId = requirePositiveInt(Number(req.params.pqrsfId), "pqrsId");
+  const rawTypeDocumentId = req.body?.typeDocumentId;
+  const typeDocumentId = requirePositiveInt(Number(rawTypeDocumentId), "typeDocumentId");
   const files = (req as Request & { files?: Express.Multer.File[] }).files ?? [];
 
   if (!files.length) {
@@ -161,6 +172,13 @@ export const uploadDocumentsForPqrs = asyncHandler(async (req: Request, res: Res
       key,
       body: file.buffer,
       contentType: file.mimetype,
+    });
+    console.info("[pqrsf][documents] uploaded", {
+      pqrsId,
+      typeDocumentId,
+      key,
+      url,
+      originalName: file.originalname,
     });
     const doc = await documentoService.create({
       url,
@@ -207,12 +225,36 @@ export const updateSurvey = asyncHandler(async (req: Request, res: Response) => 
 export const finalizePqrs = asyncHandler(async (req: Request, res: Response) => {
   const pqrsId = Number(req.params.pqrsfId);
   const result = await pqrsService.finalize(pqrsId);
+  try {
+    const data = await pqrsService.findBotResponseByPqrsId(pqrsId);
+    if (data?.ticketNumber && data?.chatId) {
+      const baseUrl = FRONTEND_URL || "http://localhost:5173";
+      const surveyLink = `${baseUrl.replace(/\/$/, "")}/survey/${data.ticketNumber}`;
+      await notifyN8n({
+        encuesta_pqrs: {
+          ticket_number: data.ticketNumber,
+          link: surveyLink,
+          chat_id: String(data.chatId),
+        },
+      });
+    }
+  } catch (err) {
+    console.warn("[pqrsf][finalize] survey webhook error", err);
+  }
   res.json(result);
 });
 
 export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
   const pqrsId = Number(req.params.pqrsfId);
   const result = await pqrsService.appeal(pqrsId);
+  try {
+    const reanalysis = await reanalisisService.findByPqrsId(pqrsId);
+    if (reanalysis?.id) {
+      await reanalisisService.update({ id: reanalysis.id, createdAt: new Date() });
+    }
+  } catch (err) {
+    console.warn("[pqrsf][appeal] reanalysis touch failed", err);
+  }
   res.json(result);
 });
 

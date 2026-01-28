@@ -5,6 +5,7 @@ import { MensajeService } from "./mensaje.service";
 import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.config";
 import {
   N8N_WEBHOOK_URL,
+  TELEGRAM_BOT_TOKEN,
   WHATSAPP_ACCESS_TOKEN,
   WHATSAPP_PHONE_ID,
 } from "../config/env.config";
@@ -19,6 +20,7 @@ type InboundPayload = {
 };
 
 const WHATSAPP_API_BASE = "https://graph.facebook.com/v20.0";
+const TELEGRAM_API_BASE = "https://api.telegram.org";
 
 const sendWhatsappMessage = async (to: string, text: string) => {
   if (!WHATSAPP_PHONE_ID || !WHATSAPP_ACCESS_TOKEN) {
@@ -42,6 +44,31 @@ const sendWhatsappMessage = async (to: string, text: string) => {
   if (!response.ok) {
     const errorBody = await response.text();
     throw new AppError("Failed to send WhatsApp message", 502, "WHATSAPP_SEND_FAILED", {
+      status: response.status,
+      errorBody,
+    });
+  }
+};
+
+const sendTelegramMessage = async (chatId: string, text: string) => {
+  if (!TELEGRAM_BOT_TOKEN) {
+    throw new AppError("Telegram credentials not configured", 500, "TELEGRAM_NOT_CONFIGURED");
+  }
+
+  const response = await fetch(`${TELEGRAM_API_BASE}/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      chat_id: chatId,
+      text,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorBody = await response.text();
+    throw new AppError("Failed to send Telegram message", 502, "TELEGRAM_SEND_FAILED", {
       status: response.status,
       errorBody,
     });
@@ -162,7 +189,12 @@ export class ChatIntegrationService {
       throw new AppError("Client phone is required", 409, "CHAT_NO_PHONE", { chatId, clientId });
     }
 
-    await sendWhatsappMessage(client.phoneNumber, content);
+    const channel = data.channel ?? "whatsapp";
+    if (channel === "telegram") {
+      await sendTelegramMessage(client.phoneNumber, content);
+    } else {
+      await sendWhatsappMessage(client.phoneNumber, content);
+    }
 
     const message = await this.mensajeService.create({
       chatId,
