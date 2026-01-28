@@ -34,7 +34,7 @@ export const IS_LOCALHOST = detectLocalhost(FRONTEND_URL) || detectLocalhost(DEV
 export const FRONTEND_ORIGIN = IS_LOCALHOST ? (DEV_HOST || FRONTEND_URL) : (PROD_HOST || FRONTEND_URL);
 
 // WHATSAPP
-export const WHATSAPP_PHONE_ID = normalize(process.env.WHATSAPP_PHONE_ID);
+export const WHATSAPP_PHONE_NUMBER_ID = normalize(process.env.WHATSAPP_PHONE_NUMBER_ID);
 export const WHATSAPP_ACCESS_TOKEN = normalize(process.env.WHATSAPP_ACCESS_TOKEN);
 export const WHATSAPP_VERIFY_TOKEN = normalize(process.env.WHATSAPP_VERIFY_TOKEN);
 
