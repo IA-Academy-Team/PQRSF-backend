@@ -8,6 +8,7 @@ import { EncuestaService } from "../services/encuesta.service";
 import { asyncHandler } from "../utils/controller.utils";
 import { requirePositiveInt } from "../utils/validation.utils";
 import { pqrsListDetailedQuerySchema, pqrsListQuerySchema } from "../schemas/pqrs.schema";
+import { notifyN8n } from "../services/chat-integration.service";
 import { createAnalisisSchema, updateAnalisisSchema } from "../schemas/analisis.schema";
 import { createReanalisisSchema, updateReanalisisSchema } from "../schemas/reanalisis.schema";
 import { createRespuestaSchema, updateRespuestaSchema } from "../schemas/respuesta.schema";
@@ -249,7 +250,7 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
     typePersonName: data.typePersonName ?? null,
   });
 
-  res.json({
+  const payload = {
     respuesta_pqrs: {
       ticket_number: data.ticketNumber,
       fecha_respuesta: formatDateEs(data.responseSentAt ?? data.updatedAt ?? null),
@@ -269,7 +270,10 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
         chat_id: data.chatId ? String(data.chatId) : "",
       },
     },
-  });
+  };
+
+  await notifyN8n(payload);
+  res.json(payload);
 });
 
 export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Response) => {
@@ -291,7 +295,7 @@ export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Respons
     typePersonName: data.typePersonName ?? null,
   });
 
-  res.json({
+  const payload = {
     respuesta_pqrs: {
       ticket_number: data.ticketNumber,
       fecha_respuesta: formatDateEs(data.responseSentAt ?? data.updatedAt ?? null),
@@ -311,5 +315,8 @@ export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Respons
         chat_id: data.chatId ? String(data.chatId) : "",
       },
     },
-  });
+  };
+
+  await notifyN8n(payload);
+  res.json(payload);
 });

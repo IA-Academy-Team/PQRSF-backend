@@ -48,7 +48,7 @@ const sendWhatsappMessage = async (to: string, text: string) => {
   }
 };
 
-const notifyN8n = async (payload: Record<string, unknown>) => {
+export const notifyN8n = async (payload: Record<string, unknown>) => {
   if (!N8N_WEBHOOK_URL) return;
   try {
     await fetch(N8N_WEBHOOK_URL, {
