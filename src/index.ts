@@ -23,14 +23,16 @@ const PORT = process.env.PORT || 3000;
 
 // desactivar el header x-powered-by por defecto en express para mayor seguridad
 app.disable('x-powered-by')
-// middleware de json para express
-app.use(express.json());
+app.set("trust proxy", 1) // si estás detrás de un proxy (ej. Heroku, Nginx)
 // middleware de logging en consola
 app.use(morgan('dev'))
+// middleware de json para express
+app.use(express.json());
+// middleware de CORS
+app.options("*", corsMiddleware);
+app.use(corsMiddleware)
 // rate limiter
 app.use(rateLimiter)
-// middleware de CORS
-app.use(corsMiddleware)
 
 // usar rutas principales
 app.use("/api", routes)
