@@ -75,6 +75,21 @@ const sendTelegramMessage = async (chatId: string, text: string) => {
   }
 };
 
+const normalizeTelegramChatId = (value: string) => {
+  const normalized = value.trim().toLowerCase();
+  if (normalized.startsWith("tg:")) return normalized.slice(3);
+  if (normalized.startsWith("telegram:")) return normalized.slice(9);
+  return value.trim();
+};
+
+const tagTelegramPhone = (value: string) => {
+  const trimmed = value.trim();
+  if (trimmed.toLowerCase().startsWith("tg:") || trimmed.toLowerCase().startsWith("telegram:")) {
+    return trimmed;
+  }
+  return `tg:${trimmed}`;
+};
+
 export const notifyN8n = async (payload: Record<string, unknown>) => {
   if (!N8N_WEBHOOK_URL) return;
   try {
@@ -127,8 +142,9 @@ export class ChatIntegrationService {
     });
   }
 
-  private async getOrCreateClientByPhone(phone: string) {
-    const normalized = optionalString(phone, "phone") ?? "";
+  private async getOrCreateClientByPhone(phone: string, channel: "whatsapp" | "telegram") {
+    const raw = optionalString(phone, "phone") ?? "";
+    const normalized = channel === "telegram" ? tagTelegramPhone(raw) : raw;
     if (!normalized) {
       throw new AppError("Phone number is required", 400, "VALIDATION_ERROR", { phone });
     }
@@ -191,7 +207,7 @@ export class ChatIntegrationService {
 
     const channel = data.channel ?? "whatsapp";
     if (channel === "telegram") {
-      await sendTelegramMessage(client.phoneNumber, content);
+      await sendTelegramMessage(normalizeTelegramChatId(client.phoneNumber), content);
     } else {
       await sendWhatsappMessage(client.phoneNumber, content);
     }
@@ -216,7 +232,7 @@ export class ChatIntegrationService {
   }
 
   async handleInboundMessage(payload: InboundPayload) {
-    const client = await this.getOrCreateClientByPhone(payload.from);
+    const client = await this.getOrCreateClientByPhone(payload.from, payload.channel);
     const chat = await this.getOrCreateChat(client.id);
 
     const rawChatId: unknown = chat?.id ?? chat?.clientId ?? client?.id;

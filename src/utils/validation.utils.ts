@@ -137,3 +137,18 @@ export const ensureFound = <T>(
   }
   return value;
 };
+
+export const normalizeValues = (values: unknown[]): unknown[] => {
+  return values.map((value) => {
+    if (value === undefined || value === null) return null;
+    if (typeof value === "bigint") return value.toString();
+    if (Array.isArray(value)) return value.map((item) => normalizeValues([item]));
+    if (value && typeof value === "object") {
+      const entries = Object.entries(value as Record<string, unknown>).map(
+        ([key, val]) => [key, normalizeValues([val])[0]]
+      );
+      return Object.fromEntries(entries);
+    }
+    return value;
+  });
+};

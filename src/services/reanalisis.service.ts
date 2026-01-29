@@ -101,6 +101,11 @@ export class ReanalisisService {
     return this.repo.findByPqrsId(id);
   }
 
+  async listByPqrsId(pqrsId: number): Promise<IReanalisis[]> {
+    const id = requirePositiveInt(pqrsId, "pqrsId");
+    return this.repo.findAllByPqrsId(id);
+  }
+
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis> {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(

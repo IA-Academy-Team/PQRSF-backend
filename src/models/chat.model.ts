@@ -13,3 +13,10 @@ export interface IChatSummary {
   lastMessage: string | null;
   lastMessageAt: Date | null;
 }
+
+export interface IChatPqrsSummary extends IChatSummary {
+  pqrsId: number;
+  ticketNumber: string;
+  statusId: number;
+  pqrsCreatedAt: Date;
+}

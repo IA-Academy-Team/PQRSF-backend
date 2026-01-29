@@ -8,6 +8,7 @@ import {
   listChatByUser,
   listChats,
   listChatSummaries,
+  listChatSummariesByPqrs,
   updateChat,
 } from "../controllers/chat.controller";
 import { createMensaje, deleteMensaje, listMensajesByChat, sendChatMessage, updateMensaje } from "../controllers/mensaje.controller";
@@ -16,6 +17,7 @@ const router = Router();
 
 router.get("/", listChats);
 router.get("/summary", listChatSummaries);
+router.get("/summary/pqrs", listChatSummariesByPqrs);
 router.get("/client/:clientId", listChatByClient);
 router.get("/user/:userId", listChatByUser);
 router.get("/area/:areaId", listChatByArea);
