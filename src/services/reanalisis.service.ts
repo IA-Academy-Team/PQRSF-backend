@@ -17,6 +17,7 @@ const PQRS_STATUS = {
   ANALISIS: 2,
   REANALISIS: 3,
   CERRADO: 4,
+  DEVUELTO: 5,
 } as const;
 
 export class ReanalisisService {
@@ -44,7 +45,7 @@ export class ReanalisisService {
       await this.pqrsRepo.findById(analysis.pqrsId),
       { pqrsId: analysis.pqrsId }
     );
-    if (pqrs.pqrsStatusId !== PQRS_STATUS.REANALISIS) {
+    if (pqrs.pqrsStatusId !== PQRS_STATUS.REANALISIS && pqrs.pqrsStatusId !== PQRS_STATUS.DEVUELTO) {
       throw new AppError(
         "PQRS must be in Reanalisis to create a reanalysis",
         409,
@@ -97,9 +98,7 @@ export class ReanalisisService {
 
   async findByPqrsId(pqrsId: number): Promise<IReanalisis | null> {
     const id = requirePositiveInt(pqrsId, "pqrsId");
-    const analysis = await this.analisisRepo.findByPqrsId(id);
-    if (!analysis) return null;
-    return this.repo.findByAnalysisId(analysis.id);
+    return this.repo.findByPqrsId(id);
   }
 
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis> {

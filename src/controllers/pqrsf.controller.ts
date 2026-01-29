@@ -248,9 +248,25 @@ export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
   const pqrsId = Number(req.params.pqrsfId);
   const result = await pqrsService.appeal(pqrsId);
   try {
-    const reanalysis = await reanalisisService.findByPqrsId(pqrsId);
-    if (reanalysis?.id) {
-      await reanalisisService.update({ id: reanalysis.id, createdAt: new Date() });
+    const analysisList = await analisisService.listByPqrsId(pqrsId);
+    const latestAnalysis = analysisList[analysisList.length - 1];
+    if (latestAnalysis?.id) {
+      const reanalysis = await reanalisisService.findByPqrsId(pqrsId);
+      if (reanalysis?.id) {
+        await reanalisisService.update({
+          id: reanalysis.id,
+          createdAt: new Date(),
+          analysisId: latestAnalysis.id,
+          responsibleId: latestAnalysis.responsibleId,
+        });
+      } else {
+        await reanalisisService.create({
+          analysisId: latestAnalysis.id,
+          responsibleId: latestAnalysis.responsibleId,
+          answer: null,
+          actionTaken: null,
+        });
+      }
     }
   } catch (err) {
     console.warn("[pqrsf][appeal] reanalysis touch failed", err);

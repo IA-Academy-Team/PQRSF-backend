@@ -26,7 +26,10 @@ const PQRS_STATUS = {
   ANALISIS: 2,
   REANALISIS: 3,
   CERRADO: 4,
+  DEVUELTO: 5,
 } as const;
+
+type PqrsStatusId = (typeof PQRS_STATUS)[keyof typeof PQRS_STATUS];
 
 export class PqrsService {
   constructor(
@@ -40,7 +43,8 @@ export class PqrsService {
     const allowed: Record<number, number[]> = {
       [PQRS_STATUS.RADICADO]: [PQRS_STATUS.ANALISIS, PQRS_STATUS.CERRADO],
       [PQRS_STATUS.ANALISIS]: [PQRS_STATUS.REANALISIS, PQRS_STATUS.CERRADO],
-      [PQRS_STATUS.REANALISIS]: [PQRS_STATUS.CERRADO],
+      [PQRS_STATUS.REANALISIS]: [PQRS_STATUS.CERRADO, PQRS_STATUS.DEVUELTO],
+      [PQRS_STATUS.DEVUELTO]: [PQRS_STATUS.REANALISIS, PQRS_STATUS.CERRADO],
     };
 
     if (current === PQRS_STATUS.RADICADO && next === PQRS_STATUS.CERRADO) {
@@ -283,10 +287,13 @@ export class PqrsService {
       );
     }
 
+    const shouldTouchUpdatedAt = data.pqrsStatusId !== undefined;
     const updated = await this.repo.update({
       ...data,
       id,
       isAutoResolved,
+      updatedAt:
+        shouldTouchUpdatedAt && data.updatedAt === undefined ? new Date() : data.updatedAt,
       dueDate:
         data.dueDate !== undefined
           ? data.dueDate === null
@@ -310,19 +317,24 @@ export class PqrsService {
     const updated = await this.repo.update({
       id: pqrs.id,
       pqrsStatusId: PQRS_STATUS.CERRADO,
+      updatedAt: new Date(),
     });
     return ensureFound("PQRS", updated, { id: pqrs.id });
   }
 
   async appeal(id: number): Promise<IPqrs> {
     const pqrs = await this.findById(requirePositiveInt(id, "id"));
+    let nextStatus: PqrsStatusId = PQRS_STATUS.REANALISIS;
     if (pqrs.pqrsStatusId === PQRS_STATUS.REANALISIS) {
-      return pqrs;
+      nextStatus = PQRS_STATUS.DEVUELTO;
+    } else if (pqrs.pqrsStatusId === PQRS_STATUS.DEVUELTO) {
+      nextStatus = PQRS_STATUS.REANALISIS;
     }
-    this.validateTransition(pqrs.pqrsStatusId, PQRS_STATUS.REANALISIS, pqrs.isAutoResolved);
+    this.validateTransition(pqrs.pqrsStatusId, nextStatus, pqrs.isAutoResolved);
     const updated = await this.repo.update({
       id: pqrs.id,
-      pqrsStatusId: PQRS_STATUS.REANALISIS,
+      pqrsStatusId: nextStatus,
+      updatedAt: new Date(),
     });
     return ensureFound("PQRS", updated, { id: pqrs.id });
   }

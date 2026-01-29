@@ -162,7 +162,7 @@ export class PqrsRepository {
          LIMIT 1
        ) r ON true
        LEFT JOIN survey sv ON sv.pqrs_id = p.id
-       WHERE p.pqrs_status_id = 3
+       WHERE p.pqrs_status_id IN (3, 5)
        ORDER BY p.created_at DESC`
     );
     return result.rows;

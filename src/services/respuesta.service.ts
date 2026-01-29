@@ -51,7 +51,7 @@ export class RespuestaService {
     );
 
     const existingResponses = await this.repo.findByPqrsId(pqrsId);
-    if (existingResponses.length > 0 && pqrs.pqrsStatusId !== 3) {
+    if (existingResponses.length > 0 && ![3, 5].includes(pqrs.pqrsStatusId)) {
       throw new AppError(
         "Response already exists for this PQRS unless it is in reanalysis",
         409,

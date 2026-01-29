@@ -169,7 +169,7 @@ export class DashboardService {
          ORDER BY sent_at DESC
          LIMIT 1
        ) response ON true
-       WHERE p.area_id = $1 AND p.pqrs_status_id = 3
+       WHERE p.area_id = $1 AND p.pqrs_status_id IN (3, 5)
        ORDER BY p.created_at DESC`,
       normalizeValues([areaId])
     );

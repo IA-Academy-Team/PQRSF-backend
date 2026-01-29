@@ -2,7 +2,8 @@ export type PQRSStatus =
   | "RADICADO"
   | "ANALISIS"
   | "REANALISIS"
-  | "CERRADO";
+  | "CERRADO"
+  | "DEVUELTO";
 
 export interface IPqrs {
   id: number;

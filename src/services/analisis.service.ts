@@ -16,6 +16,7 @@ const PQRS_STATUS = {
   ANALISIS: 2,
   REANALISIS: 3,
   CERRADO: 4,
+  DEVUELTO: 5,
 } as const;
 
 export class AnalisisService {
@@ -34,9 +35,13 @@ export class AnalisisService {
     const pqrs = ensureFound("PQRS", await this.pqrsRepo.findById(pqrsId), {
       pqrsId,
     });
-    if (pqrs.pqrsStatusId !== PQRS_STATUS.RADICADO) {
+    if (
+      pqrs.pqrsStatusId !== PQRS_STATUS.RADICADO &&
+      pqrs.pqrsStatusId !== PQRS_STATUS.REANALISIS &&
+      pqrs.pqrsStatusId !== PQRS_STATUS.DEVUELTO
+    ) {
       throw new AppError(
-        "PQRS must be in Radicado to create analysis",
+        "PQRS status does not allow creating a new analysis",
         409,
         "BUSINESS_RULE_VIOLATION",
         { pqrsId, status: pqrs.pqrsStatusId }
@@ -58,7 +63,7 @@ export class AnalisisService {
     }
 
     const existing = await this.repo.findByPqrsId(pqrsId);
-    if (existing) {
+    if (existing && pqrs.pqrsStatusId === PQRS_STATUS.RADICADO) {
       throw new AppError(
         "Analysis already exists for this PQRS",
         409,
@@ -74,10 +79,12 @@ export class AnalisisService {
       actionTaken,
     });
 
-    await this.pqrsRepo.update({
-      id: pqrsId,
-      pqrsStatusId: PQRS_STATUS.ANALISIS,
-    });
+    if (pqrs.pqrsStatusId === PQRS_STATUS.RADICADO) {
+      await this.pqrsRepo.update({
+        id: pqrsId,
+        pqrsStatusId: PQRS_STATUS.ANALISIS,
+      });
+    }
 
     return analysis;
   }
@@ -89,8 +96,7 @@ export class AnalisisService {
 
   async listByPqrsId(pqrsId: number): Promise<IAnalisis[]> {
     const id = requirePositiveInt(pqrsId, "pqrsId");
-    const analysis = await this.repo.findByPqrsId(id);
-    return analysis ? [analysis] : [];
+    return this.repo.findAllByPqrsId(id);
   }
 
   async update(data: UpdateAnalisisDTO): Promise<IAnalisis> {
