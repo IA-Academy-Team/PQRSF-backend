@@ -31,7 +31,8 @@ const detectLocalhost = (value: string) =>
 
 export const IS_LOCALHOST = detectLocalhost(FRONTEND_URL) || detectLocalhost(DEV_HOST);
 
-export const FRONTEND_ORIGIN = IS_LOCALHOST ? (DEV_HOST || FRONTEND_URL) : (PROD_HOST || FRONTEND_URL);
+// Prefer the actual frontend origin for CORS/websockets in production.
+export const FRONTEND_ORIGIN = IS_LOCALHOST ? (FRONTEND_URL || DEV_HOST) : FRONTEND_URL;
 
 // WHATSAPP
 export const WHATSAPP_PHONE_ID = normalize(process.env.WHATSAPP_PHONE_ID);

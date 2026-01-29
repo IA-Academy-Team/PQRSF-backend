@@ -1,6 +1,6 @@
 import type { Server as HttpServer } from "http";
 import { Server as SocketServer } from "socket.io";
-import { FRONTEND_URL } from "./env.config";
+import { DEV_HOST, FRONTEND_ORIGIN, FRONTEND_URL } from "./env.config";
 
 let io: SocketServer | null = null;
 
@@ -11,7 +11,7 @@ export const initWebsocket = (server: HttpServer) => {
   io = new SocketServer(server, {
     path: "/ws",
     cors: {
-      origin: FRONTEND_URL,
+      origin: [FRONTEND_ORIGIN, FRONTEND_URL, DEV_HOST].filter(Boolean),
       credentials: true,
     },
   });
