@@ -76,6 +76,7 @@ export class ChatRepository {
               pqrs.ticket_number AS "ticketNumber",
               pqrs.pqrs_status_id AS "statusId",
               pqrs.created_at AS "pqrsCreatedAt",
+              next_pqrs.created_at AS "pqrsEndAt",
               chat.id,
               chat.mode,
               chat.client_id AS "clientId",
@@ -87,9 +88,19 @@ export class ChatRepository {
        JOIN chat ON chat.client_id = pqrs.client_id
        LEFT JOIN client ON client.id = pqrs.client_id
        LEFT JOIN LATERAL (
+         SELECT created_at
+         FROM pqrs next_p
+         WHERE next_p.client_id = pqrs.client_id
+           AND next_p.created_at > pqrs.created_at
+         ORDER BY next_p.created_at ASC
+         LIMIT 1
+       ) next_pqrs ON true
+       LEFT JOIN LATERAL (
          SELECT content, created_at
          FROM message
          WHERE chat_id = chat.id
+           AND created_at >= pqrs.created_at
+           AND (next_pqrs.created_at IS NULL OR created_at < next_pqrs.created_at)
          ORDER BY created_at DESC
          LIMIT 1
        ) last_message ON true

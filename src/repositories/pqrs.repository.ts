@@ -50,6 +50,18 @@ export class PqrsRepository {
     return result.rows[0] ?? null;
   }
 
+  async findNextCreatedAtByClientId(clientId: bigint, createdAt: Date): Promise<Date | null> {
+    const result = await pool.query(
+      `SELECT created_at AS "createdAt"
+       FROM pqrs
+       WHERE client_id = $1 AND created_at > $2
+       ORDER BY created_at ASC
+       LIMIT 1`,
+      normalizeValues([clientId, createdAt])
+    );
+    return result.rows[0]?.createdAt ?? null;
+  }
+
   async findAllWithFilters(filters: PqrsFilters): Promise<IPqrs[]> {
     const conditions: string[] = [];
     const values: unknown[] = [];
@@ -103,6 +115,7 @@ export class PqrsRepository {
     const result = await pool.query(
       `SELECT p.id,
               p.ticket_number AS "ticketNumber",
+              p.description,
               p.created_at AS "createdAt",
               p.pqrs_status_id AS "statusId",
               s.name AS "statusName",
@@ -140,6 +153,7 @@ export class PqrsRepository {
     const result = await pool.query(
       `SELECT p.id,
               p.ticket_number AS "ticketNumber",
+              p.description,
               p.created_at AS "createdAt",
               p.pqrs_status_id AS "statusId",
               s.name AS "statusName",
@@ -172,6 +186,7 @@ export class PqrsRepository {
     const result = await pool.query(
       `SELECT p.id,
               p.ticket_number AS "ticketNumber",
+              p.description,
               p.created_at AS "createdAt",
               p.updated_at AS "updatedAt",
               p.pqrs_status_id AS "statusId",
@@ -399,7 +414,9 @@ export class PqrsRepository {
               resp_area.name AS "responsibleAreaName",
               chat.id AS "chatId",
               analysis.id AS "analysisId",
+              analysis.answer AS "analysisAnswer",
               analysis.action_taken AS "analysisActionTaken",
+              reanalysis.answer AS "reanalysisAnswer",
               reanalysis.action_taken AS "reanalysisActionTaken"
        FROM pqrs p
        JOIN pqrs_status s ON s.id = p.pqrs_status_id
@@ -418,14 +435,18 @@ export class PqrsRepository {
        LEFT JOIN users resp_user ON resp_user.id = r.user_id
        LEFT JOIN area resp_area ON resp_area.id = r.area_id
        LEFT JOIN LATERAL (
-         SELECT id, action_taken
+         SELECT id, answer, action_taken, created_at
          FROM analysis
          WHERE pqrs_id = p.id
-         ORDER BY created_at DESC NULLS LAST, id DESC
+           AND (resp.responsible_id IS NULL OR responsible_id = resp.responsible_id)
+         ORDER BY
+           (resp.sent_at IS NOT NULL AND created_at <= resp.sent_at) DESC,
+           created_at DESC NULLS LAST,
+           id DESC
          LIMIT 1
        ) analysis ON true
        LEFT JOIN LATERAL (
-         SELECT action_taken
+         SELECT answer, action_taken, created_at
          FROM reanalysis
          WHERE analysis_id = analysis.id
          ORDER BY created_at DESC NULLS LAST, id DESC
@@ -458,7 +479,9 @@ export class PqrsRepository {
               resp_area.name AS "responsibleAreaName",
               chat.id AS "chatId",
               analysis.id AS "analysisId",
+              analysis.answer AS "analysisAnswer",
               analysis.action_taken AS "analysisActionTaken",
+              reanalysis.answer AS "reanalysisAnswer",
               reanalysis.action_taken AS "reanalysisActionTaken"
        FROM pqrs p
        JOIN pqrs_status s ON s.id = p.pqrs_status_id
@@ -477,14 +500,18 @@ export class PqrsRepository {
        LEFT JOIN users resp_user ON resp_user.id = r.user_id
        LEFT JOIN area resp_area ON resp_area.id = r.area_id
        LEFT JOIN LATERAL (
-         SELECT id, action_taken
+         SELECT id, answer, action_taken, created_at
          FROM analysis
          WHERE pqrs_id = p.id
-         ORDER BY created_at DESC NULLS LAST, id DESC
+           AND (resp.responsible_id IS NULL OR responsible_id = resp.responsible_id)
+         ORDER BY
+           (resp.sent_at IS NOT NULL AND created_at <= resp.sent_at) DESC,
+           created_at DESC NULLS LAST,
+           id DESC
          LIMIT 1
        ) analysis ON true
        LEFT JOIN LATERAL (
-         SELECT action_taken
+         SELECT answer, action_taken, created_at
          FROM reanalysis
          WHERE analysis_id = analysis.id
          ORDER BY created_at DESC NULLS LAST, id DESC

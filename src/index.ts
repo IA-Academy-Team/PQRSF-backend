@@ -29,7 +29,6 @@ app.use(morgan('dev'))
 // middleware de json para express
 app.use(express.json());
 // middleware de CORS
-app.options("*", corsMiddleware);
 app.use(corsMiddleware)
 // rate limiter
 app.use(rateLimiter)
