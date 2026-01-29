@@ -5,6 +5,7 @@ import { PqrsRepository, PqrsDetailedFilters, PqrsFilters } from "../repositorie
 import { AreaRepository } from "../repositories/area.repository";
 import { TipoPqrsRepository } from "../repositories/tipoPqrs.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
+import { PqrsStatusHistoryService } from "./pqrsStatusHistory.service";
 import { calculateDueDate } from "../utils/date.utils";
 import { generateTicket } from "../utils/ticket.utils";
 import {
@@ -36,7 +37,8 @@ export class PqrsService {
     private readonly repo = new PqrsRepository(),
     private readonly areaRepo = new AreaRepository(),
     private readonly tipoPqrsRepo = new TipoPqrsRepository(),
-    private readonly clienteRepo = new ClienteRepository()
+    private readonly clienteRepo = new ClienteRepository(),
+    private readonly statusHistoryService = new PqrsStatusHistoryService()
   ) {}
 
   private validateTransition(current: number, next: number, isAutoResolved: boolean) {
@@ -302,7 +304,11 @@ export class PqrsService {
           : undefined,
     });
 
-    return ensureFound("PQRS", updated, { id });
+    const ensured = ensureFound("PQRS", updated, { id });
+    if (data.pqrsStatusId !== undefined && data.pqrsStatusId !== current.pqrsStatusId) {
+      await this.statusHistoryService.logStatusChange(ensured.id, ensured.pqrsStatusId);
+    }
+    return ensured;
   }
 
   async delete(data: DeletePqrsDTO): Promise<boolean> {
@@ -319,7 +325,9 @@ export class PqrsService {
       pqrsStatusId: PQRS_STATUS.CERRADO,
       updatedAt: new Date(),
     });
-    return ensureFound("PQRS", updated, { id: pqrs.id });
+    const ensured = ensureFound("PQRS", updated, { id: pqrs.id });
+    await this.statusHistoryService.logStatusChange(ensured.id, ensured.pqrsStatusId);
+    return ensured;
   }
 
   async appeal(id: number): Promise<IPqrs> {
@@ -336,6 +344,8 @@ export class PqrsService {
       pqrsStatusId: nextStatus,
       updatedAt: new Date(),
     });
-    return ensureFound("PQRS", updated, { id: pqrs.id });
+    const ensured = ensureFound("PQRS", updated, { id: pqrs.id });
+    await this.statusHistoryService.logStatusChange(ensured.id, ensured.pqrsStatusId);
+    return ensured;
   }
 }

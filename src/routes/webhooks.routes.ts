@@ -1,6 +1,7 @@
 import { Router } from "express";
 import {
   receiveWhatsappWebhook,
+  receiveTelegramWebhook,
   verifyWhatsappWebhook,
 } from "../controllers/webhook.controller";
 
@@ -18,7 +19,8 @@ router.get("/webhook", verifyWhatsappWebhook);
 // #swagger.description = 'Receives WhatsApp Cloud API webhook events.'
 // #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/WhatsappWebhookPayload' } }
 router.post("/webhook", receiveWhatsappWebhook);
-// UNUSED (frontend)
-// router.post("/telegram", receiveTelegramWebhook);
+// #swagger.tags = ['Webhooks']
+// #swagger.description = 'Receives Telegram webhook events.'
+router.post("/telegram/webhook", receiveTelegramWebhook);
 
 export default router;

@@ -48,6 +48,18 @@ export class ReanalisisRepository {
     return result.rows[0] ?? null;
   }
 
+  async findAllByPqrsId(pqrsId: number): Promise<IReanalisis[]> {
+    const result = await pool.query(
+      `SELECT r.id, r.answer, r.action_taken AS "actionTaken", r.created_at AS "createdAt", r.analysis_id AS "analysisId", r.responsible_id AS "responsibleId"
+       FROM reanalysis r
+       JOIN analysis a ON a.id = r.analysis_id
+       WHERE a.pqrs_id = $1
+       ORDER BY r.created_at ASC, r.id ASC`,
+      normalizeValues([pqrsId])
+    );
+    return result.rows ?? [];
+  }
+
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

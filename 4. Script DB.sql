@@ -271,9 +271,28 @@ CREATE TABLE verifications (
 
 COMMENT ON COLUMN notification.status IS '1 = NO LEIDO, 2 = LEIDO';
 
+
+
+CREATE TABLE pqrs_status_history (
+    id SERIAL PRIMARY KEY,
+    pqrs_id INT NOT NULL,
+    status_id INT NOT NULL,
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (pqrs_id) REFERENCES pqrs(id) ON DELETE CASCADE,
+    FOREIGN KEY (status_id) REFERENCES pqrs_status(id)
+);
+
+
 -- ==============================
 -- DML: Insertar datos iniciales
 -- ==============================
+INSERT INTO pqrs_status_history (pqrs_id, status_id, created_at)
+VALUES
+(64, 1, NOW() - interval '3 days'), -- Radicada (ajusta fecha si quieres)
+(64, 3, NOW() - interval '2 days'), -- Reanálisis
+(64, 5, NOW() - interval '1 day'),  -- Devuelto
+(64, 3, NOW());                     -- Reanálisis nuevamente
 
 
 -- ==============================

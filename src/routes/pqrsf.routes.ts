@@ -31,6 +31,8 @@ import {
   updateAnalisis,
   updateReanalisis,
   getReanalisisByPqrs,
+  getReanalisisHistoryByPqrs,
+  getStatusHistoryByPqrs,
   updateSurvey,
 } from "../controllers/pqrsf.controller";
 import multer from "multer";
@@ -67,6 +69,8 @@ router.get("/search", searchPqrs);
 
 router.get("/:pqrsfId/analysis", listAnalisisByPqrs);
 router.get("/:pqrsfId/reanalysis", getReanalisisByPqrs);
+router.get("/:pqrsfId/reanalysis/history", getReanalisisHistoryByPqrs);
+router.get("/:pqrsfId/status-history", getStatusHistoryByPqrs);
 router.post(
   "/analysis",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/CreateAnalisis' } } */

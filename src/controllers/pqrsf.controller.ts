@@ -5,6 +5,7 @@ import { ReanalisisService } from "../services/reanalisis.service";
 import { RespuestaService } from "../services/respuesta.service";
 import { DocumentoService } from "../services/documento.service";
 import { EncuestaService } from "../services/encuesta.service";
+import { PqrsStatusHistoryService } from "../services/pqrsStatusHistory.service";
 import { asyncHandler } from "../utils/controller.utils";
 import { requirePositiveInt } from "../utils/validation.utils";
 import { AppError } from "../middlewares/error.middleware";
@@ -24,6 +25,7 @@ const reanalisisService = new ReanalisisService();
 const respuestaService = new RespuestaService();
 const documentoService = new DocumentoService();
 const encuestaService = new EncuestaService();
+const statusHistoryService = new PqrsStatusHistoryService();
 
 export const getPqrsByRadicado = asyncHandler(async (req: Request, res: Response) => {
   const result = await pqrsService.findByTicketNumber(req.params.code as string);
@@ -103,6 +105,18 @@ export const getReanalisisByPqrs = asyncHandler(async (req: Request, res: Respon
   if (!result) {
     throw new AppError("Reanalysis not found", 404, "NOT_FOUND", { pqrsId });
   }
+  res.json(result);
+});
+
+export const getReanalisisHistoryByPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = Number(req.params.pqrsfId);
+  const result = await reanalisisService.listByPqrsId(pqrsId);
+  res.json(result);
+});
+
+export const getStatusHistoryByPqrs = asyncHandler(async (req: Request, res: Response) => {
+  const pqrsId = Number(req.params.pqrsfId);
+  const result = await statusHistoryService.listByPqrsId(pqrsId);
   res.json(result);
 });
 

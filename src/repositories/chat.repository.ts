@@ -1,6 +1,6 @@
 import pool from "../config/db.config";
 import { normalizeValues } from "./repository.utils";
-import { IChat, IChatSummary } from "../models/chat.model";
+import { IChat, IChatSummary, IChatPqrsSummary } from "../models/chat.model";
 import { CreateChatDTO, UpdateChatDTO, DeleteChatDTO } from "../schemas/chat.schema";
 
 export class ChatRepository {
@@ -66,6 +66,34 @@ export class ChatRepository {
        WHERE pqrs.area_id = $1
        ORDER BY chat.id`,
       normalizeValues([areaId])
+    );
+    return result.rows;
+  }
+
+  async findAllSummariesByPqrs(): Promise<IChatPqrsSummary[]> {
+    const result = await pool.query(
+      `SELECT pqrs.id AS "pqrsId",
+              pqrs.ticket_number AS "ticketNumber",
+              pqrs.pqrs_status_id AS "statusId",
+              pqrs.created_at AS "pqrsCreatedAt",
+              chat.id,
+              chat.mode,
+              chat.client_id AS "clientId",
+              client.name AS "clientName",
+              client.phone_number AS "clientPhone",
+              last_message.content AS "lastMessage",
+              last_message.created_at AS "lastMessageAt"
+       FROM pqrs
+       JOIN chat ON chat.client_id = pqrs.client_id
+       LEFT JOIN client ON client.id = pqrs.client_id
+       LEFT JOIN LATERAL (
+         SELECT content, created_at
+         FROM message
+         WHERE chat_id = chat.id
+         ORDER BY created_at DESC
+         LIMIT 1
+       ) last_message ON true
+       ORDER BY pqrs.created_at DESC`
     );
     return result.rows;
   }
