@@ -117,6 +117,12 @@ export const errorHandler = (
     });
   }
 
+  console.error("[Unexpected Error]", {
+    method: req.method,
+    path: req.originalUrl,
+    error: err,
+  });
+
   return res.status(500).json({
     error: {
       code: "INTERNAL_ERROR",

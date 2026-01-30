@@ -265,7 +265,8 @@ export const finalizePqrs = asyncHandler(async (req: Request, res: Response) => 
 
 export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
   const pqrsId = Number(req.params.pqrsfId);
-  const result = await pqrsService.appeal(pqrsId);
+  const appeal = typeof req.body?.appeal === "string" ? req.body.appeal : undefined;
+  const result = await pqrsService.appeal(pqrsId, appeal);
   try {
     const analysisList = await analisisService.listByPqrsId(pqrsId);
     const latestAnalysis = analysisList[analysisList.length - 1];

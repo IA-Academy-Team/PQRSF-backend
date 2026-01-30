@@ -23,28 +23,30 @@ export class PqrsRepository {
 
   async create(data: CreatePqrsDTO): Promise<IPqrs> {
     const result = await pool.query(
-      `INSERT INTO pqrs (ticket_number, is_auto_resolved, due_date, pqrs_status_id, client_id, type_pqrs_id, area_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"`,
-      normalizeValues([data.ticketNumber, data.isAutoResolved, data.dueDate, data.pqrsStatusId, data.clientId, data.typePqrsId, data.areaId])
+      `INSERT INTO pqrs (ticket_number, is_auto_resolved, due_date, appeal, pqrs_status_id, client_id, type_pqrs_id, area_id)
+       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+       RETURNING id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"`,
+      normalizeValues([data.ticketNumber, data.isAutoResolved, data.dueDate, data.appeal ?? null, data.pqrsStatusId, data.clientId, data.typePqrsId, data.areaId])
     );
     return result.rows[0];
   }
 
   async findById(id: number): Promise<IPqrs | null> {
     const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs WHERE id = $1`,
+      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs WHERE id = $1`,
       normalizeValues([id])
     );
     return result.rows[0] ?? null;
   }
 
   async findAll(): Promise<IPqrs[]> {
-    const result = await pool.query(`SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ORDER BY id`);
+    const result = await pool.query(`SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ORDER BY id`);
     return result.rows;
   }
 
   async findByTicketNumber(ticketNumber: string): Promise<IPqrs | null> {
     const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs WHERE ticket_number = $1`,
+      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs WHERE ticket_number = $1`,
       normalizeValues([ticketNumber])
     );
     return result.rows[0] ?? null;
@@ -105,7 +107,7 @@ export class PqrsRepository {
 
     const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
     const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ${where} ORDER BY id`,
+      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ${where} ORDER BY id`,
       normalizeValues(values)
     );
     return result.rows;
@@ -543,6 +545,11 @@ export class PqrsRepository {
       values.push(data.dueDate);
       index += 1;
     }
+    if (data.appeal !== undefined) {
+      fields.push(`appeal = $${index}`);
+      values.push(data.appeal);
+      index += 1;
+    }
     if (data.createdAt !== undefined) {
       fields.push(`created_at = $${index}`);
       values.push(data.createdAt);
@@ -578,7 +585,7 @@ export class PqrsRepository {
     }
     values.push(data.id);
     const result = await pool.query(
-      `UPDATE pqrs SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"`,
+      `UPDATE pqrs SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"`,
       normalizeValues(values)
     );
     return result.rows[0] ?? null;

@@ -10,6 +10,7 @@ import {
   optionalPositiveInt,
   optionalString,
   requireBigInt,
+  requireDate,
   requirePositiveInt,
 } from "../utils/validation.utils";
 
@@ -72,8 +73,9 @@ export class MensajeService {
       });
     }
 
-    const endAt = await this.pqrsRepo.findNextCreatedAtByClientId(pqrs.clientId, pqrs.createdAt);
-    return this.repo.findByChatIdAndRange(id, pqrs.createdAt, endAt);
+    const startAt = requireDate(pqrs.createdAt, "createdAt");
+    const endAt = await this.pqrsRepo.findNextCreatedAtByClientId(pqrs.clientId, startAt);
+    return this.repo.findByChatIdAndRange(id, startAt, endAt);
   }
 
   async update(data: UpdateMensajeDTO): Promise<IMensaje> {

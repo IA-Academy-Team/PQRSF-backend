@@ -175,6 +175,7 @@ CREATE TABLE pqrs (
     ticket_number VARCHAR(50) UNIQUE NOT NULL,
     is_auto_resolved BOOLEAN DEFAULT FALSE,
     due_date DATE,
+    appeal TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     pqrs_status_id INT NOT NULL,
