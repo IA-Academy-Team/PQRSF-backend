@@ -242,7 +242,8 @@ export const finalizePqrs = asyncHandler(async (req: Request, res: Response) => 
   try {
     const data = await pqrsService.findBotResponseByPqrsId(pqrsId);
     if (data?.responseContent) {
-      const payload = buildBotPayload(data);
+      const statusHistory = await statusHistoryService.listByPqrsId(pqrsId);
+      const payload = buildBotPayload({ ...data, statusHistory });
       const baseUrl = FRONTEND_URL || "http://localhost:5173";
       const surveyLink = `${baseUrl.replace(/\/$/, "")}/survey/${data.ticketNumber}`;
       const finalPayload = {
@@ -341,6 +342,7 @@ const resolveSolicitante = (data: {
 };
 
 const buildBotPayload = (data: {
+  id?: number;
   ticketNumber: string | null;
   responseContent: string | null;
   responseSentAt: string | Date | null;
@@ -359,6 +361,12 @@ const buildBotPayload = (data: {
   reanalysisActionTaken?: string | null;
   analysisAnswer?: string | null;
   reanalysisAnswer?: string | null;
+  statusHistory?: Array<{
+    statusId: number;
+    statusName?: string | null;
+    createdAt: string;
+    note?: string | null;
+  }>;
 }) => {
   const actionsSource =
     data.reanalysisActionTaken ??
@@ -391,6 +399,12 @@ const buildBotPayload = (data: {
       canal_respuesta: {
         chat_id: data.chatId ? String(data.chatId) : "",
       },
+      historial_estado: (data.statusHistory ?? []).map((item) => ({
+        status_id: item.statusId,
+        status: item.statusName ?? "",
+        nota: item.note ?? "",
+        fecha: formatDateEs(item.createdAt),
+      })),
     },
   };
 };
@@ -402,7 +416,8 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
   if (!data.responseContent) {
     throw new AppError("Response not available", 404, "NOT_FOUND", { ticketNumber });
   }
-  const payload = buildBotPayload(data);
+  const statusHistory = data.id ? await statusHistoryService.listByPqrsId(Number(data.id)) : [];
+  const payload = buildBotPayload({ ...data, statusHistory });
   console.info("[n8n][pqrsf][bot-response-ticket] payload", payload);
   await notifyN8n(payload);
   res.json(payload);
@@ -415,7 +430,8 @@ export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Respons
   if (!data.responseContent) {
     throw new AppError("Response not available", 404, "NOT_FOUND", { pqrsId });
   }
-  const payload = buildBotPayload(data);
+  const statusHistory = await statusHistoryService.listByPqrsId(pqrsId);
+  const payload = buildBotPayload({ ...data, statusHistory });
   console.info("[n8n][pqrsf][bot-response] payload", payload);
   await notifyN8n(payload);
   res.json(payload);

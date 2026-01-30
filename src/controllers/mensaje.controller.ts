@@ -44,7 +44,11 @@ export const getMensajeById = asyncHandler(async (req: Request, res: Response) =
 
 export const listMensajesByChat = asyncHandler(async (req: Request, res: Response) => {
   const { chatId } = mensajeChatParamSchema.parse(req.params);
-  const pqrsId = optionalPositiveInt(req.query.pqrsId, "pqrsId");
+  const pqrsIdRaw = req.query.pqrsId;
+  const pqrsId =
+    typeof pqrsIdRaw === "string" && pqrsIdRaw.trim() !== ""
+      ? optionalPositiveInt(Number(pqrsIdRaw), "pqrsId")
+      : undefined;
   const result = pqrsId ? await service.listByChatAndPqrs(chatId, pqrsId) : await service.listByChat(chatId);
   res.json(result);
 });
