@@ -316,6 +316,7 @@ export class PqrsRepository {
               p.description,
               p.is_auto_resolved AS "isAutoResolved",
               p.due_date AS "dueDate",
+              p.appeal,
               p.created_at AS "createdAt",
               p.updated_at AS "updatedAt",
               s.id AS "statusId",
