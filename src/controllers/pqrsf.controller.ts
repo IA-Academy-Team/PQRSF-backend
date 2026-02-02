@@ -26,6 +26,9 @@ const respuestaService = new RespuestaService();
 const documentoService = new DocumentoService();
 const encuestaService = new EncuestaService();
 const statusHistoryService = new PqrsStatusHistoryService();
+const PQRS_STATUS = {
+  ANALISIS: 2,
+} as const;
 
 export const getPqrsByRadicado = asyncHandler(async (req: Request, res: Response) => {
   const result = await pqrsService.findByTicketNumber(req.params.code as string);
@@ -417,6 +420,23 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
   if (!data.responseContent) {
     throw new AppError("Response not available", 404, "NOT_FOUND", { ticketNumber });
   }
+  if (data.id) {
+    const pqrsId = Number(data.id);
+    const pqrs = await pqrsService.findById(pqrsId);
+    const responses = await respuestaService.listByPqrsId(pqrsId);
+    if (pqrs.pqrsStatusId !== PQRS_STATUS.ANALISIS || responses.length !== 1) {
+      console.warn("[pqrsf][bot-response] blocked", {
+        pqrsId,
+        statusId: pqrs.pqrsStatusId,
+        responses: responses.length,
+      });
+      throw new AppError("Bot response not allowed for this PQRS status", 409, "BUSINESS_RULE_VIOLATION", {
+        pqrsId,
+        statusId: pqrs.pqrsStatusId,
+        responses: responses.length,
+      });
+    }
+  }
   const statusHistory = data.id ? await statusHistoryService.listByPqrsId(Number(data.id)) : [];
   const payload = buildBotPayload({ ...data, statusHistory });
   console.info("[n8n][pqrsf][bot-response-ticket] payload", payload);
@@ -430,6 +450,20 @@ export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Respons
 
   if (!data.responseContent) {
     throw new AppError("Response not available", 404, "NOT_FOUND", { pqrsId });
+  }
+  const pqrs = await pqrsService.findById(pqrsId);
+  const responses = await respuestaService.listByPqrsId(pqrsId);
+  if (pqrs.pqrsStatusId !== PQRS_STATUS.ANALISIS || responses.length !== 1) {
+    console.warn("[pqrsf][bot-response] blocked", {
+      pqrsId,
+      statusId: pqrs.pqrsStatusId,
+      responses: responses.length,
+    });
+    throw new AppError("Bot response not allowed for this PQRS status", 409, "BUSINESS_RULE_VIOLATION", {
+      pqrsId,
+      statusId: pqrs.pqrsStatusId,
+      responses: responses.length,
+    });
   }
   const statusHistory = await statusHistoryService.listByPqrsId(pqrsId);
   const payload = buildBotPayload({ ...data, statusHistory });
