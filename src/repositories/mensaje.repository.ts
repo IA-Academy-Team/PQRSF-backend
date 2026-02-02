@@ -35,6 +35,19 @@ export class MensajeRepository {
     return result.rows;
   }
 
+  async findByChatIdAndRange(chatId: bigint, startAt: Date, endAt: Date | null): Promise<IMensaje[]> {
+    const result = await pool.query(
+      `SELECT id, content, type, created_at AS "createdAt", chat_id AS "chatId"
+       FROM message
+       WHERE chat_id = $1
+         AND created_at >= $2
+         AND ($3::timestamp IS NULL OR created_at < $3)
+       ORDER BY created_at`,
+      normalizeValues([chatId, startAt, endAt])
+    );
+    return result.rows;
+  }
+
   async update(data: UpdateMensajeDTO): Promise<IMensaje | null> {
     const fields: string[] = [];
     const values: unknown[] = [];

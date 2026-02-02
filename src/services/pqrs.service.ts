@@ -139,6 +139,7 @@ export class PqrsService {
       clientId,
       typePqrsId,
       areaId,
+      appeal: optionalString(data.appeal, "appeal") ?? null,
     });
   }
 
@@ -239,6 +240,7 @@ export class PqrsService {
       "clientId",
       "typePqrsId",
       "areaId",
+      "appeal",
     ], "PQRS");
 
     const current = await this.findById(id);
@@ -302,6 +304,8 @@ export class PqrsService {
             ? null
             : requireDate(data.dueDate, "dueDate")
           : undefined,
+      appeal:
+        data.appeal !== undefined ? optionalString(data.appeal, "appeal") ?? null : undefined,
     });
 
     const ensured = ensureFound("PQRS", updated, { id });
@@ -330,7 +334,7 @@ export class PqrsService {
     return ensured;
   }
 
-  async appeal(id: number): Promise<IPqrs> {
+  async appeal(id: number, appeal?: string | null): Promise<IPqrs> {
     const pqrs = await this.findById(requirePositiveInt(id, "id"));
     let nextStatus: PqrsStatusId = PQRS_STATUS.REANALISIS;
     if (pqrs.pqrsStatusId === PQRS_STATUS.REANALISIS) {
@@ -343,9 +347,14 @@ export class PqrsService {
       id: pqrs.id,
       pqrsStatusId: nextStatus,
       updatedAt: new Date(),
+      appeal: appeal !== undefined ? optionalString(appeal, "appeal") ?? null : undefined,
     });
     const ensured = ensureFound("PQRS", updated, { id: pqrs.id });
-    await this.statusHistoryService.logStatusChange(ensured.id, ensured.pqrsStatusId);
+    await this.statusHistoryService.logStatusChange(
+      ensured.id,
+      ensured.pqrsStatusId,
+      appeal ? String(appeal) : undefined
+    );
     return ensured;
   }
 }

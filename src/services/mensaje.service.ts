@@ -2,6 +2,7 @@ import { CreateMensajeDTO, DeleteMensajeDTO, UpdateMensajeDTO } from "../schemas
 import { IMensaje } from "../models/mensaje.model";
 import { MensajeRepository } from "../repositories/mensaje.repository";
 import { ChatRepository } from "../repositories/chat.repository";
+import { PqrsRepository } from "../repositories/pqrs.repository";
 import { AppError } from "../middlewares/error.middleware";
 import {
   ensureFound,
@@ -9,13 +10,15 @@ import {
   optionalPositiveInt,
   optionalString,
   requireBigInt,
+  requireDate,
   requirePositiveInt,
 } from "../utils/validation.utils";
 
 export class MensajeService {
   constructor(
     private readonly repo = new MensajeRepository(),
-    private readonly chatRepo = new ChatRepository()
+    private readonly chatRepo = new ChatRepository(),
+    private readonly pqrsRepo = new PqrsRepository()
   ) {}
 
   async create(data: CreateMensajeDTO): Promise<IMensaje> {
@@ -52,6 +55,27 @@ export class MensajeService {
   async listByChat(chatId: bigint): Promise<IMensaje[]> {
     const id = requireBigInt(chatId, "chatId");
     return this.repo.findByChatId(id);
+  }
+
+  async listByChatAndPqrs(chatId: bigint, pqrsId: number): Promise<IMensaje[]> {
+    const id = requireBigInt(chatId, "chatId");
+    const pqrs = ensureFound(
+      "PQRS",
+      await this.pqrsRepo.findById(requirePositiveInt(pqrsId, "pqrsId")),
+      { pqrsId }
+    );
+    const chat = ensureFound("Chat", await this.chatRepo.findById(id), { chatId: id });
+
+    if (chat.clientId !== pqrs.clientId) {
+      throw new AppError("PQRS does not belong to this chat", 400, "VALIDATION_ERROR", {
+        chatId: id,
+        pqrsId,
+      });
+    }
+
+    const startAt = requireDate(pqrs.createdAt, "createdAt");
+    const endAt = await this.pqrsRepo.findNextCreatedAtByClientId(pqrs.clientId, startAt);
+    return this.repo.findByChatIdAndRange(id, startAt, endAt);
   }
 
   async update(data: UpdateMensajeDTO): Promise<IMensaje> {

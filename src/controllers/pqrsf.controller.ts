@@ -26,6 +26,9 @@ const respuestaService = new RespuestaService();
 const documentoService = new DocumentoService();
 const encuestaService = new EncuestaService();
 const statusHistoryService = new PqrsStatusHistoryService();
+const PQRS_STATUS = {
+  ANALISIS: 2,
+} as const;
 
 export const getPqrsByRadicado = asyncHandler(async (req: Request, res: Response) => {
   const result = await pqrsService.findByTicketNumber(req.params.code as string);
@@ -241,16 +244,21 @@ export const finalizePqrs = asyncHandler(async (req: Request, res: Response) => 
   const result = await pqrsService.finalize(pqrsId);
   try {
     const data = await pqrsService.findBotResponseByPqrsId(pqrsId);
-    if (data?.ticketNumber && data?.chatId) {
+    if (data?.responseContent) {
+      const statusHistory = await statusHistoryService.listByPqrsId(pqrsId);
+      const payload = buildBotPayload({ ...data, statusHistory });
       const baseUrl = FRONTEND_URL || "http://localhost:5173";
       const surveyLink = `${baseUrl.replace(/\/$/, "")}/survey/${data.ticketNumber}`;
-      await notifyN8n({
+      const finalPayload = {
+        ...payload,
         encuesta_pqrs: {
           ticket_number: data.ticketNumber,
           link: surveyLink,
           chat_id: String(data.chatId),
         },
-      });
+      };
+      console.info("[n8n][pqrsf][finalize] payload", finalPayload);
+      await notifyN8n(finalPayload);
     }
   } catch (err) {
     console.warn("[pqrsf][finalize] survey webhook error", err);
@@ -260,7 +268,8 @@ export const finalizePqrs = asyncHandler(async (req: Request, res: Response) => 
 
 export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
   const pqrsId = Number(req.params.pqrsfId);
-  const result = await pqrsService.appeal(pqrsId);
+  const appeal = typeof req.body?.appeal === "string" ? req.body.appeal : undefined;
+  const result = await pqrsService.appeal(pqrsId, appeal);
   try {
     const analysisList = await analisisService.listByPqrsId(pqrsId);
     const latestAnalysis = analysisList[analysisList.length - 1];
@@ -336,31 +345,55 @@ const resolveSolicitante = (data: {
   };
 };
 
-export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res: Response) => {
-  const ticketNumber = req.params.ticketNumber as string;
-  const data = await pqrsService.findBotResponseByTicketNumber(ticketNumber);
-
-  if (!data.responseContent) {
-    throw new AppError("Response not available", 404, "NOT_FOUND", { ticketNumber });
-  }
-
-  const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;
+const buildBotPayload = (data: {
+  id?: number;
+  ticketNumber: string | null;
+  responseContent: string | null;
+  responseSentAt: string | Date | null;
+  updatedAt: string | Date | null;
+  typeName: string | null;
+  areaName: string | null;
+  statusName: string | null;
+  description: string | null;
+  clientName: string | null;
+  typePersonName: string | null;
+  responsibleName: string | null;
+  responsibleAreaName: string | null;
+  responsibleEmail: string | null;
+  chatId: number | string | null;
+  analysisActionTaken?: string | null;
+  reanalysisActionTaken?: string | null;
+  analysisAnswer?: string | null;
+  reanalysisAnswer?: string | null;
+  statusHistory?: Array<{
+    statusId: number;
+    statusName?: string | null;
+    createdAt: string;
+    note?: string | null;
+  }>;
+}) => {
+  const actionsSource =
+    data.reanalysisActionTaken ??
+    data.reanalysisAnswer ??
+    data.analysisActionTaken ??
+    data.analysisAnswer ??
+    null;
   const actions = splitActions(actionsSource);
   const solicitante = resolveSolicitante({
     clientName: data.clientName ?? null,
     typePersonName: data.typePersonName ?? null,
   });
 
-  const payload = {
+  return {
     respuesta_pqrs: {
-      ticket_number: data.ticketNumber,
+      ticket_number: data.ticketNumber ?? "",
       fecha_respuesta: formatDateEs(data.responseSentAt ?? data.updatedAt ?? null),
-      tipo_pqrs: data.typeName,
-      area: data.areaName,
-      estado: data.statusName,
+      tipo_pqrs: data.typeName ?? "",
+      area: data.areaName ?? "",
+      estado: data.statusName ?? "",
       solicitante,
-      descripcion_original: data.description,
-      respuesta: data.responseContent,
+      descripcion_original: data.description ?? "",
+      respuesta: data.responseContent ?? "",
       acciones: actions,
       responsable: {
         nombre: data.responsibleName ?? "Responsable",
@@ -370,9 +403,43 @@ export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res:
       canal_respuesta: {
         chat_id: data.chatId ? String(data.chatId) : "",
       },
+      historial_estado: (data.statusHistory ?? []).map((item) => ({
+        status_id: item.statusId,
+        status: item.statusName ?? "",
+        nota: item.note ?? "",
+        fecha: formatDateEs(item.createdAt),
+      })),
     },
   };
+};
 
+export const getPqrsBotResponseByTicket = asyncHandler(async (req: Request, res: Response) => {
+  const ticketNumber = req.params.ticketNumber as string;
+  const data = await pqrsService.findBotResponseByTicketNumber(ticketNumber);
+
+  if (!data.responseContent) {
+    throw new AppError("Response not available", 404, "NOT_FOUND", { ticketNumber });
+  }
+  if (data.id) {
+    const pqrsId = Number(data.id);
+    const pqrs = await pqrsService.findById(pqrsId);
+    const responses = await respuestaService.listByPqrsId(pqrsId);
+    if (pqrs.pqrsStatusId !== PQRS_STATUS.ANALISIS || responses.length !== 1) {
+      console.warn("[pqrsf][bot-response] blocked", {
+        pqrsId,
+        statusId: pqrs.pqrsStatusId,
+        responses: responses.length,
+      });
+      throw new AppError("Bot response not allowed for this PQRS status", 409, "BUSINESS_RULE_VIOLATION", {
+        pqrsId,
+        statusId: pqrs.pqrsStatusId,
+        responses: responses.length,
+      });
+    }
+  }
+  const statusHistory = data.id ? await statusHistoryService.listByPqrsId(Number(data.id)) : [];
+  const payload = buildBotPayload({ ...data, statusHistory });
+  console.info("[n8n][pqrsf][bot-response-ticket] payload", payload);
   await notifyN8n(payload);
   res.json(payload);
 });
@@ -384,36 +451,23 @@ export const getPqrsBotResponse = asyncHandler(async (req: Request, res: Respons
   if (!data.responseContent) {
     throw new AppError("Response not available", 404, "NOT_FOUND", { pqrsId });
   }
-
-  const actionsSource = data.reanalysisActionTaken ?? data.analysisActionTaken ?? null;
-  const actions = splitActions(actionsSource);
-  const solicitante = resolveSolicitante({
-    clientName: data.clientName ?? null,
-    typePersonName: data.typePersonName ?? null,
-  });
-
-  const payload = {
-    respuesta_pqrs: {
-      ticket_number: data.ticketNumber,
-      fecha_respuesta: formatDateEs(data.responseSentAt ?? data.updatedAt ?? null),
-      tipo_pqrs: data.typeName,
-      area: data.areaName,
-      estado: data.statusName,
-      solicitante,
-      descripcion_original: data.description,
-      respuesta: data.responseContent,
-      acciones: actions,
-      responsable: {
-        nombre: data.responsibleName ?? "Responsable",
-        cargo: data.responsibleAreaName ?? "Responsable",
-        email: data.responsibleEmail ?? "",
-      },
-      canal_respuesta: {
-        chat_id: data.chatId ? String(data.chatId) : "",
-      },
-    },
-  };
-
+  const pqrs = await pqrsService.findById(pqrsId);
+  const responses = await respuestaService.listByPqrsId(pqrsId);
+  if (pqrs.pqrsStatusId !== PQRS_STATUS.ANALISIS || responses.length !== 1) {
+    console.warn("[pqrsf][bot-response] blocked", {
+      pqrsId,
+      statusId: pqrs.pqrsStatusId,
+      responses: responses.length,
+    });
+    throw new AppError("Bot response not allowed for this PQRS status", 409, "BUSINESS_RULE_VIOLATION", {
+      pqrsId,
+      statusId: pqrs.pqrsStatusId,
+      responses: responses.length,
+    });
+  }
+  const statusHistory = await statusHistoryService.listByPqrsId(pqrsId);
+  const payload = buildBotPayload({ ...data, statusHistory });
+  console.info("[n8n][pqrsf][bot-response] payload", payload);
   await notifyN8n(payload);
   res.json(payload);
 });

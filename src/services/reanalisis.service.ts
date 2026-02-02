@@ -110,7 +110,7 @@ export class ReanalisisService {
     const id = requirePositiveInt(data.id, "id");
     ensureUpdates(
       data as Record<string, unknown>,
-      ["answer", "actionTaken"],
+      ["answer", "actionTaken", "analysisId", "responsibleId", "createdAt"],
       "Reanalysis"
     );
 
@@ -141,6 +141,15 @@ export class ReanalisisService {
         data.actionTaken !== undefined
           ? optionalString(data.actionTaken, "actionTaken")
           : undefined,
+      analysisId:
+        data.analysisId !== undefined
+          ? requirePositiveInt(data.analysisId, "analysisId")
+          : undefined,
+      responsibleId:
+        data.responsibleId !== undefined
+          ? requirePositiveInt(data.responsibleId, "responsibleId")
+          : undefined,
+      createdAt: data.createdAt !== undefined ? data.createdAt : undefined,
     });
     return ensureFound("Reanalysis", updated, { id });
   }

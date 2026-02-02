@@ -10,6 +10,7 @@ import {
 import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.config";
 import { sendChatMessageSchema } from "../schemas/chatIntegration.schema";
 import { ChatIntegrationService } from "../services/chat-integration.service";
+import { optionalPositiveInt } from "../utils/validation.utils";
 
 const service = new MensajeService();
 const integrationService = new ChatIntegrationService();
@@ -43,7 +44,12 @@ export const getMensajeById = asyncHandler(async (req: Request, res: Response) =
 
 export const listMensajesByChat = asyncHandler(async (req: Request, res: Response) => {
   const { chatId } = mensajeChatParamSchema.parse(req.params);
-  const result = await service.listByChat(chatId);
+  const pqrsIdRaw = req.query.pqrsId;
+  const pqrsId =
+    typeof pqrsIdRaw === "string" && pqrsIdRaw.trim() !== ""
+      ? optionalPositiveInt(Number(pqrsIdRaw), "pqrsId")
+      : undefined;
+  const result = pqrsId ? await service.listByChatAndPqrs(chatId, pqrsId) : await service.listByChat(chatId);
   res.json(result);
 });
 

@@ -29,6 +29,10 @@ export class DashboardService {
        GROUP BY a.id, a.name
        ORDER BY "avgDays" ASC`
     );
+    const surveyAverage = await pool.query(
+      `SELECT COALESCE(ROUND(AVG((q1_clarity + q2_timeliness + q3_quality + q4_attention + q5_overall) / 5.0)::numeric, 1), 0) AS "avgScore"
+       FROM survey`
+    );
     const chats = await pool.query(`SELECT COUNT(*)::int AS total FROM chat`);
     const clients = await pool.query(`SELECT COUNT(*)::int AS total FROM client`);
 
@@ -39,6 +43,7 @@ export class DashboardService {
       byStatus: byStatus.rows,
       byType: byType.rows,
       avgResponseByArea: avgResponseByArea.rows,
+      surveyAverage: surveyAverage.rows[0]?.avgScore ?? 0,
     };
   }
 

@@ -19,4 +19,5 @@ export interface IChatPqrsSummary extends IChatSummary {
   ticketNumber: string;
   statusId: number;
   pqrsCreatedAt: Date;
+  pqrsEndAt: Date | null;
 }

@@ -20,8 +20,14 @@ export class PqrsStatusHistoryRepository {
 
   async listByPqrsId(pqrsId: number): Promise<IPqrsStatusHistory[]> {
     const result = await pool.query(
-      `SELECT id, pqrs_id AS "pqrsId", status_id AS "statusId", created_at AS "createdAt", note
-       FROM pqrs_status_history
+      `SELECT h.id,
+              h.pqrs_id AS "pqrsId",
+              h.status_id AS "statusId",
+              s.name AS "statusName",
+              h.created_at AS "createdAt",
+              h.note
+       FROM pqrs_status_history h
+       JOIN pqrs_status s ON s.id = h.status_id
        WHERE pqrs_id = $1
        ORDER BY created_at ASC, id ASC`,
       normalizeValues([pqrsId])

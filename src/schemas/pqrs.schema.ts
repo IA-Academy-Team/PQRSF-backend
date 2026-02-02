@@ -7,6 +7,7 @@ import {
   optionalPositiveIntSchema,
   optionalPositiveBigIntSchema,
   optionalStringSchema,
+  optionalNullableStringSchema,
   positiveBigIntSchema,
   positiveIntSchema,
 } from "./core/common.schema";
@@ -16,6 +17,7 @@ export const createPqrsSchema = z
     ticketNumber: nonEmptyStringSchema.optional(),
     isAutoResolved: optionalBooleanSchema,
     dueDate: optionalNullableDateSchema,
+    appeal: optionalNullableStringSchema,
     pqrsStatusId: optionalPositiveIntSchema,
     clientId: positiveBigIntSchema,
     typePqrsId: positiveIntSchema,
@@ -28,6 +30,7 @@ export const updatePqrsSchema = z
     ticketNumber: nonEmptyStringSchema.optional(),
     isAutoResolved: optionalBooleanSchema,
     dueDate: optionalNullableDateSchema,
+    appeal: optionalNullableStringSchema,
     pqrsStatusId: optionalPositiveIntSchema,
     clientId: positiveBigIntSchema.optional(),
     typePqrsId: positiveIntSchema.optional(),
