@@ -10,7 +10,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { rateLimiter } from "./middlewares/rateLimit.middleware";
 import { corsMiddleware } from "./middlewares/cors.middleware";
-import pool from "./config/db.config";
+import { prisma } from "./config/db.config";
 import { initWebsocket } from "./config/websocket.config";
 
 dotenv.config();
@@ -37,56 +37,13 @@ app.use(rateLimiter)
 app.use("/api", routes)
 
 // A simple health check endpoint
-app.get('/health', async (req, res) => {
-  // In a real app, you might also check database connection, etc.
-  if (await isAppHealthy()) {
-    res.status(200).send({
-      status: 'ok',
-    });
-  } else {
-    res.send({
-      status: 'error',
-    });
-  }
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'OK' });
 });
 
-const HEALTH_CHECK_TTL_MS = 5_000;
-const REQUIRED_ENV_VARS = ["DB_USER", "DB_HOST", "DB_NAME", "DB_PASSWORD", "DB_PORT"] as const;
-let lastHealthCheckAt = 0;
-let lastHealthStatus = false;
-
-function hasCriticalEnvVars(): boolean {
-  return REQUIRED_ENV_VARS.every((key) => {
-    const value = process.env[key];
-    return typeof value === "string" && value.trim().length > 0;
-  });
-}
-
-async function checkCriticalDependencies(): Promise<boolean> {
-  if (!hasCriticalEnvVars()) {
-    return false;
-  }
-
-  try {
-    await pool.query("SELECT 1");
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-async function isAppHealthy(): Promise<boolean> {
-  const now = Date.now();
-  if (now - lastHealthCheckAt < HEALTH_CHECK_TTL_MS) {
-    return lastHealthStatus;
-  }
-
-  // verificar si hay dependencias críticas como la base de datos
-  lastHealthStatus = await checkCriticalDependencies();
-  lastHealthCheckAt = now;
-
-  return lastHealthStatus;
-}
+prisma.$queryRaw`SELECT 1`
+  .then(() => console.log('Prisma connection OK'))
+  .catch((error: unknown) => console.error('Prisma connection FAILED', error));
 
 // 📘 Swagger
 const swaggerPath = path.resolve(__dirname, "..", "swagger_output.json");

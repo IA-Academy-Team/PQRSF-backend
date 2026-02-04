@@ -1,38 +1,19 @@
-import { Pool } from 'pg';
-import dotenv from "dotenv";
+import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from '@prisma/adapter-pg';
+import { DATABASE_URL } from './env.config';
 
-dotenv.config();
+const globalForPrisma = globalThis as unknown as { prisma?: PrismaClient };
+const adapter = new PrismaPg({ connectionString: DATABASE_URL });
 
-// crea el objeto de conexión a la base de datos
-const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
-  port: parseInt(process.env.DB_PORT || '5432'),
-});
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    adapter,
+    log: process.env.NODE_ENV === 'development' ? ['warn', 'error'] : ['error'],
+  });
 
-// log de conexión
-pool.on('connect', () => {
-  console.log('Connected to the PostgreSQL database');
-});
+if (process.env.NODE_ENV !== 'production') {
+  globalForPrisma.prisma = prisma;
+}
 
-// log de error
-pool.on('error', (err) => {
-  console.error('Unexpected error on idle client', err);
-  process.exit(-1);
-});
-
-// log asynctronic de cierre de conexión
-(async () => {
-  try {
-    const client = await pool.connect();
-    console.log('DB connection OK');
-    client.release();
-  } catch (err) {
-    console.error('DB connection FAILED', err);
-  }
-})();
-
-
-export default pool;
+export default prisma;
