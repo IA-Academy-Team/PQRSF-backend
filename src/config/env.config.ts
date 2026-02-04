@@ -1,5 +1,8 @@
 import dotenv from 'dotenv';
-dotenv.config();
+dotenv.config({
+  // hace que no muestre logs del env mientras se ejecuta en test
+  quiet: process.env.NODE_ENV === "test",
+});
 
 const normalize = (value: string | undefined, fallback = '') =>
   (value ?? fallback).toString().trim();

@@ -1,10 +1,10 @@
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { createFieldAttribute } from "better-auth/db";
-import { PostgresDialect } from "kysely";
 import bcrypt from "bcrypt";
-import pool from "./db.config";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { sendEmail } from "../utils/mailer.utils";
+import prisma from "./db.config";
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
   "campuslands.com",
@@ -23,11 +23,10 @@ const isAllowedEmail = (email?: string | null) => {
 
 export const auth = betterAuth({
   appName: "Hubux",
-  database: {
-    dialect: new PostgresDialect({ pool }),
-    type: "postgres",
-    casing: "snake",
-  },
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+    usePlural: false,
+  }),
 
   logger: {
     level: "debug",
