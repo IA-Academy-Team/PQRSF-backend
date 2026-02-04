@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 import { IStakeholder } from "../models/stakeholder.model";
 import { CreateStakeholderDTO, UpdateStakeholderDTO, DeleteStakeholderDTO } from "../schemas/stakeholder.schema";
 
@@ -56,7 +57,8 @@ export class StakeholderRepository {
       });
       return stakeholder;
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+      const err = error as Prisma.PrismaClientKnownRequestError;
+      if (err?.code === "P2025") {
         return null;
       }
       throw error;

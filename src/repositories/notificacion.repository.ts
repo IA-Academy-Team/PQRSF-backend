@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 import { INotificacion } from "../models/notificacion.model";
 import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../schemas/notificacion.schema";
 
@@ -114,7 +115,7 @@ export class NotificacionRepository {
 
     const updated = await prisma.notification.updateMany({
       where: { id: data.id as number },
-      data: updateData,
+      data: updateData as Prisma.NotificationUncheckedUpdateManyInput,
     });
 
     if (updated.count === 0) return null;

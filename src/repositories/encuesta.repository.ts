@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 import { IEncuesta, IEncuestaDetailed } from "../models/encuesta.model";
 import { CreateEncuestaDTO, UpdateEncuestaDTO, DeleteEncuestaDTO } from "../schemas/encuesta.schema";
 

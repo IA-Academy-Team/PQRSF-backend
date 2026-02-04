@@ -11,11 +11,27 @@ const reanalysisSelect = {
   responsibleId: true,
 } as const;
 
+const toReanalisis = (row: {
+  id: number;
+  answer: string | null;
+  actionTaken: string | null;
+  createdAt: Date | null;
+  analysisId: number;
+  responsibleId: number;
+}): IReanalisis => ({
+  id: row.id,
+  answer: row.answer,
+  actionTaken: row.actionTaken,
+  createdAt: row.createdAt ?? new Date(),
+  analysisId: row.analysisId,
+  responsibleId: row.responsibleId,
+});
+
 export class ReanalisisRepository {
   private readonly table = "reanalysis";
 
   async create(data: CreateReanalisisDTO): Promise<IReanalisis> {
-    return prisma.reanalysis.create({
+    const created = await prisma.reanalysis.create({
       data: {
         answer: data.answer,
         actionTaken: data.actionTaken,
@@ -24,44 +40,50 @@ export class ReanalisisRepository {
       },
       select: reanalysisSelect,
     });
+    return toReanalisis(created);
   }
 
   async findById(id: number): Promise<IReanalisis | null> {
-    return prisma.reanalysis.findUnique({
+    const found = await prisma.reanalysis.findUnique({
       where: { id },
       select: reanalysisSelect,
     });
+    return found ? toReanalisis(found) : null;
   }
 
   async findAll(): Promise<IReanalisis[]> {
-    return prisma.reanalysis.findMany({
+    const rows = await prisma.reanalysis.findMany({
       orderBy: { id: "asc" },
       select: reanalysisSelect,
     });
+    return rows.map(toReanalisis);
   }
 
   async findByAnalysisId(analysisId: number): Promise<IReanalisis | null> {
-    return prisma.reanalysis.findFirst({
+    const found = await prisma.reanalysis.findFirst({
       where: { analysisId },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       select: reanalysisSelect,
     });
+    return found ? toReanalisis(found) : null;
   }
 
   async findByPqrsId(pqrsId: number): Promise<IReanalisis | null> {
-    return prisma.reanalysis.findFirst({
+    const found = await prisma.reanalysis.findFirst({
       where: { analysis: { pqrsId } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       select: reanalysisSelect,
     });
+    return found ? toReanalisis(found) : null;
   }
 
   async findAllByPqrsId(pqrsId: number): Promise<IReanalisis[]> {
-    return prisma.reanalysis.findMany({
+    const rows = await prisma.reanalysis.findMany({
       where: { analysis: { pqrsId } },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       select: reanalysisSelect,
     });
+    return rows.map(toReanalisis);
   }
 
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis | null> {

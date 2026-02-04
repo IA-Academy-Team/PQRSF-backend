@@ -7,84 +7,81 @@ import {
 } from "../schemas/verificacion.schema";
 
 export class VerificacionRepository {
+  private readonly selectFields = {
+    id: true,
+    identifier: true,
+    value: true,
+    expiresAt: true,
+    createdAt: true,
+    updatedAt: true,
+  } as const;
+
+  private toVerificacion(row: {
+    id: number;
+    identifier: string;
+    value: string;
+    expiresAt: Date;
+    createdAt: Date | null;
+    updatedAt: Date | null;
+  }): IVerificacion {
+    return {
+      id: row.id,
+      identifier: row.identifier,
+      value: row.value,
+      expiresAt: row.expiresAt,
+      createdAt: row.createdAt ?? new Date(),
+      updatedAt: row.updatedAt ?? new Date(),
+    };
+  }
+
   async create(data: CreateVerificacionDTO): Promise<IVerificacion> {
-    return prisma.verification.create({
+    const created = await prisma.verification.create({
       data: {
         identifier: data.identifier,
         value: data.value,
         expiresAt: data.expiresAt,
       },
-      select: {
-        id: true,
-        identifier: true,
-        value: true,
-        expiresAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: this.selectFields,
     });
+    return this.toVerificacion(created);
   }
 
   async findById(id: number): Promise<IVerificacion | null> {
-    return prisma.verification.findUnique({
+    const found = await prisma.verification.findUnique({
       where: { id },
-      select: {
-        id: true,
-        identifier: true,
-        value: true,
-        expiresAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: this.selectFields,
     });
+    return found ? this.toVerificacion(found) : null;
   }
 
   async findAll(): Promise<IVerificacion[]> {
-    return prisma.verification.findMany({
+    const rows = await prisma.verification.findMany({
       orderBy: { id: "asc" },
-      select: {
-        id: true,
-        identifier: true,
-        value: true,
-        expiresAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: this.selectFields,
     });
+    return rows.map((row) => this.toVerificacion(row));
   }
 
   async findByIdentifier(identifier: string): Promise<IVerificacion | null> {
-    return prisma.verification.findFirst({
+    const found = await prisma.verification.findFirst({
       where: { identifier },
-      select: {
-        id: true,
-        identifier: true,
-        value: true,
-        expiresAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: this.selectFields,
     });
+    return found ? this.toVerificacion(found) : null;
   }
 
   async findByIdentifierAndValue(
     identifier: string,
     value: string
   ): Promise<IVerificacion | null> {
-    return prisma.verification.findFirst({
+    const found = await prisma.verification.findFirst({
       where: {
         identifier,
         value,
       },
-      select: {
-        id: true,
-        identifier: true,
-        value: true,
-        expiresAt: true,
-        createdAt: true,
-        updatedAt: true,
-      },
+      select: this.selectFields,
     });
+    return found ? this.toVerificacion(found) : null;
   }
 
   async update(data: UpdateVerificacionDTO): Promise<IVerificacion | null> {
@@ -111,18 +108,12 @@ export class VerificacionRepository {
     }
 
     try {
-      return await prisma.verification.update({
+      const updated = await prisma.verification.update({
         where: { id: data.id as number },
         data: updateData,
-        select: {
-          id: true,
-          identifier: true,
-          value: true,
-          expiresAt: true,
-          createdAt: true,
-          updatedAt: true,
-        },
+        select: this.selectFields,
       });
+      return this.toVerificacion(updated);
     } catch {
       return null;
     }

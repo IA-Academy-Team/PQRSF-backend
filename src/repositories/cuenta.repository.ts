@@ -63,6 +63,7 @@ export class CuentaRepository {
         accessTokenExpiresAt: data.accessTokenExpiresAt,
         refreshTokenExpiresAt: data.refreshTokenExpiresAt,
         scope: data.scope,
+        updatedAt: new Date(),
         userId: data.userId,
       },
       select: accountSelect,

@@ -8,7 +8,7 @@ export class PqrsStatusHistoryRepository {
     createdAt?: Date;
     note?: string | null;
   }): Promise<IPqrsStatusHistory> {
-    return prisma.pqrsStatusHistory.create({
+    const created = await prisma.pqrsStatusHistory.create({
       data: {
         pqrsId: data.pqrsId,
         statusId: data.statusId,
@@ -23,6 +23,13 @@ export class PqrsStatusHistoryRepository {
         note: true,
       },
     });
+    return {
+      id: created.id,
+      pqrsId: created.pqrsId,
+      statusId: created.statusId,
+      createdAt: created.createdAt ? created.createdAt.toISOString() : new Date().toISOString(),
+      note: created.note ?? null,
+    };
   }
 
   async listByPqrsId(pqrsId: number): Promise<IPqrsStatusHistory[]> {
@@ -46,7 +53,7 @@ export class PqrsStatusHistoryRepository {
       pqrsId: row.pqrsId,
       statusId: row.statusId,
       statusName: row.status?.name ?? null,
-      createdAt: row.createdAt,
+      createdAt: row.createdAt ? row.createdAt.toISOString() : new Date().toISOString(),
       note: row.note ?? null,
     }));
   }

@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 import { IPqrs } from "../models/pqrs.model";
 import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../schemas/pqrs.schema";
 
@@ -120,14 +121,15 @@ export class PqrsRepository {
   async create(data: CreatePqrsDTO): Promise<IPqrs> {
     const created = await prisma.pqrs.create({
       data: {
-        ticketNumber: data.ticketNumber,
+        ticketNumber: data.ticketNumber as string,
         isAutoResolved: data.isAutoResolved,
         dueDate: data.dueDate,
         appeal: data.appeal ?? null,
-        pqrsStatusId: data.pqrsStatusId,
+        pqrsStatusId: data.pqrsStatusId as number,
         clientId: data.clientId,
         typePqrsId: data.typePqrsId,
         areaId: data.areaId,
+        description: (data as { description?: string }).description ?? "",
       },
       select: pqrsSelect,
     });

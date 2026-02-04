@@ -1,4 +1,5 @@
 import prisma from "../config/db.config";
+import { Prisma } from "@prisma/client";
 import { IChat, IChatSummary, IChatPqrsSummary } from "../models/chat.model";
 import { CreateChatDTO, UpdateChatDTO, DeleteChatDTO } from "../schemas/chat.schema";
 
@@ -46,7 +47,7 @@ export class ChatRepository {
   }
 
   async findAllSummaries(): Promise<IChatSummary[]> {
-    return prisma.$queryRaw<IChatSummary[]>(`SELECT chat.id,
+    return prisma.$queryRaw<IChatSummary[]>(Prisma.sql`SELECT chat.id,
               chat.mode,
               chat.client_id AS "clientId",
               client.name AS "clientName",
@@ -75,7 +76,7 @@ export class ChatRepository {
 
   async findByAreaId(areaId: number): Promise<IChat[]> {
     const rows = await prisma.$queryRaw<{ id: bigint; mode: number | null; clientId: bigint | null }[]>(
-      prisma.sql`SELECT DISTINCT chat.id, chat.mode, chat.client_id AS "clientId"
+      Prisma.sql`SELECT DISTINCT chat.id, chat.mode, chat.client_id AS "clientId"
        FROM chat
        JOIN pqrs ON pqrs.client_id = chat.client_id
        WHERE pqrs.area_id = ${areaId}

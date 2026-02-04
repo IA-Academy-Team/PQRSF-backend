@@ -12,42 +12,64 @@ const responseSelect = {
   responsibleId: true,
 } as const;
 
+const toRespuesta = (row: {
+  id: number;
+  pqrsId: number;
+  responsibleId: number;
+  content: string;
+  channel: number;
+  sentAt: Date | null;
+  documentId: number | null;
+}): IRespuesta => ({
+  id: row.id,
+  pqrsId: row.pqrsId,
+  responsibleId: row.responsibleId,
+  content: row.content,
+  channel: row.channel,
+  sentAt: row.sentAt ?? new Date(),
+  documentId: row.documentId,
+});
+
 export class RespuestaRepository {
   private readonly table = "response";
 
   async create(data: CreateRespuestaDTO): Promise<IRespuesta> {
-    return prisma.response.create({
+    const created = await prisma.response.create({
       data: {
         content: data.content,
-        channel: data.channel,
+        channel: data.channel as number,
         documentId: data.documentId,
         pqrsId: data.pqrsId,
         responsibleId: data.responsibleId,
       },
       select: responseSelect,
     });
+    return toRespuesta(created);
   }
 
   async findById(id: number): Promise<IRespuesta | null> {
-    return prisma.response.findUnique({
+    const found = await prisma.response.findUnique({
       where: { id },
       select: responseSelect,
     });
+    return found ? toRespuesta(found) : null;
   }
 
   async findAll(): Promise<IRespuesta[]> {
-    return prisma.response.findMany({
+    const rows = await prisma.response.findMany({
       orderBy: { id: "asc" },
       select: responseSelect,
     });
+    return rows.map(toRespuesta);
   }
 
   async findByPqrsId(pqrsId: number): Promise<IRespuesta[]> {
-    return prisma.response.findMany({
+    const rows = await prisma.response.findMany({
       where: { pqrsId },
       orderBy: { id: "asc" },
       select: responseSelect,
     });
+    return rows.map(toRespuesta);
   }
 
   async update(data: UpdateRespuestaDTO): Promise<IRespuesta | null> {
