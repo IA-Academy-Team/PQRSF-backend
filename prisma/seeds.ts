@@ -1,4 +1,4 @@
-import { prisma } from './PrismaClient.ts';
+import { prisma } from './PrismaClient';
 
 // !hasheo de contraseñas en desarrollo
 const SEEDED_PASSWORD_HASHES = {

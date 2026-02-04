@@ -47,7 +47,7 @@ router.use("/pqrsf", pqrsfRoutes);
 // router.use("/notifications", notificationsRoutes); // UNUSED (frontend)
 router.use("/dashboard", dashboardRoutes);
 // router.use("/responses", responsesRoutes); // UNUSED (frontend)
-router.use("/whatsapp", webhooksRoutes); // External integrations (not used by frontend)
+router.use("/whatsapp", webhooksRoutes); // External integrations (not used by frontend, used by n8n)
 router.use("/responsables", responsableRoutes);
 // router.use("/clientes", clienteRoutes); // UNUSED (frontend)
 router.use("/chats", chatRoutes);
