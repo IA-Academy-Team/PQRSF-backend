@@ -1,5 +1,5 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../../prisma/PrismaClient";
+import { Prisma } from "@prisma/client";
 import { IStakeholder } from "../models/stakeholder.model";
 import { CreateStakeholderDTO, UpdateStakeholderDTO, DeleteStakeholderDTO } from "../schemas/stakeholder.schema";
 
@@ -7,48 +7,67 @@ export class StakeholderRepository {
   private readonly table = "stakeholder";
 
   async create(data: CreateStakeholderDTO): Promise<IStakeholder> {
-    const result = await pool.query(
-      `INSERT INTO stakeholder (name) VALUES ($1) RETURNING id, name`,
-      normalizeValues([data.name])
-    );
-    return result.rows[0];
+    const stakeholder = await prisma.stakeholder.create({
+      data: {
+        name: data.name,
+      },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return stakeholder;
   }
 
   async findById(id: number): Promise<IStakeholder | null> {
-    const result = await pool.query(
-      `SELECT id, name FROM stakeholder WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const stakeholder = await prisma.stakeholder.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
+    return stakeholder ?? null;
   }
 
   async findAll(): Promise<IStakeholder[]> {
-    const result = await pool.query(`SELECT id, name FROM stakeholder ORDER BY id`);
-    return result.rows;
+    return prisma.stakeholder.findMany({
+      orderBy: { id: "asc" },
+      select: {
+        id: true,
+        name: true,
+      },
+    });
   }
 
   async update(data: UpdateStakeholderDTO): Promise<IStakeholder | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.name !== undefined) {
-      fields.push(`name = $${index}`);
-      values.push(data.name);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    if (data.name === undefined) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE stakeholder SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+    try {
+      const stakeholder = await prisma.stakeholder.update({
+        where: { id: data.id as number },
+        data: {
+          name: data.name,
+        },
+        select: {
+          id: true,
+          name: true,
+        },
+      });
+      return stakeholder;
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025") {
+        return null;
+      }
+      throw error;
+    }
   }
 
   async delete(data: DeleteStakeholderDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM stakeholder WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const result = await prisma.stakeholder.deleteMany({
+      where: { id: data.id },
+    });
+    return result.count > 0;
   }
 }

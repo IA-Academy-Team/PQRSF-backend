@@ -1,5 +1,4 @@
 import { Router } from 'express'
-// imports de autenticacion
 // imports de las rutas
 import pqrsRoutes from "./pqrs.routes";
 import analisisRoutes from "./analisis.routes";
@@ -36,7 +35,7 @@ const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/users/type-person", tipoPersonaRoutes);
-// router.use("/users/stake-holder", stakeholderRoutes); // UNUSED (frontend)
+router.use("/stake-holder", stakeholderRoutes); // UNUSED (frontend)
 router.use("/users", usersRoutes);
 // router.use("/roles", rolRoutes); // UNUSED (frontend)
 router.use("/type-pqrsf", tipoPqrsRoutes);
