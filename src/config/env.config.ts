@@ -10,6 +10,9 @@ export const DB_PORT = Number(normalize(process.env.DB_PORT, '5432'));
 export const DB_USER = normalize(process.env.DB_USER, 'postgres');
 export const DB_PASSWORD = normalize(process.env.DB_PASSWORD, 'postgres');
 export const DB_NAME = normalize(process.env.DB_NAME, 'pqrs');
+// prisma
+export const DATABASE_URL = normalize(process.env.DATABASE_URL, "");
+// export const DATABASE_URL = normalize(process.env.DATABASE_URL, `postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}`);
 
 // recuperar constraseña
 export const SMTP_HOST = normalize(process.env.SMTP_HOST, 'smtp.mailtrap.io');
