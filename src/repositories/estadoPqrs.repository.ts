@@ -1,5 +1,4 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IEstadoPqrs } from "../models/estado.model";
 import { CreateEstadoPqrsDTO, UpdateEstadoPqrsDTO, DeleteEstadoPqrsDTO } from "../schemas/estadoPqrs.schema";
 
@@ -7,48 +6,44 @@ export class EstadoPqrsRepository {
   private readonly table = "pqrs_status";
 
   async create(data: CreateEstadoPqrsDTO): Promise<IEstadoPqrs> {
-    const result = await pool.query(
-      `INSERT INTO pqrs_status (name) VALUES ($1) RETURNING id, name`,
-      normalizeValues([data.name])
-    );
-    return result.rows[0];
+    return prisma.pqrsStatus.create({
+      data: { name: data.name },
+      select: { id: true, name: true },
+    });
   }
 
   async findById(id: number): Promise<IEstadoPqrs | null> {
-    const result = await pool.query(
-      `SELECT id, name FROM pqrs_status WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    return prisma.pqrsStatus.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
   }
 
   async findAll(): Promise<IEstadoPqrs[]> {
-    const result = await pool.query(`SELECT id, name FROM pqrs_status ORDER BY id`);
-    return result.rows;
+    return prisma.pqrsStatus.findMany({
+      orderBy: { id: "asc" },
+      select: { id: true, name: true },
+    });
   }
 
   async update(data: UpdateEstadoPqrsDTO): Promise<IEstadoPqrs | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.name !== undefined) {
-      fields.push(`name = $${index}`);
-      values.push(data.name);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    if (data.name === undefined) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE pqrs_status SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.pqrsStatus.updateMany({
+      where: { id: data.id as number },
+      data: { name: data.name },
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteEstadoPqrsDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM pqrs_status WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.pqrsStatus.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

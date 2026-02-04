@@ -1,93 +1,141 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IVerificacion } from "../models/verificacion.model";
-import { CreateVerificacionDTO, UpdateVerificacionDTO, DeleteVerificacionDTO } from "../schemas/verificacion.schema";
+import {
+  CreateVerificacionDTO,
+  UpdateVerificacionDTO,
+  DeleteVerificacionDTO,
+} from "../schemas/verificacion.schema";
 
 export class VerificacionRepository {
-  private readonly table = "verifications";
-
   async create(data: CreateVerificacionDTO): Promise<IVerificacion> {
-    const result = await pool.query(
-      `INSERT INTO verifications (identifier, value, expires_at) VALUES ($1, $2, $3) RETURNING id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt"`,
-      normalizeValues([data.identifier, data.value, data.expiresAt])
-    );
-    return result.rows[0];
+    return prisma.verification.create({
+      data: {
+        identifier: data.identifier,
+        value: data.value,
+        expiresAt: data.expiresAt,
+      },
+      select: {
+        id: true,
+        identifier: true,
+        value: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async findById(id: number): Promise<IVerificacion | null> {
-    const result = await pool.query(
-      `SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    return prisma.verification.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        identifier: true,
+        value: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async findAll(): Promise<IVerificacion[]> {
-    const result = await pool.query(`SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications ORDER BY id`);
-    return result.rows;
+    return prisma.verification.findMany({
+      orderBy: { id: "asc" },
+      select: {
+        id: true,
+        identifier: true,
+        value: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async findByIdentifier(identifier: string): Promise<IVerificacion | null> {
-    const result = await pool.query(
-      `SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications WHERE identifier = $1`,
-      normalizeValues([identifier])
-    );
-    return result.rows[0] ?? null;
+    return prisma.verification.findFirst({
+      where: { identifier },
+      select: {
+        id: true,
+        identifier: true,
+        value: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async findByIdentifierAndValue(
     identifier: string,
     value: string
   ): Promise<IVerificacion | null> {
-    const result = await pool.query(
-      `SELECT id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt" FROM verifications WHERE identifier = $1 AND value = $2`,
-      normalizeValues([identifier, value])
-    );
-    return result.rows[0] ?? null;
+    return prisma.verification.findFirst({
+      where: {
+        identifier,
+        value,
+      },
+      select: {
+        id: true,
+        identifier: true,
+        value: true,
+        expiresAt: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
   }
 
   async update(data: UpdateVerificacionDTO): Promise<IVerificacion | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.identifier !== undefined) {
-      fields.push(`identifier = $${index}`);
-      values.push(data.identifier);
-      index += 1;
-    }
-    if (data.value !== undefined) {
-      fields.push(`value = $${index}`);
-      values.push(data.value);
-      index += 1;
-    }
-    if (data.expiresAt !== undefined) {
-      fields.push(`expires_at = $${index}`);
-      values.push(data.expiresAt);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (data.updatedAt !== undefined) {
-      fields.push(`updated_at = $${index}`);
-      values.push(data.updatedAt);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: Partial<IVerificacion> = {};
+
+    if (data.identifier !== undefined)
+      updateData.identifier = data.identifier;
+
+    if (data.value !== undefined)
+      updateData.value = data.value;
+
+    if (data.expiresAt !== undefined)
+      updateData.expiresAt = data.expiresAt;
+
+    if (data.createdAt !== undefined)
+      updateData.createdAt = data.createdAt;
+
+    if (data.updatedAt !== undefined)
+      updateData.updatedAt = data.updatedAt;
+
+    // 🔁 MISMA lógica que antes
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE verifications SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, identifier, value, expires_at AS "expiresAt", created_at AS "createdAt", updated_at AS "updatedAt"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    try {
+      return await prisma.verification.update({
+        where: { id: data.id as number },
+        data: updateData,
+        select: {
+          id: true,
+          identifier: true,
+          value: true,
+          expiresAt: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      });
+    } catch {
+      return null;
+    }
   }
 
   async delete(data: DeleteVerificacionDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM verifications WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    try {
+      await prisma.verification.delete({
+        where: { id: data.id },
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

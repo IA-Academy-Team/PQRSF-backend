@@ -1,96 +1,110 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IResponsable, IResponsableSummary } from "../models/responsable.model";
 import { CreateResponsableDTO, UpdateResponsableDTO, DeleteResponsableDTO } from "../schemas/responsable.schema";
+
+const responsibleSelect = {
+  id: true,
+  userId: true,
+  areaId: true,
+} as const;
 
 export class ResponsableRepository {
   private readonly table = "responsible";
 
   async create(data: CreateResponsableDTO): Promise<IResponsable> {
-    const result = await pool.query(
-      `INSERT INTO responsible (user_id, area_id) VALUES ($1, $2) RETURNING id, user_id AS "userId", area_id AS "areaId"`,
-      normalizeValues([data.userId, data.areaId])
-    );
-    return result.rows[0];
+    return prisma.responsible.create({
+      data: {
+        userId: data.userId,
+        areaId: data.areaId,
+      },
+      select: responsibleSelect,
+    });
   }
 
   async findById(id: number): Promise<IResponsable | null> {
-    const result = await pool.query(
-      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    return prisma.responsible.findUnique({
+      where: { id },
+      select: responsibleSelect,
+    });
   }
 
   async findAll(): Promise<IResponsable[]> {
-    const result = await pool.query(
-      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible ORDER BY id`
-    );
-    return result.rows;
+    return prisma.responsible.findMany({
+      orderBy: { id: "asc" },
+      select: responsibleSelect,
+    });
   }
 
   async findAllDetailed(): Promise<IResponsableSummary[]> {
-    const result = await pool.query(
-      `SELECT r.id,
-              r.user_id AS "userId",
-              r.area_id AS "areaId",
-              u.name AS "userName",
-              u.email AS "userEmail",
-              u.is_active AS "userIsActive",
-              u.role_id AS "roleId",
-              a.name AS "areaName",
-              a.code AS "areaCode"
-       FROM responsible r
-       JOIN users u ON u.id = r.user_id
-       LEFT JOIN area a ON a.id = r.area_id
-       ORDER BY r.id`
-    );
-    return result.rows;
+    const rows = await prisma.responsible.findMany({
+      orderBy: { id: "asc" },
+      include: {
+        user: {
+          select: {
+            name: true,
+            email: true,
+            isActive: true,
+            roleId: true,
+          },
+        },
+        area: {
+          select: {
+            name: true,
+            code: true,
+          },
+        },
+      },
+    });
+
+    return rows.map((row) => ({
+      id: row.id,
+      userId: row.userId,
+      areaId: row.areaId,
+      userName: row.user?.name ?? null,
+      userEmail: row.user?.email ?? null,
+      userIsActive: row.user?.isActive ?? true,
+      roleId: row.user?.roleId ?? 1,
+      areaName: row.area?.name ?? null,
+      areaCode: row.area?.code ?? null,
+    }));
   }
 
   async findByUserId(userId: number): Promise<IResponsable | null> {
-    const result = await pool.query(
-      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible WHERE user_id = $1`,
-      normalizeValues([userId])
-    );
-    return result.rows[0] ?? null;
+    return prisma.responsible.findFirst({
+      where: { userId },
+      select: responsibleSelect,
+    });
   }
 
   async findByAreaId(areaId: number): Promise<IResponsable[]> {
-    const result = await pool.query(
-      `SELECT id, user_id AS "userId", area_id AS "areaId" FROM responsible WHERE area_id = $1 ORDER BY id`,
-      normalizeValues([areaId])
-    );
-    return result.rows;
+    return prisma.responsible.findMany({
+      where: { areaId },
+      orderBy: { id: "asc" },
+      select: responsibleSelect,
+    });
   }
 
   async update(data: UpdateResponsableDTO): Promise<IResponsable | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.userId !== undefined) {
-      fields.push(`user_id = $${index}`);
-      values.push(data.userId);
-      index += 1;
-    }
-    if (data.areaId !== undefined) {
-      fields.push(`area_id = $${index}`);
-      values.push(data.areaId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: { userId?: number; areaId?: number | null } = {};
+
+    if (data.userId !== undefined) updateData.userId = data.userId;
+    if (data.areaId !== undefined) updateData.areaId = data.areaId;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE responsible SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, user_id AS "userId", area_id AS "areaId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.responsible.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteResponsableDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM responsible WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.responsible.deleteMany({ where: { id: data.id } });
+    return deleted.count > 0;
   }
 }

@@ -1,43 +1,86 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IEncuesta, IEncuestaDetailed } from "../models/encuesta.model";
 import { CreateEncuestaDTO, UpdateEncuestaDTO, DeleteEncuestaDTO } from "../schemas/encuesta.schema";
+
+const surveySelect = {
+  id: true,
+  q1Clarity: true,
+  q2Timeliness: true,
+  q3Quality: true,
+  q4Attention: true,
+  q5Overall: true,
+  comment: true,
+  pqrsId: true,
+  createdAt: true,
+} as const;
+
+const toEncuesta = (row: {
+  id: number;
+  q1Clarity: number | null;
+  q2Timeliness: number | null;
+  q3Quality: number | null;
+  q4Attention: number | null;
+  q5Overall: number | null;
+  comment: string | null;
+  pqrsId: number;
+  createdAt: Date | null;
+}): IEncuesta => ({
+  id: row.id,
+  q1Clarity: row.q1Clarity,
+  q2Timeliness: row.q2Timeliness,
+  q3Quality: row.q3Quality,
+  q4Attention: row.q4Attention,
+  q5Overall: row.q5Overall,
+  comment: row.comment,
+  pqrsId: row.pqrsId,
+  createdAt: row.createdAt ?? new Date(),
+});
 
 export class EncuestaRepository {
   private readonly table = "survey";
 
   async create(data: CreateEncuestaDTO): Promise<IEncuesta> {
-    const result = await pool.query(
-      `INSERT INTO survey (q1_clarity, q2_timeliness, q3_quality, q4_attention, q5_overall, comment, pqrs_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, q1_clarity AS "q1Clarity", q2_timeliness AS "q2Timeliness", q3_quality AS "q3Quality", q4_attention AS "q4Attention", q5_overall AS "q5Overall", comment, pqrs_id AS "pqrsId", created_at AS "createdAt"`,
-      normalizeValues([data.q1Clarity, data.q2Timeliness, data.q3Quality, data.q4Attention, data.q5Overall, data.comment, data.pqrsId])
-    );
-    return result.rows[0];
+    const created = await prisma.survey.create({
+      data: {
+        q1Clarity: data.q1Clarity,
+        q2Timeliness: data.q2Timeliness,
+        q3Quality: data.q3Quality,
+        q4Attention: data.q4Attention,
+        q5Overall: data.q5Overall,
+        comment: data.comment,
+        pqrsId: data.pqrsId,
+      },
+      select: surveySelect,
+    });
+    return toEncuesta(created);
   }
 
   async findById(id: number): Promise<IEncuesta | null> {
-    const result = await pool.query(
-      `SELECT id, q1_clarity AS "q1Clarity", q2_timeliness AS "q2Timeliness", q3_quality AS "q3Quality", q4_attention AS "q4Attention", q5_overall AS "q5Overall", comment, pqrs_id AS "pqrsId", created_at AS "createdAt" FROM survey WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.survey.findUnique({
+      where: { id },
+      select: surveySelect,
+    });
+    return found ? toEncuesta(found) : null;
   }
 
   async findAll(): Promise<IEncuesta[]> {
-    const result = await pool.query(`SELECT id, q1_clarity AS "q1Clarity", q2_timeliness AS "q2Timeliness", q3_quality AS "q3Quality", q4_attention AS "q4Attention", q5_overall AS "q5Overall", comment, pqrs_id AS "pqrsId", created_at AS "createdAt" FROM survey ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.survey.findMany({
+      orderBy: { id: "asc" },
+      select: surveySelect,
+    });
+    return rows.map(toEncuesta);
   }
 
   async findByPqrsId(pqrsId: number): Promise<IEncuesta | null> {
-    const result = await pool.query(
-      `SELECT id, q1_clarity AS "q1Clarity", q2_timeliness AS "q2Timeliness", q3_quality AS "q3Quality", q4_attention AS "q4Attention", q5_overall AS "q5Overall", comment, pqrs_id AS "pqrsId", created_at AS "createdAt" FROM survey WHERE pqrs_id = $1`,
-      normalizeValues([pqrsId])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.survey.findFirst({
+      where: { pqrsId },
+      select: surveySelect,
+    });
+    return found ? toEncuesta(found) : null;
   }
 
   async findAllDetailed(): Promise<IEncuestaDetailed[]> {
-    const result = await pool.query(
-      `SELECT s.id,
+    return prisma.$queryRaw<IEncuestaDetailed[]>(Prisma.sql`SELECT s.id,
               s.q1_clarity AS "q1Clarity",
               s.q2_timeliness AS "q2Timeliness",
               s.q3_quality AS "q3Quality",
@@ -67,68 +110,47 @@ export class EncuestaRepository {
        JOIN type_pqrs tp ON tp.id = p.type_pqrs_id
        JOIN area a ON a.id = p.area_id
        JOIN client c ON c.id = p.client_id
-       ORDER BY s.created_at DESC`
-    );
-    return result.rows;
+       ORDER BY s.created_at DESC`);
   }
 
   async update(data: UpdateEncuestaDTO): Promise<IEncuesta | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.q1Clarity !== undefined) {
-      fields.push(`q1_clarity = $${index}`);
-      values.push(data.q1Clarity);
-      index += 1;
-    }
-    if (data.q2Timeliness !== undefined) {
-      fields.push(`q2_timeliness = $${index}`);
-      values.push(data.q2Timeliness);
-      index += 1;
-    }
-    if (data.q3Quality !== undefined) {
-      fields.push(`q3_quality = $${index}`);
-      values.push(data.q3Quality);
-      index += 1;
-    }
-    if (data.q4Attention !== undefined) {
-      fields.push(`q4_attention = $${index}`);
-      values.push(data.q4Attention);
-      index += 1;
-    }
-    if (data.q5Overall !== undefined) {
-      fields.push(`q5_overall = $${index}`);
-      values.push(data.q5Overall);
-      index += 1;
-    }
-    if (data.comment !== undefined) {
-      fields.push(`comment = $${index}`);
-      values.push(data.comment);
-      index += 1;
-    }
-    if (data.pqrsId !== undefined) {
-      fields.push(`pqrs_id = $${index}`);
-      values.push(data.pqrsId);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      q1Clarity?: number | null;
+      q2Timeliness?: number | null;
+      q3Quality?: number | null;
+      q4Attention?: number | null;
+      q5Overall?: number | null;
+      comment?: string | null;
+      pqrsId?: number;
+      createdAt?: Date;
+    } = {};
+
+    if (data.q1Clarity !== undefined) updateData.q1Clarity = data.q1Clarity;
+    if (data.q2Timeliness !== undefined) updateData.q2Timeliness = data.q2Timeliness;
+    if (data.q3Quality !== undefined) updateData.q3Quality = data.q3Quality;
+    if (data.q4Attention !== undefined) updateData.q4Attention = data.q4Attention;
+    if (data.q5Overall !== undefined) updateData.q5Overall = data.q5Overall;
+    if (data.comment !== undefined) updateData.comment = data.comment;
+    if (data.pqrsId !== undefined) updateData.pqrsId = data.pqrsId;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE survey SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, q1_clarity AS "q1Clarity", q2_timeliness AS "q2Timeliness", q3_quality AS "q3Quality", q4_attention AS "q4Attention", q5_overall AS "q5Overall", comment, pqrs_id AS "pqrsId", created_at AS "createdAt"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.survey.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteEncuestaDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM survey WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.survey.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

@@ -1,90 +1,114 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IMensaje } from "../models/mensaje.model";
 import { CreateMensajeDTO, UpdateMensajeDTO, DeleteMensajeDTO } from "../schemas/mensaje.schema";
+
+const messageSelect = {
+  id: true,
+  content: true,
+  type: true,
+  createdAt: true,
+  chatId: true,
+} as const;
+
+const toMensaje = (row: {
+  id: number;
+  content: string | null;
+  type: number | null;
+  createdAt: Date | null;
+  chatId: bigint;
+}): IMensaje => ({
+  id: row.id,
+  content: row.content,
+  type: row.type,
+  createdAt: row.createdAt ?? new Date(),
+  chatId: row.chatId,
+});
 
 export class MensajeRepository {
   private readonly table = "message";
 
   async create(data: CreateMensajeDTO): Promise<IMensaje> {
-    const result = await pool.query(
-      `INSERT INTO message (content, type, chat_id) VALUES ($1, $2, $3) RETURNING id, content, type, created_at AS "createdAt", chat_id AS "chatId"`,
-      normalizeValues([data.content, data.type, data.chatId])
-    );
-    return result.rows[0];
+    const created = await prisma.message.create({
+      data: {
+        content: data.content,
+        type: data.type,
+        chatId: data.chatId,
+      },
+      select: messageSelect,
+    });
+    return toMensaje(created);
   }
 
   async findById(id: number): Promise<IMensaje | null> {
-    const result = await pool.query(
-      `SELECT id, content, type, created_at AS "createdAt", chat_id AS "chatId" FROM message WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.message.findUnique({
+      where: { id },
+      select: messageSelect,
+    });
+    return found ? toMensaje(found) : null;
   }
 
   async findAll(): Promise<IMensaje[]> {
-    const result = await pool.query(`SELECT id, content, type, created_at AS "createdAt", chat_id AS "chatId" FROM message ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.message.findMany({
+      orderBy: { id: "asc" },
+      select: messageSelect,
+    });
+    return rows.map(toMensaje);
   }
 
   async findByChatId(chatId: bigint): Promise<IMensaje[]> {
-    const result = await pool.query(
-      `SELECT id, content, type, created_at AS "createdAt", chat_id AS "chatId" FROM message WHERE chat_id = $1 ORDER BY created_at`,
-      normalizeValues([chatId])
-    );
-    return result.rows;
+    const rows = await prisma.message.findMany({
+      where: { chatId },
+      orderBy: { createdAt: "asc" },
+      select: messageSelect,
+    });
+    return rows.map(toMensaje);
   }
 
   async findByChatIdAndRange(chatId: bigint, startAt: Date, endAt: Date | null): Promise<IMensaje[]> {
-    const result = await pool.query(
-      `SELECT id, content, type, created_at AS "createdAt", chat_id AS "chatId"
-       FROM message
-       WHERE chat_id = $1
-         AND created_at >= $2
-         AND ($3::timestamp IS NULL OR created_at < $3)
-       ORDER BY created_at`,
-      normalizeValues([chatId, startAt, endAt])
-    );
-    return result.rows;
+    const rows = await prisma.message.findMany({
+      where: {
+        chatId,
+        createdAt: {
+          gte: startAt,
+          ...(endAt ? { lt: endAt } : {}),
+        },
+      },
+      orderBy: { createdAt: "asc" },
+      select: messageSelect,
+    });
+    return rows.map(toMensaje);
   }
 
   async update(data: UpdateMensajeDTO): Promise<IMensaje | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.content !== undefined) {
-      fields.push(`content = $${index}`);
-      values.push(data.content);
-      index += 1;
-    }
-    if (data.type !== undefined) {
-      fields.push(`type = $${index}`);
-      values.push(data.type);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (data.chatId !== undefined) {
-      fields.push(`chat_id = $${index}`);
-      values.push(data.chatId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      content?: string | null;
+      type?: number | null;
+      createdAt?: Date;
+      chatId?: bigint;
+    } = {};
+
+    if (data.content !== undefined) updateData.content = data.content;
+    if (data.type !== undefined) updateData.type = data.type;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+    if (data.chatId !== undefined) updateData.chatId = data.chatId;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE message SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, content, type, created_at AS "createdAt", chat_id AS "chatId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.message.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteMensajeDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM message WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.message.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

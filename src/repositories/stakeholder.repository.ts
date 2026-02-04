@@ -1,5 +1,4 @@
-import prisma from "../../prisma/PrismaClient";
-import { Prisma } from "@prisma/client";
+import prisma from "../config/db.config";
 import { IStakeholder } from "../models/stakeholder.model";
 import { CreateStakeholderDTO, UpdateStakeholderDTO, DeleteStakeholderDTO } from "../schemas/stakeholder.schema";
 

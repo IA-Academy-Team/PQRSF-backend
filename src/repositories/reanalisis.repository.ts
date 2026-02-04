@@ -1,107 +1,101 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IReanalisis } from "../models/reanalisis.model";
 import { CreateReanalisisDTO, UpdateReanalisisDTO, DeleteReanalisisDTO } from "../schemas/reanalisis.schema";
+
+const reanalysisSelect = {
+  id: true,
+  answer: true,
+  actionTaken: true,
+  createdAt: true,
+  analysisId: true,
+  responsibleId: true,
+} as const;
 
 export class ReanalisisRepository {
   private readonly table = "reanalysis";
 
   async create(data: CreateReanalisisDTO): Promise<IReanalisis> {
-    const result = await pool.query(
-      `INSERT INTO reanalysis (answer, action_taken, analysis_id, responsible_id) VALUES ($1, $2, $3, $4) RETURNING id, answer, action_taken AS "actionTaken", created_at AS "createdAt", analysis_id AS "analysisId", responsible_id AS "responsibleId"`,
-      normalizeValues([data.answer, data.actionTaken, data.analysisId, data.responsibleId])
-    );
-    return result.rows[0];
+    return prisma.reanalysis.create({
+      data: {
+        answer: data.answer,
+        actionTaken: data.actionTaken,
+        analysisId: data.analysisId,
+        responsibleId: data.responsibleId,
+      },
+      select: reanalysisSelect,
+    });
   }
 
   async findById(id: number): Promise<IReanalisis | null> {
-    const result = await pool.query(
-      `SELECT id, answer, action_taken AS "actionTaken", created_at AS "createdAt", analysis_id AS "analysisId", responsible_id AS "responsibleId" FROM reanalysis WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    return prisma.reanalysis.findUnique({
+      where: { id },
+      select: reanalysisSelect,
+    });
   }
 
   async findAll(): Promise<IReanalisis[]> {
-    const result = await pool.query(`SELECT id, answer, action_taken AS "actionTaken", created_at AS "createdAt", analysis_id AS "analysisId", responsible_id AS "responsibleId" FROM reanalysis ORDER BY id`);
-    return result.rows;
+    return prisma.reanalysis.findMany({
+      orderBy: { id: "asc" },
+      select: reanalysisSelect,
+    });
   }
 
   async findByAnalysisId(analysisId: number): Promise<IReanalisis | null> {
-    const result = await pool.query(
-      `SELECT id, answer, action_taken AS "actionTaken", created_at AS "createdAt", analysis_id AS "analysisId", responsible_id AS "responsibleId" FROM reanalysis WHERE analysis_id = $1`,
-      normalizeValues([analysisId])
-    );
-    return result.rows[0] ?? null;
+    return prisma.reanalysis.findFirst({
+      where: { analysisId },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      select: reanalysisSelect,
+    });
   }
 
   async findByPqrsId(pqrsId: number): Promise<IReanalisis | null> {
-    const result = await pool.query(
-      `SELECT r.id, r.answer, r.action_taken AS "actionTaken", r.created_at AS "createdAt", r.analysis_id AS "analysisId", r.responsible_id AS "responsibleId"
-       FROM reanalysis r
-       JOIN analysis a ON a.id = r.analysis_id
-       WHERE a.pqrs_id = $1
-       ORDER BY r.created_at DESC, r.id DESC
-       LIMIT 1`,
-      normalizeValues([pqrsId])
-    );
-    return result.rows[0] ?? null;
+    return prisma.reanalysis.findFirst({
+      where: { analysis: { pqrsId } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      select: reanalysisSelect,
+    });
   }
 
   async findAllByPqrsId(pqrsId: number): Promise<IReanalisis[]> {
-    const result = await pool.query(
-      `SELECT r.id, r.answer, r.action_taken AS "actionTaken", r.created_at AS "createdAt", r.analysis_id AS "analysisId", r.responsible_id AS "responsibleId"
-       FROM reanalysis r
-       JOIN analysis a ON a.id = r.analysis_id
-       WHERE a.pqrs_id = $1
-       ORDER BY r.created_at ASC, r.id ASC`,
-      normalizeValues([pqrsId])
-    );
-    return result.rows ?? [];
+    return prisma.reanalysis.findMany({
+      where: { analysis: { pqrsId } },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
+      select: reanalysisSelect,
+    });
   }
 
   async update(data: UpdateReanalisisDTO): Promise<IReanalisis | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.answer !== undefined) {
-      fields.push(`answer = $${index}`);
-      values.push(data.answer);
-      index += 1;
-    }
-    if (data.actionTaken !== undefined) {
-      fields.push(`action_taken = $${index}`);
-      values.push(data.actionTaken);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (data.analysisId !== undefined) {
-      fields.push(`analysis_id = $${index}`);
-      values.push(data.analysisId);
-      index += 1;
-    }
-    if (data.responsibleId !== undefined) {
-      fields.push(`responsible_id = $${index}`);
-      values.push(data.responsibleId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      answer?: string | null;
+      actionTaken?: string | null;
+      createdAt?: Date | null;
+      analysisId?: number;
+      responsibleId?: number;
+    } = {};
+
+    if (data.answer !== undefined) updateData.answer = data.answer;
+    if (data.actionTaken !== undefined) updateData.actionTaken = data.actionTaken;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt ?? null;
+    if (data.analysisId !== undefined) updateData.analysisId = data.analysisId;
+    if (data.responsibleId !== undefined) updateData.responsibleId = data.responsibleId;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE reanalysis SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, answer, action_taken AS "actionTaken", created_at AS "createdAt", analysis_id AS "analysisId", responsible_id AS "responsibleId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.reanalysis.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteReanalisisDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM reanalysis WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.reanalysis.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

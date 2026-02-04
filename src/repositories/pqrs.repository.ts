@@ -1,7 +1,46 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IPqrs } from "../models/pqrs.model";
 import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../schemas/pqrs.schema";
+
+const pqrsSelect = {
+  id: true,
+  ticketNumber: true,
+  isAutoResolved: true,
+  dueDate: true,
+  appeal: true,
+  createdAt: true,
+  updatedAt: true,
+  pqrsStatusId: true,
+  clientId: true,
+  typePqrsId: true,
+  areaId: true,
+} as const;
+
+const toPqrs = (row: {
+  id: number;
+  ticketNumber: string;
+  isAutoResolved: boolean | null;
+  dueDate: Date | null;
+  appeal: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  pqrsStatusId: number;
+  clientId: bigint;
+  typePqrsId: number;
+  areaId: number;
+}): IPqrs => ({
+  id: row.id,
+  ticketNumber: row.ticketNumber,
+  isAutoResolved: row.isAutoResolved ?? false,
+  dueDate: row.dueDate,
+  appeal: row.appeal,
+  createdAt: row.createdAt ?? new Date(),
+  updatedAt: row.updatedAt ?? new Date(),
+  pqrsStatusId: row.pqrsStatusId,
+  clientId: row.clientId,
+  typePqrsId: row.typePqrsId,
+  areaId: row.areaId,
+});
 
 export interface PqrsFilters {
   pqrsStatusId?: number;
@@ -18,104 +57,151 @@ export interface PqrsDetailedFilters extends PqrsFilters {
   sort?: "recent" | "oldest" | "ticket";
 }
 
+export interface PqrsDetailedView {
+  id: number;
+  ticketNumber: string;
+  description: string;
+  isAutoResolved: boolean;
+  dueDate: Date | null;
+  appeal?: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  statusId: number;
+  statusName: string;
+  typeId: number;
+  typeName: string;
+  areaId: number;
+  areaName: string;
+  areaCode?: string | null;
+  clientId: number | bigint;
+  clientName: string | null;
+  clientEmail: string | null;
+  clientDocument?: string | null;
+  clientPhone?: string | null;
+  typePersonId?: number | null;
+  typePersonName?: string | null;
+  stakeholderId?: number | null;
+  stakeholderName?: string | null;
+}
+
+export interface PqrsTicketArea {
+  ticketNumber: string;
+  areaCode: string | null;
+}
+
+export interface PqrsBotResponseView {
+  id?: number;
+  ticketNumber: string | null;
+  description: string | null;
+  updatedAt: Date | null;
+  statusName: string | null;
+  typeName: string | null;
+  areaName: string | null;
+  clientName: string | null;
+  typePersonName: string | null;
+  responseContent: string | null;
+  responseSentAt: Date | null;
+  responseChannel: number | null;
+  responseResponsibleId: number | null;
+  responsibleName: string | null;
+  responsibleEmail: string | null;
+  responsibleAreaName: string | null;
+  chatId: number | string | null;
+  analysisId: number | null;
+  analysisAnswer: string | null;
+  analysisActionTaken: string | null;
+  reanalysisAnswer: string | null;
+  reanalysisActionTaken: string | null;
+}
+
 export class PqrsRepository {
   private readonly table = "pqrs";
 
   async create(data: CreatePqrsDTO): Promise<IPqrs> {
-    const result = await pool.query(
-      `INSERT INTO pqrs (ticket_number, is_auto_resolved, due_date, appeal, pqrs_status_id, client_id, type_pqrs_id, area_id)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
-       RETURNING id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"`,
-      normalizeValues([data.ticketNumber, data.isAutoResolved, data.dueDate, data.appeal ?? null, data.pqrsStatusId, data.clientId, data.typePqrsId, data.areaId])
-    );
-    return result.rows[0];
+    const created = await prisma.pqrs.create({
+      data: {
+        ticketNumber: data.ticketNumber,
+        isAutoResolved: data.isAutoResolved,
+        dueDate: data.dueDate,
+        appeal: data.appeal ?? null,
+        pqrsStatusId: data.pqrsStatusId,
+        clientId: data.clientId,
+        typePqrsId: data.typePqrsId,
+        areaId: data.areaId,
+      },
+      select: pqrsSelect,
+    });
+    return toPqrs(created);
   }
 
   async findById(id: number): Promise<IPqrs | null> {
-    const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.pqrs.findUnique({
+      where: { id },
+      select: pqrsSelect,
+    });
+    return found ? toPqrs(found) : null;
   }
 
   async findAll(): Promise<IPqrs[]> {
-    const result = await pool.query(`SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.pqrs.findMany({
+      orderBy: { id: "asc" },
+      select: pqrsSelect,
+    });
+    return rows.map(toPqrs);
   }
 
   async findByTicketNumber(ticketNumber: string): Promise<IPqrs | null> {
-    const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs WHERE ticket_number = $1`,
-      normalizeValues([ticketNumber])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.pqrs.findUnique({
+      where: { ticketNumber },
+      select: pqrsSelect,
+    });
+    return found ? toPqrs(found) : null;
   }
 
   async findNextCreatedAtByClientId(clientId: bigint, createdAt: Date): Promise<Date | null> {
-    const result = await pool.query(
-      `SELECT created_at AS "createdAt"
-       FROM pqrs
-       WHERE client_id = $1 AND created_at > $2
-       ORDER BY created_at ASC
-       LIMIT 1`,
-      normalizeValues([clientId, createdAt])
-    );
-    return result.rows[0]?.createdAt ?? null;
+    const found = await prisma.pqrs.findFirst({
+      where: {
+        clientId,
+        createdAt: { gt: createdAt },
+      },
+      orderBy: { createdAt: "asc" },
+      select: { createdAt: true },
+    });
+    return found?.createdAt ?? null;
   }
 
   async findAllWithFilters(filters: PqrsFilters): Promise<IPqrs[]> {
-    const conditions: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
+    const where: {
+      pqrsStatusId?: number;
+      areaId?: number;
+      typePqrsId?: number;
+      clientId?: bigint;
+      ticketNumber?: string;
+      createdAt?: { gte?: Date; lte?: Date };
+    } = {};
 
-    if (filters.pqrsStatusId !== undefined) {
-      conditions.push(`pqrs_status_id = $${index}`);
-      values.push(filters.pqrsStatusId);
-      index += 1;
-    }
-    if (filters.areaId !== undefined) {
-      conditions.push(`area_id = $${index}`);
-      values.push(filters.areaId);
-      index += 1;
-    }
-    if (filters.typePqrsId !== undefined) {
-      conditions.push(`type_pqrs_id = $${index}`);
-      values.push(filters.typePqrsId);
-      index += 1;
-    }
-    if (filters.clientId !== undefined) {
-      conditions.push(`client_id = $${index}`);
-      values.push(filters.clientId);
-      index += 1;
-    }
-    if (filters.ticketNumber !== undefined) {
-      conditions.push(`ticket_number = $${index}`);
-      values.push(filters.ticketNumber);
-      index += 1;
-    }
-    if (filters.fromDate !== undefined) {
-      conditions.push(`created_at >= $${index}`);
-      values.push(filters.fromDate);
-      index += 1;
-    }
-    if (filters.toDate !== undefined) {
-      conditions.push(`created_at <= $${index}`);
-      values.push(filters.toDate);
-      index += 1;
+    if (filters.pqrsStatusId !== undefined) where.pqrsStatusId = filters.pqrsStatusId;
+    if (filters.areaId !== undefined) where.areaId = filters.areaId;
+    if (filters.typePqrsId !== undefined) where.typePqrsId = filters.typePqrsId;
+    if (filters.clientId !== undefined) where.clientId = filters.clientId;
+    if (filters.ticketNumber !== undefined) where.ticketNumber = filters.ticketNumber;
+    if (filters.fromDate !== undefined || filters.toDate !== undefined) {
+      where.createdAt = {
+        ...(filters.fromDate ? { gte: filters.fromDate } : {}),
+        ...(filters.toDate ? { lte: filters.toDate } : {}),
+      };
     }
 
-    const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
-    const result = await pool.query(
-      `SELECT id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId" FROM pqrs ${where} ORDER BY id`,
-      normalizeValues(values)
-    );
-    return result.rows;
+    const rows = await prisma.pqrs.findMany({
+      where,
+      orderBy: { id: "asc" },
+      select: pqrsSelect,
+    });
+    return rows.map(toPqrs);
   }
 
   async findSeguimientoDetailed() {
-    const result = await pool.query(
-      `SELECT p.id,
+    return prisma.$queryRaw(Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.created_at AS "createdAt",
@@ -146,14 +232,11 @@ export class PqrsRepository {
        ) r ON true
        LEFT JOIN survey sv ON sv.pqrs_id = p.id
        WHERE p.pqrs_status_id = 2
-       ORDER BY p.created_at DESC`
-    );
-    return result.rows;
+       ORDER BY p.created_at DESC`);
   }
 
   async findApelacionesDetailed() {
-    const result = await pool.query(
-      `SELECT p.id,
+    return prisma.$queryRaw(Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.created_at AS "createdAt",
@@ -179,14 +262,11 @@ export class PqrsRepository {
        ) r ON true
        LEFT JOIN survey sv ON sv.pqrs_id = p.id
        WHERE p.pqrs_status_id IN (3, 5)
-       ORDER BY p.created_at DESC`
-    );
-    return result.rows;
+       ORDER BY p.created_at DESC`);
   }
 
   async findCerradasDetailed() {
-    const result = await pool.query(
-      `SELECT p.id,
+    return prisma.$queryRaw(Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.created_at AS "createdAt",
@@ -218,12 +298,10 @@ export class PqrsRepository {
        ) r ON true
        LEFT JOIN survey sv ON sv.pqrs_id = p.id
        WHERE p.pqrs_status_id = 4
-       ORDER BY p.updated_at DESC`
-    );
-    return result.rows;
+       ORDER BY p.updated_at DESC`);
   }
 
-  async findAllDetailed(filters: PqrsDetailedFilters) {
+  async findAllDetailed(filters: PqrsDetailedFilters): Promise<unknown[]> {
     const conditions: string[] = [];
     const values: unknown[] = [];
     let index = 1;
@@ -283,7 +361,7 @@ export class PqrsRepository {
       }
     })();
 
-    const result = await pool.query(
+    const result = await prisma.$queryRawUnsafe(
       `SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
@@ -304,14 +382,14 @@ export class PqrsRepository {
        JOIN client c ON c.id = p.client_id
        ${where}
        ORDER BY ${orderBy}`,
-      normalizeValues(values)
+      ...values
     );
-    return result.rows;
+    return result as unknown[];
   }
 
-  async findDetailedById(id: number) {
-    const result = await pool.query(
-      `SELECT p.id,
+  async findDetailedById(id: number): Promise<PqrsDetailedView | null> {
+    const result = await prisma.$queryRaw(
+      Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.is_auto_resolved AS "isAutoResolved",
@@ -342,27 +420,25 @@ export class PqrsRepository {
        JOIN client c ON c.id = p.client_id
        LEFT JOIN type_person tp ON tp.id = c.type_person_id
        LEFT JOIN stakeholder sh ON sh.id = c.stakeholder_id
-       WHERE p.id = $1`,
-      normalizeValues([id])
+       WHERE p.id = ${id}`
     );
-    return result.rows[0] ?? null;
+    return (result as PqrsDetailedView[])[0] ?? null;
   }
 
-  async findTicketAndAreaCode(pqrsId: number) {
-    const result = await pool.query(
-      `SELECT p.ticket_number AS "ticketNumber",
+  async findTicketAndAreaCode(pqrsId: number): Promise<PqrsTicketArea | null> {
+    const result = await prisma.$queryRaw(
+      Prisma.sql`SELECT p.ticket_number AS "ticketNumber",
               a.code AS "areaCode"
        FROM pqrs p
        JOIN area a ON a.id = p.area_id
-       WHERE p.id = $1`,
-      normalizeValues([pqrsId])
+       WHERE p.id = ${pqrsId}`
     );
-    return result.rows[0] ?? null;
+    return (result as PqrsTicketArea[])[0] ?? null;
   }
 
-  async findDetailedByTicketNumber(ticketNumber: string) {
-    const result = await pool.query(
-      `SELECT p.id,
+  async findDetailedByTicketNumber(ticketNumber: string): Promise<PqrsDetailedView | null> {
+    const result = await prisma.$queryRaw(
+      Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.is_auto_resolved AS "isAutoResolved",
@@ -391,15 +467,14 @@ export class PqrsRepository {
        JOIN client c ON c.id = p.client_id
        LEFT JOIN type_person tp ON tp.id = c.type_person_id
        LEFT JOIN stakeholder sh ON sh.id = c.stakeholder_id
-       WHERE p.ticket_number = $1`,
-      normalizeValues([ticketNumber])
+       WHERE p.ticket_number = ${ticketNumber}`
     );
-    return result.rows[0] ?? null;
+    return (result as PqrsDetailedView[])[0] ?? null;
   }
 
-  async findBotResponseByTicketNumber(ticketNumber: string) {
-    const result = await pool.query(
-      `SELECT p.id,
+  async findBotResponseByTicketNumber(ticketNumber: string): Promise<PqrsBotResponseView | null> {
+    const result = await prisma.$queryRaw(
+      Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.updated_at AS "updatedAt",
@@ -456,15 +531,14 @@ export class PqrsRepository {
          LIMIT 1
        ) reanalysis ON true
        LEFT JOIN chat ON chat.client_id = p.client_id
-       WHERE p.ticket_number = $1`,
-      normalizeValues([ticketNumber])
+       WHERE p.ticket_number = ${ticketNumber}`
     );
-    return result.rows[0] ?? null;
+    return (result as PqrsBotResponseView[])[0] ?? null;
   }
 
-  async findBotResponseByPqrsId(pqrsId: number) {
-    const result = await pool.query(
-      `SELECT p.id,
+  async findBotResponseByPqrsId(pqrsId: number): Promise<PqrsBotResponseView | null> {
+    const result = await prisma.$queryRaw(
+      Prisma.sql`SELECT p.id,
               p.ticket_number AS "ticketNumber",
               p.description,
               p.updated_at AS "updatedAt",
@@ -521,79 +595,53 @@ export class PqrsRepository {
          LIMIT 1
        ) reanalysis ON true
        LEFT JOIN chat ON chat.client_id = p.client_id
-       WHERE p.id = $1`,
-      normalizeValues([pqrsId])
+       WHERE p.id = ${pqrsId}`
     );
-    return result.rows[0] ?? null;
+    return (result as PqrsBotResponseView[])[0] ?? null;
   }
 
   async update(data: UpdatePqrsDTO): Promise<IPqrs | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.ticketNumber !== undefined) {
-      fields.push(`ticket_number = $${index}`);
-      values.push(data.ticketNumber);
-      index += 1;
-    }
-    if (data.isAutoResolved !== undefined) {
-      fields.push(`is_auto_resolved = $${index}`);
-      values.push(data.isAutoResolved);
-      index += 1;
-    }
-    if (data.dueDate !== undefined) {
-      fields.push(`due_date = $${index}`);
-      values.push(data.dueDate);
-      index += 1;
-    }
-    if (data.appeal !== undefined) {
-      fields.push(`appeal = $${index}`);
-      values.push(data.appeal);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (data.updatedAt !== undefined) {
-      fields.push(`updated_at = $${index}`);
-      values.push(data.updatedAt);
-      index += 1;
-    }
-    if (data.pqrsStatusId !== undefined) {
-      fields.push(`pqrs_status_id = $${index}`);
-      values.push(data.pqrsStatusId);
-      index += 1;
-    }
-    if (data.clientId !== undefined) {
-      fields.push(`client_id = $${index}`);
-      values.push(data.clientId);
-      index += 1;
-    }
-    if (data.typePqrsId !== undefined) {
-      fields.push(`type_pqrs_id = $${index}`);
-      values.push(data.typePqrsId);
-      index += 1;
-    }
-    if (data.areaId !== undefined) {
-      fields.push(`area_id = $${index}`);
-      values.push(data.areaId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      ticketNumber?: string;
+      isAutoResolved?: boolean;
+      dueDate?: Date | null;
+      appeal?: string | null;
+      createdAt?: Date;
+      updatedAt?: Date;
+      pqrsStatusId?: number;
+      clientId?: bigint;
+      typePqrsId?: number;
+      areaId?: number;
+    } = {};
+
+    if (data.ticketNumber !== undefined) updateData.ticketNumber = data.ticketNumber;
+    if (data.isAutoResolved !== undefined) updateData.isAutoResolved = data.isAutoResolved;
+    if (data.dueDate !== undefined) updateData.dueDate = data.dueDate;
+    if (data.appeal !== undefined) updateData.appeal = data.appeal;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+    if (data.updatedAt !== undefined) updateData.updatedAt = data.updatedAt;
+    if (data.pqrsStatusId !== undefined) updateData.pqrsStatusId = data.pqrsStatusId;
+    if (data.clientId !== undefined) updateData.clientId = data.clientId;
+    if (data.typePqrsId !== undefined) updateData.typePqrsId = data.typePqrsId;
+    if (data.areaId !== undefined) updateData.areaId = data.areaId;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE pqrs SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, ticket_number AS "ticketNumber", is_auto_resolved AS "isAutoResolved", due_date AS "dueDate", appeal, created_at AS "createdAt", updated_at AS "updatedAt", pqrs_status_id AS "pqrsStatusId", client_id AS "clientId", type_pqrs_id AS "typePqrsId", area_id AS "areaId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.pqrs.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeletePqrsDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM pqrs WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.pqrs.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

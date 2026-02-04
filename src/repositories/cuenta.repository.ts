@@ -1,120 +1,153 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { ICuenta } from "../models/cuenta.model";
 import { CreateCuentaDTO, UpdateCuentaDTO, DeleteCuentaDTO } from "../schemas/cuenta.schema";
+
+const accountSelect = {
+  id: true,
+  providerId: true,
+  providerAccountId: true,
+  password: true,
+  accessToken: true,
+  refreshToken: true,
+  idToken: true,
+  accessTokenExpiresAt: true,
+  refreshTokenExpiresAt: true,
+  scope: true,
+  createdAt: true,
+  updatedAt: true,
+  userId: true,
+} as const;
+
+const toCuenta = (row: {
+  id: number;
+  providerId: string;
+  providerAccountId: string;
+  password: string | null;
+  accessToken: string | null;
+  refreshToken: string | null;
+  idToken: string | null;
+  accessTokenExpiresAt: Date | null;
+  refreshTokenExpiresAt: Date | null;
+  scope: string | null;
+  createdAt: Date | null;
+  updatedAt: Date | null;
+  userId: number;
+}): ICuenta => ({
+  id: row.id,
+  providerId: row.providerId,
+  providerAccountId: row.providerAccountId,
+  password: row.password,
+  accessToken: row.accessToken,
+  refreshToken: row.refreshToken,
+  idToken: row.idToken,
+  accessTokenExpiresAt: row.accessTokenExpiresAt,
+  refreshTokenExpiresAt: row.refreshTokenExpiresAt,
+  scope: row.scope,
+  createdAt: row.createdAt ?? new Date(),
+  updatedAt: row.updatedAt ?? new Date(),
+  userId: row.userId,
+});
 
 export class CuentaRepository {
   private readonly table = "accounts";
 
   async create(data: CreateCuentaDTO): Promise<ICuenta> {
-    const result = await pool.query(
-      `INSERT INTO accounts (provider_id, provider_account_id, password, access_token, refresh_token, id_token, access_token_expires_at, refresh_token_expires_at, scope, user_id) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) RETURNING id, provider_id AS "providerId", provider_account_id AS "providerAccountId", password, access_token AS "accessToken", refresh_token AS "refreshToken", id_token AS "idToken", access_token_expires_at AS "accessTokenExpiresAt", refresh_token_expires_at AS "refreshTokenExpiresAt", scope, created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId"`,
-      normalizeValues([data.providerId, data.providerAccountId, data.password, data.accessToken, data.refreshToken, data.idToken, data.accessTokenExpiresAt, data.refreshTokenExpiresAt, data.scope, data.userId])
-    );
-    return result.rows[0];
+    const created = await prisma.account.create({
+      data: {
+        providerId: data.providerId,
+        providerAccountId: data.providerAccountId,
+        password: data.password,
+        accessToken: data.accessToken,
+        refreshToken: data.refreshToken,
+        idToken: data.idToken,
+        accessTokenExpiresAt: data.accessTokenExpiresAt,
+        refreshTokenExpiresAt: data.refreshTokenExpiresAt,
+        scope: data.scope,
+        userId: data.userId,
+      },
+      select: accountSelect,
+    });
+    return toCuenta(created);
   }
 
   async findById(id: number): Promise<ICuenta | null> {
-    const result = await pool.query(
-      `SELECT id, provider_id AS "providerId", provider_account_id AS "providerAccountId", password, access_token AS "accessToken", refresh_token AS "refreshToken", id_token AS "idToken", access_token_expires_at AS "accessTokenExpiresAt", refresh_token_expires_at AS "refreshTokenExpiresAt", scope, created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM accounts WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.account.findUnique({
+      where: { id },
+      select: accountSelect,
+    });
+    return found ? toCuenta(found) : null;
   }
 
   async findAll(): Promise<ICuenta[]> {
-    const result = await pool.query(`SELECT id, provider_id AS "providerId", provider_account_id AS "providerAccountId", password, access_token AS "accessToken", refresh_token AS "refreshToken", id_token AS "idToken", access_token_expires_at AS "accessTokenExpiresAt", refresh_token_expires_at AS "refreshTokenExpiresAt", scope, created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM accounts ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.account.findMany({
+      orderBy: { id: "asc" },
+      select: accountSelect,
+    });
+    return rows.map(toCuenta);
   }
 
   async findByProvider(
     providerId: string,
     providerAccountId: string
   ): Promise<ICuenta | null> {
-    const result = await pool.query(
-      `SELECT id, provider_id AS "providerId", provider_account_id AS "providerAccountId", password, access_token AS "accessToken", refresh_token AS "refreshToken", id_token AS "idToken", access_token_expires_at AS "accessTokenExpiresAt", refresh_token_expires_at AS "refreshTokenExpiresAt", scope, created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM accounts WHERE provider_id = $1 AND provider_account_id = $2`,
-      normalizeValues([providerId, providerAccountId])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.account.findUnique({
+      where: {
+        providerId_providerAccountId: {
+          providerId,
+          providerAccountId,
+        },
+      },
+      select: accountSelect,
+    });
+    return found ? toCuenta(found) : null;
   }
 
   async update(data: UpdateCuentaDTO): Promise<ICuenta | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.providerId !== undefined) {
-      fields.push(`provider_id = $${index}`);
-      values.push(data.providerId);
-      index += 1;
-    }
-    if (data.providerAccountId !== undefined) {
-      fields.push(`provider_account_id = $${index}`);
-      values.push(data.providerAccountId);
-      index += 1;
-    }
-    if (data.password !== undefined) {
-      fields.push(`password = $${index}`);
-      values.push(data.password);
-      index += 1;
-    }
-    if (data.accessToken !== undefined) {
-      fields.push(`access_token = $${index}`);
-      values.push(data.accessToken);
-      index += 1;
-    }
-    if (data.refreshToken !== undefined) {
-      fields.push(`refresh_token = $${index}`);
-      values.push(data.refreshToken);
-      index += 1;
-    }
-    if (data.idToken !== undefined) {
-      fields.push(`id_token = $${index}`);
-      values.push(data.idToken);
-      index += 1;
-    }
-    if (data.accessTokenExpiresAt !== undefined) {
-      fields.push(`access_token_expires_at = $${index}`);
-      values.push(data.accessTokenExpiresAt);
-      index += 1;
-    }
-    if (data.refreshTokenExpiresAt !== undefined) {
-      fields.push(`refresh_token_expires_at = $${index}`);
-      values.push(data.refreshTokenExpiresAt);
-      index += 1;
-    }
-    if (data.scope !== undefined) {
-      fields.push(`scope = $${index}`);
-      values.push(data.scope);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (data.updatedAt !== undefined) {
-      fields.push(`updated_at = $${index}`);
-      values.push(data.updatedAt);
-      index += 1;
-    }
-    if (data.userId !== undefined) {
-      fields.push(`user_id = $${index}`);
-      values.push(data.userId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      providerId?: string;
+      providerAccountId?: string;
+      password?: string | null;
+      accessToken?: string | null;
+      refreshToken?: string | null;
+      idToken?: string | null;
+      accessTokenExpiresAt?: Date | null;
+      refreshTokenExpiresAt?: Date | null;
+      scope?: string | null;
+      createdAt?: Date;
+      updatedAt?: Date;
+      userId?: number;
+    } = {};
+
+    if (data.providerId !== undefined) updateData.providerId = data.providerId;
+    if (data.providerAccountId !== undefined) updateData.providerAccountId = data.providerAccountId;
+    if (data.password !== undefined) updateData.password = data.password;
+    if (data.accessToken !== undefined) updateData.accessToken = data.accessToken;
+    if (data.refreshToken !== undefined) updateData.refreshToken = data.refreshToken;
+    if (data.idToken !== undefined) updateData.idToken = data.idToken;
+    if (data.accessTokenExpiresAt !== undefined) updateData.accessTokenExpiresAt = data.accessTokenExpiresAt;
+    if (data.refreshTokenExpiresAt !== undefined) updateData.refreshTokenExpiresAt = data.refreshTokenExpiresAt;
+    if (data.scope !== undefined) updateData.scope = data.scope;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+    if (data.updatedAt !== undefined) updateData.updatedAt = data.updatedAt;
+    if (data.userId !== undefined) updateData.userId = data.userId;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE accounts SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, provider_id AS "providerId", provider_account_id AS "providerAccountId", password, access_token AS "accessToken", refresh_token AS "refreshToken", id_token AS "idToken", access_token_expires_at AS "accessTokenExpiresAt", refresh_token_expires_at AS "refreshTokenExpiresAt", scope, created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.account.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteCuentaDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM accounts WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.account.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

@@ -1,5 +1,4 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { ITipoPersona } from "../models/tipoPersona.model";
 import { CreateTipoPersonaDTO, UpdateTipoPersonaDTO, DeleteTipoPersonaDTO } from "../schemas/tipoPersona.schema";
 
@@ -7,48 +6,44 @@ export class TipoPersonaRepository {
   private readonly table = "type_person";
 
   async create(data: CreateTipoPersonaDTO): Promise<ITipoPersona> {
-    const result = await pool.query(
-      `INSERT INTO type_person (name) VALUES ($1) RETURNING id, name`,
-      normalizeValues([data.name])
-    );
-    return result.rows[0];
+    return prisma.typePerson.create({
+      data: { name: data.name },
+      select: { id: true, name: true },
+    });
   }
 
   async findById(id: number): Promise<ITipoPersona | null> {
-    const result = await pool.query(
-      `SELECT id, name FROM type_person WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    return prisma.typePerson.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
   }
 
   async findAll(): Promise<ITipoPersona[]> {
-    const result = await pool.query(`SELECT id, name FROM type_person ORDER BY id`);
-    return result.rows;
+    return prisma.typePerson.findMany({
+      orderBy: { id: "asc" },
+      select: { id: true, name: true },
+    });
   }
 
   async update(data: UpdateTipoPersonaDTO): Promise<ITipoPersona | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.name !== undefined) {
-      fields.push(`name = $${index}`);
-      values.push(data.name);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    if (data.name === undefined) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE type_person SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.typePerson.updateMany({
+      where: { id: data.id as number },
+      data: { name: data.name },
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteTipoPersonaDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM type_person WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.typePerson.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }
