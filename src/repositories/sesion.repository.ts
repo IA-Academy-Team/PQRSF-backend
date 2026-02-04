@@ -1,5 +1,5 @@
 import prisma from "../config/db.config";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { ISesion } from "../models/sesion.model";
 import {
   CreateSesionDTO,

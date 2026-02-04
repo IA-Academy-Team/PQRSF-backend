@@ -1,5 +1,5 @@
 import prisma from "../config/db.config";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { IChat, IChatSummary, IChatPqrsSummary } from "../models/chat.model";
 import { CreateChatDTO, UpdateChatDTO, DeleteChatDTO } from "../schemas/chat.schema";
 

@@ -1,5 +1,5 @@
 import prisma from "../config/db.config";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { INotificacion } from "../models/notificacion.model";
 import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../schemas/notificacion.schema";
 

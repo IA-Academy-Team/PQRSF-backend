@@ -1,5 +1,5 @@
 import prisma from "../config/db.config";
-import { Prisma } from "@prisma/client";
+import { Prisma } from "../../generated/prisma/client";
 import { IPqrs } from "../models/pqrs.model";
 import { CreatePqrsDTO, UpdatePqrsDTO, DeletePqrsDTO } from "../schemas/pqrs.schema";
 

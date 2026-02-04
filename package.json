@@ -14,7 +14,7 @@
     "prisma:generate": "prisma generate",
     "prisma:reset": "prisma migrate reset",
     "prisma:migrate": "prisma migrate dev --name init",
-    "prisma:migrate:seed": "ts-node prisma/seeds.ts",
+    "prisma:migrate:seed": "node --loader ts-node/esm prisma/seeds.mts",
     "prisma:studio": "prisma studio",
     "swagger": "ts-node swagger.ts",
     "swagger:generate": "ts-node swagger.ts"
