@@ -57,7 +57,7 @@ export class DashboardService {
       {
         chatId: number;
         mode: string | null;
-        clientId: bigint | null;
+        clientId: string | null;
         clientName: string | null;
         lastMessage: string | null;
         lastMessageAt: Date | null;
@@ -65,7 +65,7 @@ export class DashboardService {
       }[]
     >`SELECT c.id AS "chatId",
               c.mode,
-              c.client_id AS "clientId",
+              c.client_id::text AS "clientId",
               cl.name AS "clientName",
               m.content AS "lastMessage",
               m.created_at AS "lastMessageAt",
@@ -120,7 +120,7 @@ export class DashboardService {
         createdAt: Date;
         updatedAt: Date;
         pqrsStatusId: number;
-        clientId: bigint;
+        clientId: string;
         clientName: string | null;
         typePqrsId: number;
         typeName: string;
@@ -138,7 +138,7 @@ export class DashboardService {
               p.created_at AS "createdAt",
               p.updated_at AS "updatedAt",
               p.pqrs_status_id AS "pqrsStatusId",
-              p.client_id AS "clientId",
+              p.client_id::text AS "clientId",
               c.name AS "clientName",
               p.type_pqrs_id AS "typePqrsId",
               t.name AS "typeName",
@@ -180,7 +180,7 @@ export class DashboardService {
         createdAt: Date;
         updatedAt: Date;
         pqrsStatusId: number;
-        clientId: bigint;
+        clientId: string;
         clientName: string | null;
         typePqrsId: number;
         typeName: string;
@@ -198,7 +198,7 @@ export class DashboardService {
               p.created_at AS "createdAt",
               p.updated_at AS "updatedAt",
               p.pqrs_status_id AS "pqrsStatusId",
-              p.client_id AS "clientId",
+              p.client_id::text AS "clientId",
               c.name AS "clientName",
               p.type_pqrs_id AS "typePqrsId",
               t.name AS "typeName",

@@ -1,4 +1,6 @@
-import prisma from "../../src/config/db.config";
+import prismaModule from "../../src/config/db.config";
+
+const prisma: any = (prismaModule as any).default ?? (prismaModule as any).prisma ?? prismaModule;
 
 const TABLES = [
   "pqrs_status_history",

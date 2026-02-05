@@ -100,7 +100,7 @@ export class EncuestaRepository {
               tp.name AS "typeName",
               a.id AS "areaId",
               a.name AS "areaName",
-              c.id AS "clientId",
+              c.id::text AS "clientId",
               c.name AS "clientName",
               c.email AS "clientEmail",
               c.document AS "clientDocument",

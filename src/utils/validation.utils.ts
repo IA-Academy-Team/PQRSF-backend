@@ -68,7 +68,7 @@ export const requireBigInt = (value: unknown, field: string) => {
   if (typeof value === "number" && Number.isInteger(value)) {
     return BigInt(value);
   }
-  if (typeof value === "string" && /^\\d+$/.test(value)) {
+  if (typeof value === "string" && /^\d+$/.test(value)) {
     return BigInt(value);
   }
   throw badRequest(`${field} must be a bigint`, { field });
