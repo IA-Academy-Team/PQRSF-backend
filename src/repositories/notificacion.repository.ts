@@ -1,109 +1,131 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
+import { Prisma } from "../../generated/prisma/client";
 import { INotificacion } from "../models/notificacion.model";
 import { CreateNotificacionDTO, UpdateNotificacionDTO, DeleteNotificacionDTO } from "../schemas/notificacion.schema";
+
+const notificationSelect = {
+  id: true,
+  message: true,
+  status: true,
+  responsibleId: true,
+  pqrsId: true,
+  createdAt: true,
+} as const;
+
+const toNotificacion = (row: {
+  id: number;
+  message: string;
+  status: number | null;
+  responsibleId: number;
+  pqrsId: number;
+  createdAt: Date | null;
+}): INotificacion => ({
+  id: row.id,
+  message: row.message,
+  status: row.status ?? 1,
+  responsibleId: row.responsibleId,
+  pqrsId: row.pqrsId,
+  createdAt: row.createdAt ?? new Date(),
+});
 
 export class NotificacionRepository {
   private readonly table = "notification";
 
   async create(data: CreateNotificacionDTO): Promise<INotificacion> {
-    const result = await pool.query(
-      `INSERT INTO notification (message, status, responsible_id, pqrs_id) VALUES ($1, $2, $3, $4) RETURNING id, message, status, responsible_id AS "responsibleId", pqrs_id AS "pqrsId", created_at AS "createdAt"`,
-      normalizeValues([data.message, data.status, data.responsibleId, data.pqrsId])
-    );
-    return result.rows[0];
+    const created = await prisma.notification.create({
+      data: {
+        message: data.message,
+        ...(data.status !== undefined ? { status: data.status } : {}),
+        responsibleId: data.responsibleId,
+        pqrsId: data.pqrsId,
+      },
+      select: notificationSelect,
+    });
+    return toNotificacion(created);
   }
 
   async findById(id: number): Promise<INotificacion | null> {
-    const result = await pool.query(
-      `SELECT id, message, status, responsible_id AS "responsibleId", pqrs_id AS "pqrsId", created_at AS "createdAt" FROM notification WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.notification.findUnique({
+      where: { id },
+      select: notificationSelect,
+    });
+    return found ? toNotificacion(found) : null;
   }
 
   async findAll(): Promise<INotificacion[]> {
-    const result = await pool.query(`SELECT id, message, status, responsible_id AS "responsibleId", pqrs_id AS "pqrsId", created_at AS "createdAt" FROM notification ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.notification.findMany({
+      orderBy: { id: "asc" },
+      select: notificationSelect,
+    });
+    return rows.map(toNotificacion);
   }
 
   async findByResponsibleId(responsibleId: number): Promise<INotificacion[]> {
-    const result = await pool.query(
-      `SELECT id, message, status, responsible_id AS "responsibleId", pqrs_id AS "pqrsId", created_at AS "createdAt" FROM notification WHERE responsible_id = $1 ORDER BY created_at DESC`,
-      normalizeValues([responsibleId])
-    );
-    return result.rows;
+    const rows = await prisma.notification.findMany({
+      where: { responsibleId },
+      orderBy: { createdAt: "desc" },
+      select: notificationSelect,
+    });
+    return rows.map(toNotificacion);
   }
 
   async countUnread(responsibleId: number): Promise<number> {
-    const result = await pool.query(
-      `SELECT COUNT(*)::int AS count FROM notification WHERE responsible_id = $1 AND status = 1`,
-      normalizeValues([responsibleId])
-    );
-    return result.rows[0]?.count ?? 0;
+    return prisma.notification.count({
+      where: { responsibleId, status: 1 },
+    });
   }
 
   async markAsRead(ids: number[]): Promise<number> {
     if (ids.length === 0) {
       return 0;
     }
-    const result = await pool.query(
-      `UPDATE notification SET status = 2 WHERE id = ANY($1::int[])`,
-      [ids]
-    );
-    return result.rowCount ?? 0;
+    const updated = await prisma.notification.updateMany({
+      where: { id: { in: ids } },
+      data: { status: 2 },
+    });
+    return updated.count;
   }
 
   async markAllAsReadByResponsible(responsibleId: number): Promise<number> {
-    const result = await pool.query(
-      `UPDATE notification SET status = 2 WHERE responsible_id = $1 AND status = 1`,
-      normalizeValues([responsibleId])
-    );
-    return result.rowCount ?? 0;
+    const updated = await prisma.notification.updateMany({
+      where: { responsibleId, status: 1 },
+      data: { status: 2 },
+    });
+    return updated.count;
   }
 
   async update(data: UpdateNotificacionDTO): Promise<INotificacion | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.message !== undefined) {
-      fields.push(`message = $${index}`);
-      values.push(data.message);
-      index += 1;
-    }
-    if (data.status !== undefined) {
-      fields.push(`status = $${index}`);
-      values.push(data.status);
-      index += 1;
-    }
-    if (data.responsibleId !== undefined) {
-      fields.push(`responsible_id = $${index}`);
-      values.push(data.responsibleId);
-      index += 1;
-    }
-    if (data.pqrsId !== undefined) {
-      fields.push(`pqrs_id = $${index}`);
-      values.push(data.pqrsId);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      message?: string | null;
+      status?: number;
+      responsibleId?: number;
+      pqrsId?: number;
+      createdAt?: Date;
+    } = {};
+
+    if (data.message !== undefined) updateData.message = data.message;
+    if (data.status !== undefined) updateData.status = data.status;
+    if (data.responsibleId !== undefined) updateData.responsibleId = data.responsibleId;
+    if (data.pqrsId !== undefined) updateData.pqrsId = data.pqrsId;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE notification SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, message, status, responsible_id AS "responsibleId", pqrs_id AS "pqrsId", created_at AS "createdAt"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.notification.updateMany({
+      where: { id: data.id as number },
+      data: updateData as Prisma.NotificationUncheckedUpdateManyInput,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteNotificacionDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM notification WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.notification.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

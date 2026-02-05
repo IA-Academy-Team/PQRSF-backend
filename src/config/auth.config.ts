@@ -1,10 +1,10 @@
 import { betterAuth } from "better-auth";
 import { APIError } from "better-auth/api";
 import { createFieldAttribute } from "better-auth/db";
-import { PostgresDialect } from "kysely";
 import bcrypt from "bcrypt";
-import pool from "./db.config";
+import { prismaAdapter } from "better-auth/adapters/prisma";
 import { sendEmail } from "../utils/mailer.utils";
+import prisma from "./db.config";
 
 const ALLOWED_EMAIL_DOMAINS = new Set([
   "campuslands.com",
@@ -23,11 +23,10 @@ const isAllowedEmail = (email?: string | null) => {
 
 export const auth = betterAuth({
   appName: "Hubux",
-  database: {
-    dialect: new PostgresDialect({ pool }),
-    type: "postgres",
-    casing: "snake",
-  },
+  database: prismaAdapter(prisma, {
+    provider: "postgresql",
+    usePlural: false,
+  }),
 
   logger: {
     level: "debug",
@@ -35,7 +34,7 @@ export const auth = betterAuth({
 
   advanced: {
     database: {
-      generateId: "uuid",
+      useNumberId: true,
     },
   },
 
@@ -48,25 +47,25 @@ export const auth = betterAuth({
   ],
 
   user: {
-    modelName: "users",
+    modelName: "User",
     fields: {
-      emailVerified: "email_verified",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
-      twoFactorEnabled: "two_factor_enabled",
+      emailVerified: "emailVerified",
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
+      twoFactorEnabled: "twoFactorEnabled",
     },
     additionalFields: {
-      phone_number: createFieldAttribute("string", {
-        fieldName: "phone_number",
+      phoneNumber: createFieldAttribute("string", {
+        fieldName: "phoneNumber",
         required: false,
       }),
-      role_id: createFieldAttribute("number", {
-        fieldName: "role_id",
+      roleId: createFieldAttribute("number", {
+        fieldName: "roleId",
         required: false,
         defaultValue: 1,
       }),
-      is_active: createFieldAttribute("boolean", {
-        fieldName: "is_active",
+      isActive: createFieldAttribute("boolean", {
+        fieldName: "isActive",
         required: false,
         returned: false,
       }),
@@ -74,18 +73,18 @@ export const auth = betterAuth({
   },
 
   account: {
-    modelName: "accounts",
+    modelName: "Account",
     fields: {
-      providerId: "provider_id",
-      accountId: "provider_account_id",
-      userId: "user_id",
-      accessToken: "access_token",
-      refreshToken: "refresh_token",
-      idToken: "id_token",
-      accessTokenExpiresAt: "access_token_expires_at",
-      refreshTokenExpiresAt: "refresh_token_expires_at",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+      providerId: "providerId",
+      accountId: "providerAccountId",
+      userId: "userId",
+      accessToken: "accessToken",
+      refreshToken: "refreshToken",
+      idToken: "idToken",
+      accessTokenExpiresAt: "accessTokenExpiresAt",
+      refreshTokenExpiresAt: "refreshTokenExpiresAt",
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
     },
     accountLinking: {
       enabled: true,
@@ -96,25 +95,25 @@ export const auth = betterAuth({
   },
 
   session: {
-    modelName: "sessions",
+    modelName: "Session",
     fields: {
-      userId: "user_id",
-      expiresAt: "expires_at",
-      ipAddress: "ip_address",
-      userAgent: "user_agent",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+      userId: "userId",
+      expiresAt: "expiresAt",
+      ipAddress: "ipAddress",
+      userAgent: "userAgent",
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
     },
   },
 
   verification: {
-    modelName: "verifications",
+    modelName: "Verification",
     fields: {
       token: "value",
       identifier: "identifier",
-      expiresAt: "expires_at",
-      createdAt: "created_at",
-      updatedAt: "updated_at",
+      expiresAt: "expiresAt",
+      createdAt: "createdAt",
+      updatedAt: "updatedAt",
     },
   },
 

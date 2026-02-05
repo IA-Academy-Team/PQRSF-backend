@@ -1,92 +1,121 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
+import { Prisma } from "../../generated/prisma/client";
 import { ISesion } from "../models/sesion.model";
-import { CreateSesionDTO, UpdateSesionDTO, DeleteSesionDTO } from "../schemas/sesion.schema";
+import {
+  CreateSesionDTO,
+  UpdateSesionDTO,
+  DeleteSesionDTO,
+} from "../schemas/sesion.schema";
 
 export class SesionRepository {
-  private readonly table = "sessions";
+  private readonly selectFields = {
+    id: true,
+    token: true,
+    expiresAt: true,
+    ipAddress: true,
+    userAgent: true,
+    createdAt: true,
+    updatedAt: true,
+    userId: true,
+  } as const;
+
+  private toSesion(row: {
+    id: number;
+    token: string;
+    expiresAt: Date;
+    ipAddress: string | null;
+    userAgent: string | null;
+    createdAt: Date | null;
+    updatedAt: Date;
+    userId: number;
+  }): ISesion {
+    return {
+      id: row.id,
+      token: row.token,
+      expiresAt: row.expiresAt,
+      ipAddress: row.ipAddress,
+      userAgent: row.userAgent,
+      createdAt: row.createdAt ?? new Date(),
+      updatedAt: row.updatedAt,
+      userId: row.userId,
+    };
+  }
 
   async create(data: CreateSesionDTO): Promise<ISesion> {
-    const result = await pool.query(
-      `INSERT INTO sessions (token, expires_at, ip_address, user_agent, user_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId"`,
-      normalizeValues([data.token, data.expiresAt, data.ipAddress, data.userAgent, data.userId])
-    );
-    return result.rows[0];
+    const created = await prisma.session.create({
+      data: {
+        token: data.token,
+        expiresAt: data.expiresAt,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+        updatedAt: new Date(),
+        userId: data.userId,
+      },
+      select: this.selectFields,
+    });
+    return this.toSesion(created);
   }
 
   async findById(id: number): Promise<ISesion | null> {
-    const result = await pool.query(
-      `SELECT id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM sessions WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.session.findUnique({
+      where: { id },
+      select: this.selectFields,
+    });
+    return found ? this.toSesion(found) : null;
   }
 
   async findAll(): Promise<ISesion[]> {
-    const result = await pool.query(`SELECT id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM sessions ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.session.findMany({
+      orderBy: { id: "asc" },
+      select: this.selectFields,
+    });
+    return rows.map((row) => this.toSesion(row));
   }
 
   async findByToken(token: string): Promise<ISesion | null> {
-    const result = await pool.query(
-      `SELECT id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId" FROM sessions WHERE token = $1`,
-      normalizeValues([token])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.session.findUnique({
+      where: { token },
+      select: this.selectFields,
+    });
+    return found ? this.toSesion(found) : null;
   }
 
   async update(data: UpdateSesionDTO): Promise<ISesion | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.token !== undefined) {
-      fields.push(`token = $${index}`);
-      values.push(data.token);
-      index += 1;
-    }
-    if (data.expiresAt !== undefined) {
-      fields.push(`expires_at = $${index}`);
-      values.push(data.expiresAt);
-      index += 1;
-    }
-    if (data.ipAddress !== undefined) {
-      fields.push(`ip_address = $${index}`);
-      values.push(data.ipAddress);
-      index += 1;
-    }
-    if (data.userAgent !== undefined) {
-      fields.push(`user_agent = $${index}`);
-      values.push(data.userAgent);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (data.updatedAt !== undefined) {
-      fields.push(`updated_at = $${index}`);
-      values.push(data.updatedAt);
-      index += 1;
-    }
-    if (data.userId !== undefined) {
-      fields.push(`user_id = $${index}`);
-      values.push(data.userId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: Prisma.SessionUncheckedUpdateInput = {};
+
+    if (data.token !== undefined) updateData.token = data.token;
+    if (data.expiresAt !== undefined) updateData.expiresAt = data.expiresAt ?? undefined;
+    if (data.ipAddress !== undefined) updateData.ipAddress = data.ipAddress;
+    if (data.userAgent !== undefined) updateData.userAgent = data.userAgent;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+    if (data.updatedAt !== undefined) updateData.updatedAt = data.updatedAt;
+    if (data.userId !== undefined) updateData.userId = data.userId;
+
+    // 🔁 MISMA lógica que antes
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE sessions SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, token, expires_at AS "expiresAt", ip_address AS "ipAddress", user_agent AS "userAgent", created_at AS "createdAt", updated_at AS "updatedAt", user_id AS "userId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    try {
+      const updated = await prisma.session.update({
+        where: { id: data.id as number },
+        data: updateData,
+        select: this.selectFields,
+      });
+      return this.toSesion(updated);
+    } catch {
+      return null;
+    }
   }
 
   async delete(data: DeleteSesionDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM sessions WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    try {
+      await prisma.session.delete({
+        where: { id: data.id },
+      });
+      return true;
+    } catch {
+      return false;
+    }
   }
 }

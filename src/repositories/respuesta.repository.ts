@@ -1,87 +1,111 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IRespuesta } from "../models/respuesta.model";
 import { CreateRespuestaDTO, UpdateRespuestaDTO, DeleteRespuestaDTO } from "../schemas/respuesta.schema";
+
+const responseSelect = {
+  id: true,
+  content: true,
+  channel: true,
+  sentAt: true,
+  documentId: true,
+  pqrsId: true,
+  responsibleId: true,
+} as const;
+
+const toRespuesta = (row: {
+  id: number;
+  pqrsId: number;
+  responsibleId: number;
+  content: string;
+  channel: number;
+  sentAt: Date | null;
+  documentId: number | null;
+}): IRespuesta => ({
+  id: row.id,
+  pqrsId: row.pqrsId,
+  responsibleId: row.responsibleId,
+  content: row.content,
+  channel: row.channel,
+  sentAt: row.sentAt ?? new Date(),
+  documentId: row.documentId,
+});
 
 export class RespuestaRepository {
   private readonly table = "response";
 
   async create(data: CreateRespuestaDTO): Promise<IRespuesta> {
-    const result = await pool.query(
-      `INSERT INTO response (content, channel, document_id, pqrs_id, responsible_id) VALUES ($1, $2, $3, $4, $5) RETURNING id, content, channel, sent_at AS "sentAt", document_id AS "documentId", pqrs_id AS "pqrsId", responsible_id AS "responsibleId"`,
-      normalizeValues([data.content, data.channel, data.documentId, data.pqrsId, data.responsibleId])
-    );
-    return result.rows[0];
+    const created = await prisma.response.create({
+      data: {
+        content: data.content,
+        channel: data.channel as number,
+        documentId: data.documentId,
+        pqrsId: data.pqrsId,
+        responsibleId: data.responsibleId,
+      },
+      select: responseSelect,
+    });
+    return toRespuesta(created);
   }
 
   async findById(id: number): Promise<IRespuesta | null> {
-    const result = await pool.query(
-      `SELECT id, content, channel, sent_at AS "sentAt", document_id AS "documentId", pqrs_id AS "pqrsId", responsible_id AS "responsibleId" FROM response WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.response.findUnique({
+      where: { id },
+      select: responseSelect,
+    });
+    return found ? toRespuesta(found) : null;
   }
 
   async findAll(): Promise<IRespuesta[]> {
-    const result = await pool.query(`SELECT id, content, channel, sent_at AS "sentAt", document_id AS "documentId", pqrs_id AS "pqrsId", responsible_id AS "responsibleId" FROM response ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.response.findMany({
+      orderBy: { id: "asc" },
+      select: responseSelect,
+    });
+    return rows.map(toRespuesta);
   }
 
   async findByPqrsId(pqrsId: number): Promise<IRespuesta[]> {
-    const result = await pool.query(
-      `SELECT id, content, channel, sent_at AS "sentAt", document_id AS "documentId", pqrs_id AS "pqrsId", responsible_id AS "responsibleId" FROM response WHERE pqrs_id = $1 ORDER BY id`,
-      normalizeValues([pqrsId])
-    );
-    return result.rows;
+    const rows = await prisma.response.findMany({
+      where: { pqrsId },
+      orderBy: { id: "asc" },
+      select: responseSelect,
+    });
+    return rows.map(toRespuesta);
   }
 
   async update(data: UpdateRespuestaDTO): Promise<IRespuesta | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.content !== undefined) {
-      fields.push(`content = $${index}`);
-      values.push(data.content);
-      index += 1;
-    }
-    if (data.channel !== undefined) {
-      fields.push(`channel = $${index}`);
-      values.push(data.channel);
-      index += 1;
-    }
-    if (data.sentAt !== undefined) {
-      fields.push(`sent_at = $${index}`);
-      values.push(data.sentAt);
-      index += 1;
-    }
-    if (data.documentId !== undefined) {
-      fields.push(`document_id = $${index}`);
-      values.push(data.documentId);
-      index += 1;
-    }
-    if (data.pqrsId !== undefined) {
-      fields.push(`pqrs_id = $${index}`);
-      values.push(data.pqrsId);
-      index += 1;
-    }
-    if (data.responsibleId !== undefined) {
-      fields.push(`responsible_id = $${index}`);
-      values.push(data.responsibleId);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: {
+      content?: string;
+      channel?: number;
+      sentAt?: Date | null;
+      documentId?: number | null;
+      pqrsId?: number;
+      responsibleId?: number;
+    } = {};
+
+    if (data.content !== undefined) updateData.content = data.content;
+    if (data.channel !== undefined) updateData.channel = data.channel;
+    if (data.sentAt !== undefined) updateData.sentAt = data.sentAt ?? null;
+    if (data.documentId !== undefined) updateData.documentId = data.documentId ?? null;
+    if (data.pqrsId !== undefined) updateData.pqrsId = data.pqrsId;
+    if (data.responsibleId !== undefined) updateData.responsibleId = data.responsibleId;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE response SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, content, channel, sent_at AS "sentAt", document_id AS "documentId", pqrs_id AS "pqrsId", responsible_id AS "responsibleId"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.response.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteRespuestaDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM response WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.response.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

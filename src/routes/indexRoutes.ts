@@ -1,5 +1,4 @@
 import { Router } from 'express'
-// imports de autenticacion
 // imports de las rutas
 import pqrsRoutes from "./pqrs.routes";
 import analisisRoutes from "./analisis.routes";
@@ -36,7 +35,7 @@ const router = Router();
 
 router.use("/auth", authRoutes);
 router.use("/users/type-person", tipoPersonaRoutes);
-// router.use("/users/stake-holder", stakeholderRoutes); // UNUSED (frontend)
+router.use("/stake-holder", stakeholderRoutes); // UNUSED (frontend)
 router.use("/users", usersRoutes);
 // router.use("/roles", rolRoutes); // UNUSED (frontend)
 router.use("/type-pqrsf", tipoPqrsRoutes);
@@ -47,7 +46,7 @@ router.use("/pqrsf", pqrsfRoutes);
 // router.use("/notifications", notificationsRoutes); // UNUSED (frontend)
 router.use("/dashboard", dashboardRoutes);
 // router.use("/responses", responsesRoutes); // UNUSED (frontend)
-router.use("/whatsapp", webhooksRoutes); // External integrations (not used by frontend)
+router.use("/whatsapp", webhooksRoutes); // External integrations (not used by frontend, used by n8n)
 router.use("/responsables", responsableRoutes);
 // router.use("/clientes", clienteRoutes); // UNUSED (frontend)
 router.use("/chats", chatRoutes);
