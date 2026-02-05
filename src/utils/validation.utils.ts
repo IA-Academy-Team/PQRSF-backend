@@ -142,6 +142,7 @@ export const normalizeValues = (values: unknown[]): unknown[] => {
   return values.map((value) => {
     if (value === undefined || value === null) return null;
     if (typeof value === "bigint") return value.toString();
+    if (value instanceof Date) return value;
     if (Array.isArray(value)) return value.map((item) => normalizeValues([item]));
     if (value && typeof value === "object") {
       const entries = Object.entries(value as Record<string, unknown>).map(

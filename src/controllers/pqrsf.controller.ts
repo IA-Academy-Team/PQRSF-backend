@@ -7,7 +7,7 @@ import { DocumentoService } from "../services/documento.service";
 import { EncuestaService } from "../services/encuesta.service";
 import { PqrsStatusHistoryService } from "../services/pqrsStatusHistory.service";
 import { asyncHandler } from "../utils/controller.utils";
-import { requirePositiveInt } from "../utils/validation.utils";
+import { normalizeValues, requirePositiveInt } from "../utils/validation.utils";
 import { AppError } from "../middlewares/error.middleware";
 import { pqrsListDetailedQuerySchema, pqrsListQuerySchema } from "../schemas/pqrs.schema";
 import { notifyN8n } from "../services/chat-integration.service";
@@ -30,51 +30,58 @@ const PQRS_STATUS = {
   ANALISIS: 2,
 } as const;
 
+const normalizeResponse = <T>(value: T): T => {
+  if (Array.isArray(value)) {
+    return normalizeValues(value) as T;
+  }
+  return normalizeValues([value])[0] as T;
+};
+
 export const getPqrsByRadicado = asyncHandler(async (req: Request, res: Response) => {
   const result = await pqrsService.findByTicketNumber(req.params.code as string);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listPqrsByStatus = asyncHandler(async (req: Request, res: Response) => {
   const statusId = Number(req.params.statusId);
   const result = await pqrsService.list({ pqrsStatusId: statusId });
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listPqrsByType = asyncHandler(async (req: Request, res: Response) => {
   const typeId = Number(req.params.typeId);
   const result = await pqrsService.list({ typePqrsId: typeId });
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listPqrsByUser = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.params.userId;
   const result = await pqrsService.list({ clientId: userId as unknown as bigint });
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listPqrsByArea = asyncHandler(async (req: Request, res: Response) => {
   const areaId = Number(req.params.areaId);
   const result = await pqrsService.list({ areaId });
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listPqrsDetailed = asyncHandler(async (req: Request, res: Response) => {
   const filters = pqrsListDetailedQuerySchema.parse(req.query);
   const result = await pqrsService.listDetailed(filters);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const getPqrsDetailedById = asyncHandler(async (req: Request, res: Response) => {
   const id = Number(req.params.pqrsfId);
   const result = await pqrsService.findDetailedById(id);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const searchPqrs = asyncHandler(async (req: Request, res: Response) => {
   const filters = pqrsListQuerySchema.parse(req.query);
   const result = await pqrsService.list(filters);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listAnalisisByPqrs = asyncHandler(async (req: Request, res: Response) => {

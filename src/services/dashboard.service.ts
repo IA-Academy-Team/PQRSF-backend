@@ -2,35 +2,39 @@ import prisma from "../config/db.config";
 import { Prisma } from "../../generated/prisma/client";
 
 export class DashboardService {
+  private normalizeRows<T>(rows: T[] | T[][]): T[] {
+    if (!Array.isArray(rows)) return [];
+    return (rows as Array<T | T[]>).flatMap((row) => (Array.isArray(row) ? row : [row]));
+  }
+
   async getAdminMetrics() {
     const totals = await prisma.$queryRaw<{ total: number }[]>`
       SELECT COUNT(*)::int AS total FROM pqrs
     `;
     const byStatus = await prisma.$queryRaw<
       { statusId: number; statusName: string; count: number }[]
-    >`SELECT p.pqrs_status_id AS "statusId", s.name AS "statusName", COUNT(*)::int AS count
-       FROM pqrs p
-       JOIN pqrs_status s ON s.id = p.pqrs_status_id
-       GROUP BY p.pqrs_status_id, s.name
-       ORDER BY p.pqrs_status_id`;
+    >`SELECT s.id AS "statusId", s.name AS "statusName", COALESCE(COUNT(p.id), 0)::int AS count
+       FROM pqrs_status s
+       LEFT JOIN pqrs p ON p.pqrs_status_id = s.id
+       GROUP BY s.id, s.name
+       ORDER BY s.id`;
     const byType = await prisma.$queryRaw<
       { typeId: number; typeName: string; count: number }[]
-    >`SELECT t.id AS "typeId", t.name AS "typeName", COUNT(*)::int AS count
-       FROM pqrs p
-       JOIN type_pqrs t ON t.id = p.type_pqrs_id
+    >`SELECT t.id AS "typeId", t.name AS "typeName", COALESCE(COUNT(p.id), 0)::int AS count
+       FROM type_pqrs t
+       LEFT JOIN pqrs p ON p.type_pqrs_id = t.id
        GROUP BY t.id, t.name
        ORDER BY t.id`;
     const avgResponseByArea = await prisma.$queryRaw<
       { areaId: number; areaName: string; avgDays: number }[]
     >`SELECT a.id AS "areaId", a.name AS "areaName",
-              COALESCE(ROUND(AVG(EXTRACT(EPOCH FROM (p.updated_at - p.created_at)) / 86400)::numeric, 1), 0) AS "avgDays"
-       FROM pqrs p
-       JOIN area a ON a.id = p.area_id
-       WHERE p.pqrs_status_id = 4
+              ROUND(AVG(EXTRACT(EPOCH FROM (p.updated_at - p.created_at)) / 86400), 1)::float AS "avgDays"
+       FROM area a
+       JOIN pqrs p ON p.area_id = a.id AND p.pqrs_status_id = 4
        GROUP BY a.id, a.name
        ORDER BY "avgDays" ASC`;
     const surveyAverage = await prisma.$queryRaw<{ avgScore: number }[]
-    >`SELECT COALESCE(ROUND(AVG((q1_clarity + q2_timeliness + q3_quality + q4_attention + q5_overall) / 5.0)::numeric, 1), 0) AS "avgScore"
+    >`SELECT COALESCE(ROUND(AVG((q1_clarity + q2_timeliness + q3_quality + q4_attention + q5_overall) / 5.0), 1), 0)::float AS "avgScore"
        FROM survey`;
     const chats = await prisma.$queryRaw<{ total: number }[]
     >`
@@ -45,9 +49,9 @@ export class DashboardService {
       totalPqrs: totals[0]?.total ?? 0,
       totalChats: chats[0]?.total ?? 0,
       totalClients: clients[0]?.total ?? 0,
-      byStatus,
-      byType,
-      avgResponseByArea,
+      byStatus: this.normalizeRows(byStatus),
+      byType: this.normalizeRows(byType),
+      avgResponseByArea: this.normalizeRows(avgResponseByArea),
       surveyAverage: surveyAverage[0]?.avgScore ?? 0,
     };
   }
@@ -97,15 +101,15 @@ export class DashboardService {
       WHERE area_id = ${areaId}
     `;
     const byStatus = await prisma.$queryRaw<{ statusId: number; count: number }[]>`
-      SELECT pqrs_status_id AS "statusId", COUNT(*)::int AS count
-      FROM pqrs
-      WHERE area_id = ${areaId}
-      GROUP BY pqrs_status_id
-      ORDER BY pqrs_status_id
+      SELECT s.id AS "statusId", COALESCE(COUNT(p.id), 0)::int AS count
+      FROM pqrs_status s
+      LEFT JOIN pqrs p ON p.pqrs_status_id = s.id AND p.area_id = ${areaId}
+      GROUP BY s.id
+      ORDER BY s.id
     `;
     return {
       totalPqrs: totals[0]?.total ?? 0,
-      byStatus,
+      byStatus: this.normalizeRows(byStatus),
     };
   }
 
