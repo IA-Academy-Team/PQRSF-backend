@@ -172,6 +172,18 @@ export class PqrsRepository {
     return found?.createdAt ?? null;
   }
 
+  async findPrevCreatedAtByClientId(clientId: bigint, createdAt: Date): Promise<Date | null> {
+    const found = await prisma.pqrs.findFirst({
+      where: {
+        clientId,
+        createdAt: { lt: createdAt },
+      },
+      orderBy: { createdAt: "desc" },
+      select: { createdAt: true },
+    });
+    return found?.createdAt ?? null;
+  }
+
   async findAllWithFilters(filters: PqrsFilters): Promise<IPqrs[]> {
     const where: {
       pqrsStatusId?: number;

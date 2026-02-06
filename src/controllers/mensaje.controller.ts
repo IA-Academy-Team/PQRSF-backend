@@ -11,6 +11,7 @@ import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.
 import { sendChatMessageSchema } from "../schemas/chatIntegration.schema";
 import { ChatIntegrationService } from "../services/chat-integration.service";
 import { normalizeValues, optionalPositiveInt } from "../utils/validation.utils";
+import { AppError } from "../middlewares/error.middleware";
 
 const service = new MensajeService();
 const integrationService = new ChatIntegrationService();
@@ -40,6 +41,22 @@ export const createMensaje = asyncHandler(async (req: Request, res: Response) =>
 export const sendChatMessage = asyncHandler(async (req: Request, res: Response) => {
   const data = sendChatMessageSchema.parse(req.body);
   const result = await integrationService.sendAdminMessage(data);
+  res.status(201).json(normalizeResponse(result));
+});
+
+export const sendChatFile = asyncHandler(async (req: Request, res: Response) => {
+  const file = (req as Request & { file?: Express.Multer.File }).file;
+  if (!file) {
+    throw new AppError("File is required", 400, "VALIDATION_ERROR", { field: "file" });
+  }
+
+  const chatId = req.body?.chatId;
+  const channel = req.body?.channel;
+  const result = await integrationService.sendAdminFile({
+    chatId,
+    channel,
+    file,
+  });
   res.status(201).json(normalizeResponse(result));
 });
 
