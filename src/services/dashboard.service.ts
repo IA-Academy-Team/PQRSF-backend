@@ -169,7 +169,13 @@ export class DashboardService {
          ORDER BY sent_at DESC
          LIMIT 1
        ) response ON true
-       WHERE p.area_id = ${areaId} AND p.pqrs_status_id != 4
+       WHERE p.area_id = ${areaId}
+         AND p.pqrs_status_id = 1
+         AND NOT EXISTS (
+           SELECT 1
+           FROM response r2
+           WHERE r2.pqrs_id = p.id
+         )
        ORDER BY p.created_at DESC`);
   }
 
