@@ -2,6 +2,8 @@ import { AppError } from "../middlewares/error.middleware";
 import { ChatRepository } from "../repositories/chat.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
 import { MensajeService } from "./mensaje.service";
+import { uploadToS3 } from "./s3.service";
+import path from "path";
 import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.config";
 import {
   N8N_WEBHOOK_URL,
@@ -16,6 +18,7 @@ type InboundPayload = {
   channel: "whatsapp" | "telegram";
   from: string;
   content: string;
+  name?: string | null;
   metadata?: Record<string, unknown>;
 };
 
@@ -142,15 +145,46 @@ export class ChatIntegrationService {
     });
   }
 
-  private async getOrCreateClientByPhone(phone: string, channel: "whatsapp" | "telegram") {
+  private async getOrCreateClientByPhone(
+    phone: string,
+    channel: "whatsapp" | "telegram",
+    name?: string | null
+  ) {
     const raw = optionalString(phone, "phone") ?? "";
     const normalized = channel === "telegram" ? tagTelegramPhone(raw) : raw;
     if (!normalized) {
       throw new AppError("Phone number is required", 400, "VALIDATION_ERROR", { phone });
     }
 
+    const displayName = optionalString(name, "name") ?? null;
+
     const existing = await this.clientRepo.findByPhoneNumber(normalized);
-    if (existing) return existing;
+    if (existing) {
+      if ((!existing.name && displayName) || !existing.phoneNumber) {
+        const updated = await this.clientRepo.update({
+          id: existing.id,
+          name: existing.name ?? displayName,
+          phoneNumber: existing.phoneNumber ?? normalized,
+        });
+        return updated ?? existing;
+      }
+      return existing;
+    }
+
+    if (channel === "whatsapp") {
+      const digits = normalized.replace(/\D/g, "");
+      if (digits) {
+        const byId = await this.clientRepo.findById(BigInt(digits));
+        if (byId) {
+          const updated = await this.clientRepo.update({
+            id: byId.id,
+            name: byId.name ?? displayName,
+            phoneNumber: byId.phoneNumber ?? normalized,
+          });
+          return updated ?? byId;
+        }
+      }
+    }
 
     let id = BigInt(Date.now());
     while (await this.clientRepo.findById(id)) {
@@ -159,7 +193,7 @@ export class ChatIntegrationService {
 
     return this.clientRepo.create({
       id,
-      name: "Usuario WhatsApp",
+      name: displayName ?? "Usuario WhatsApp",
       document: null,
       email: null,
       phoneNumber: normalized,
@@ -201,15 +235,80 @@ export class ChatIntegrationService {
     }
 
     const client = await this.clientRepo.findById(clientId);
-    if (!client || !client.phoneNumber) {
+    const fallbackPhone = client?.phoneNumber ?? String(client?.id ?? "").trim();
+    if (!client || !fallbackPhone) {
       throw new AppError("Client phone is required", 409, "CHAT_NO_PHONE", { chatId, clientId });
     }
 
     const channel = data.channel ?? "whatsapp";
     if (channel === "telegram") {
-      await sendTelegramMessage(normalizeTelegramChatId(client.phoneNumber), content);
+      await sendTelegramMessage(normalizeTelegramChatId(fallbackPhone), content);
     } else {
-      await sendWhatsappMessage(client.phoneNumber, content);
+      await sendWhatsappMessage(fallbackPhone, content);
+    }
+
+    const message = await this.mensajeService.create({
+      chatId,
+      content,
+      type: 3,
+    });
+
+    const numericChatId = Number(chatId);
+    if (Number.isFinite(numericChatId)) {
+      broadcastChatMessage(numericChatId, message);
+      broadcastChatSummary({
+        chatId: numericChatId,
+        lastMessage: message.content ?? "",
+        lastMessageAt: message.createdAt ?? null,
+      });
+    }
+
+    return message;
+  }
+
+  async sendAdminFile(params: {
+    chatId: bigint;
+    file: Express.Multer.File;
+    channel?: "whatsapp" | "telegram";
+  }) {
+    const chatId = requireBigInt(params.chatId, "chatId");
+    const chat = await this.chatRepo.findById(chatId);
+    if (!chat) {
+      throw new AppError("Chat not found", 404, "NOT_FOUND", { chatId });
+    }
+
+    const mode = chat.mode ?? 1;
+    if (mode !== 2) {
+      throw new AppError("Chat is in IA mode", 409, "CHAT_MODE_AI", { chatId, mode });
+    }
+
+    const clientId = chat.clientId;
+    if (!clientId) {
+      throw new AppError("Chat has no client", 409, "CHAT_NO_CLIENT", { chatId });
+    }
+
+    const client = await this.clientRepo.findById(clientId);
+    const fallbackPhone = client?.phoneNumber ?? String(client?.id ?? "").trim();
+    if (!client || !fallbackPhone) {
+      throw new AppError("Client phone is required", 409, "CHAT_NO_PHONE", { chatId, clientId });
+    }
+
+    const file = params.file;
+    const ext = path.extname(file.originalname || "").replace(/[^a-zA-Z0-9.]/g, "");
+    const baseName = path.basename(file.originalname || "archivo", ext).replace(/[^\w.-]+/g, "_");
+    const key = `chats/${String(chatId)}/${Date.now()}_${baseName}${ext}`;
+    const fileUrl = await uploadToS3({
+      key,
+      body: file.buffer,
+      contentType: file.mimetype,
+    });
+
+    const content = `${file.originalname || "archivo"}: ${fileUrl}`;
+    const channel = params.channel ?? "whatsapp";
+    if (channel === "telegram") {
+      await sendTelegramMessage(normalizeTelegramChatId(fallbackPhone), content);
+    } else {
+      await sendWhatsappMessage(fallbackPhone, content);
     }
 
     const message = await this.mensajeService.create({
@@ -232,7 +331,7 @@ export class ChatIntegrationService {
   }
 
   async handleInboundMessage(payload: InboundPayload) {
-    const client = await this.getOrCreateClientByPhone(payload.from, payload.channel);
+    const client = await this.getOrCreateClientByPhone(payload.from, payload.channel, payload.name);
     const chat = await this.getOrCreateChat(client.id);
 
     const rawChatId: unknown = chat?.id ?? chat?.clientId ?? client?.id;

@@ -73,8 +73,10 @@ export class MensajeService {
       });
     }
 
-    const startAt = requireDate(pqrs.createdAt, "createdAt");
-    const endAt = await this.pqrsRepo.findNextCreatedAtByClientId(pqrs.clientId, startAt);
+    const startAtRaw = requireDate(pqrs.createdAt, "createdAt");
+    const graceWindowMs = 2 * 60 * 60 * 1000;
+    const startAt = new Date(startAtRaw.getTime() - graceWindowMs);
+    const endAt = await this.pqrsRepo.findNextCreatedAtByClientId(pqrs.clientId, startAtRaw);
     return this.repo.findByChatIdAndRange(id, startAt, endAt);
   }
 

@@ -50,8 +50,8 @@ export class ChatRepository {
     return prisma.$queryRaw<IChatSummary[]>(Prisma.sql`SELECT chat.id,
               chat.mode,
               chat.client_id AS "clientId",
-              client.name AS "clientName",
-              client.phone_number AS "clientPhone",
+              COALESCE(client.name, 'Usuario WhatsApp') AS "clientName",
+              COALESCE(client.phone_number, chat.client_id::text) AS "clientPhone",
               last_message.content AS "lastMessage",
               last_message.created_at AS "lastMessageAt"
        FROM chat
@@ -94,13 +94,22 @@ export class ChatRepository {
               chat.id,
               chat.mode,
               chat.client_id AS "clientId",
-              client.name AS "clientName",
-              client.phone_number AS "clientPhone",
+              CASE
+                WHEN anon_window.is_anon = true THEN 'Anónimo'
+                WHEN LOWER(tp.name) IN ('anónimo', 'anonimo') OR client.name IS NULL THEN 'Anónimo'
+                ELSE client.name
+              END AS "clientName",
+              CASE
+                WHEN anon_window.is_anon = true THEN NULL
+                WHEN LOWER(tp.name) IN ('anónimo', 'anonimo') THEN NULL
+                ELSE COALESCE(client.phone_number, chat.client_id::text)
+              END AS "clientPhone",
               last_message.content AS "lastMessage",
               last_message.created_at AS "lastMessageAt"
        FROM pqrs
        JOIN chat ON chat.client_id = pqrs.client_id
        LEFT JOIN client ON client.id = pqrs.client_id
+       LEFT JOIN type_person tp ON tp.id = client.type_person_id
        LEFT JOIN LATERAL (
          SELECT created_at
          FROM pqrs next_p
@@ -118,6 +127,16 @@ export class ChatRepository {
          ORDER BY created_at DESC
          LIMIT 1
        ) last_message ON true
+       LEFT JOIN LATERAL (
+         SELECT EXISTS (
+           SELECT 1
+           FROM message m
+           WHERE m.chat_id = chat.id
+             AND m.created_at >= pqrs.created_at
+             AND (next_pqrs.created_at IS NULL OR m.created_at < next_pqrs.created_at)
+             AND m.content ILIKE '%anonim%'
+         ) AS is_anon
+       ) anon_window ON true
        ORDER BY pqrs.created_at DESC`);
   }
 

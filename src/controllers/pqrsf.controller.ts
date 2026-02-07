@@ -270,7 +270,7 @@ export const finalizePqrs = asyncHandler(async (req: Request, res: Response) => 
   } catch (err) {
     console.warn("[pqrsf][finalize] survey webhook error", err);
   }
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
@@ -301,7 +301,7 @@ export const appealPqrs = asyncHandler(async (req: Request, res: Response) => {
   } catch (err) {
     console.warn("[pqrsf][appeal] reanalysis touch failed", err);
   }
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listSeguimiento = asyncHandler(async (_req: Request, res: Response) => {

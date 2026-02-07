@@ -1,6 +1,7 @@
 import type { Server as HttpServer } from "http";
 import { Server as SocketServer } from "socket.io";
 import { DEV_HOST, FRONTEND_ORIGIN, FRONTEND_URL } from "./env.config";
+import { normalizeValues } from "../utils/validation.utils";
 
 let io: SocketServer | null = null;
 
@@ -36,16 +37,19 @@ export const initWebsocket = (server: HttpServer) => {
 
 export const broadcastChatMessage = (chatId: number, message: unknown) => {
   if (!io) return;
-  io.to(getChatRoom(chatId)).emit("chat_message", { chatId, message });
+  const payload = normalizeValues([{ chatId, message }])[0];
+  io.to(getChatRoom(chatId)).emit("chat_message", payload);
 };
 
 export const broadcastChatSummary = (payload: unknown) => {
   if (!io) return;
-  io.to(SUMMARY_ROOM).emit("chat_summary", payload);
+  const normalized = normalizeValues([payload])[0];
+  io.to(SUMMARY_ROOM).emit("chat_summary", normalized);
 };
 
 export const broadcastChatMode = (chatId: number, mode: number | null) => {
   if (!io) return;
-  io.to(SUMMARY_ROOM).emit("chat_mode", { chatId, mode });
-  io.to(getChatRoom(chatId)).emit("chat_mode", { chatId, mode });
+  const payload = normalizeValues([{ chatId, mode }])[0];
+  io.to(SUMMARY_ROOM).emit("chat_mode", payload);
+  io.to(getChatRoom(chatId)).emit("chat_mode", payload);
 };
