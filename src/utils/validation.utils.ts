@@ -68,7 +68,7 @@ export const requireBigInt = (value: unknown, field: string) => {
   if (typeof value === "number" && Number.isInteger(value)) {
     return BigInt(value);
   }
-  if (typeof value === "string" && /^\\d+$/.test(value)) {
+  if (typeof value === "string" && /^\d+$/.test(value)) {
     return BigInt(value);
   }
   throw badRequest(`${field} must be a bigint`, { field });
@@ -142,6 +142,7 @@ export const normalizeValues = (values: unknown[]): unknown[] => {
   return values.map((value) => {
     if (value === undefined || value === null) return null;
     if (typeof value === "bigint") return value.toString();
+    if (value instanceof Date) return value;
     if (Array.isArray(value)) return value.map((item) => normalizeValues([item]));
     if (value && typeof value === "object") {
       const entries = Object.entries(value as Record<string, unknown>).map(

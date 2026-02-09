@@ -5,7 +5,7 @@
     "lib": ["es2020", "esnext"],
     "allowJs": true,
     "outDir": "./dist",
-    "rootDir": "./src",
+    "rootDir": ".",
     "strict": true,
     "noImplicitAny": true,
     "esModuleInterop": true,
@@ -13,6 +13,6 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["src/**/*", "src/index.ts"],
+  "include": ["src/**/*", "generated/prisma/**/*.ts"],
   "exclude": ["node_modules"]
 }

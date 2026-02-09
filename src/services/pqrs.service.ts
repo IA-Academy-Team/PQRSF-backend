@@ -1,7 +1,14 @@
 import { AppError } from "../middlewares/error.middleware";
 import { CreatePqrsDTO, DeletePqrsDTO, UpdatePqrsDTO } from "../schemas/pqrs.schema";
 import { IPqrs } from "../models/pqrs.model";
-import { PqrsRepository, PqrsDetailedFilters, PqrsFilters } from "../repositories/pqrs.repository";
+import {
+  PqrsRepository,
+  PqrsDetailedFilters,
+  PqrsFilters,
+  PqrsBotResponseView,
+  PqrsDetailedView,
+  PqrsTicketArea,
+} from "../repositories/pqrs.repository";
 import { AreaRepository } from "../repositories/area.repository";
 import { TipoPqrsRepository } from "../repositories/tipoPqrs.repository";
 import { ClienteRepository } from "../repositories/cliente.repository";
@@ -148,12 +155,12 @@ export class PqrsService {
     return ensureFound("PQRS", pqrs, { id });
   }
 
-  async findDetailedById(id: number) {
+  async findDetailedById(id: number): Promise<PqrsDetailedView> {
     const pqrs = await this.repo.findDetailedById(requirePositiveInt(id, "id"));
     return ensureFound("PQRS", pqrs, { id });
   }
 
-  async findTicketAndAreaCode(pqrsId: number) {
+  async findTicketAndAreaCode(pqrsId: number): Promise<PqrsTicketArea> {
     const id = requirePositiveInt(pqrsId, "pqrsId");
     const data = await this.repo.findTicketAndAreaCode(id);
     return ensureFound("PQRS", data, { pqrsId: id });
@@ -212,19 +219,19 @@ export class PqrsService {
     return ensureFound("PQRS", pqrs, { ticketNumber: code });
   }
 
-  async findDetailedByTicketNumber(ticketNumber: string) {
+  async findDetailedByTicketNumber(ticketNumber: string): Promise<PqrsDetailedView> {
     const code = requireString(ticketNumber, "ticketNumber");
     const pqrs = await this.repo.findDetailedByTicketNumber(code);
     return ensureFound("PQRS", pqrs, { ticketNumber: code });
   }
 
-  async findBotResponseByTicketNumber(ticketNumber: string) {
+  async findBotResponseByTicketNumber(ticketNumber: string): Promise<PqrsBotResponseView> {
     const code = requireString(ticketNumber, "ticketNumber");
     const pqrs = await this.repo.findBotResponseByTicketNumber(code);
     return ensureFound("PQRS", pqrs, { ticketNumber: code });
   }
 
-  async findBotResponseByPqrsId(pqrsId: number) {
+  async findBotResponseByPqrsId(pqrsId: number): Promise<PqrsBotResponseView> {
     const id = requirePositiveInt(pqrsId, "pqrsId");
     const pqrs = await this.repo.findBotResponseByPqrsId(id);
     return ensureFound("PQRS", pqrs, { pqrsId: id });

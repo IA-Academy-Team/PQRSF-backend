@@ -1,4 +1,5 @@
 import { Router } from "express";
+import multer from "multer";
 import {
   createChat,
   deleteChat,
@@ -11,9 +12,20 @@ import {
   listChatSummariesByPqrs,
   updateChat,
 } from "../controllers/chat.controller";
-import { createMensaje, deleteMensaje, listMensajesByChat, sendChatMessage, updateMensaje } from "../controllers/mensaje.controller";
+import {
+  createMensaje,
+  deleteMensaje,
+  listMensajesByChat,
+  sendChatFile,
+  sendChatMessage,
+  updateMensaje,
+} from "../controllers/mensaje.controller";
 
 const router = Router();
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 },
+});
 
 router.get("/", listChats);
 router.get("/summary", listChatSummaries);
@@ -50,6 +62,11 @@ router.post(
   "/messages/send",
   /* #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/SendChatMessage' } } */
   sendChatMessage
+);
+router.post(
+  "/messages/send-file",
+  upload.single("file"),
+  sendChatFile
 );
 router.put(
   "/messages/:id",

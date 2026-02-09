@@ -12,7 +12,8 @@ const extractWhatsappPayload = (body: any) => {
   const message = change?.messages?.[0];
   const text = message?.text?.body;
   const from = message?.from || change?.contacts?.[0]?.wa_id;
-  return { text, from, raw: body };
+  const name = change?.contacts?.[0]?.profile?.name ?? change?.contacts?.[0]?.name;
+  return { text, from, name, raw: body };
 };
 
 export const verifyWhatsappWebhook = asyncHandler(async (req: Request, res: Response) => {
@@ -62,7 +63,7 @@ export const receiveWhatsappWebhook = asyncHandler(async (req: Request, res: Res
       return;
     }
 
-    const { text, from, raw } = extractWhatsappPayload(req.body);
+    const { text, from, name, raw } = extractWhatsappPayload(req.body);
     if (!text || !from) {
       console.warn("[webhook][whatsapp][receive] payload missing text or from", {
         hasText: Boolean(text),
@@ -76,6 +77,7 @@ export const receiveWhatsappWebhook = asyncHandler(async (req: Request, res: Res
       channel: "whatsapp",
       from,
       content: text,
+      name,
       metadata: { raw },
     });
 

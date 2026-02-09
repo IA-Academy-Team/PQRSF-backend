@@ -1,72 +1,88 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { IRol } from "../models/rol.model";
 import { CreateRolDTO, UpdateRolDTO, DeleteRolDTO } from "../schemas/rol.schema";
+
+const roleSelect = {
+  id: true,
+  name: true,
+  description: true,
+  createdAt: true,
+} as const;
+
+const toRol = (row: {
+  id: number;
+  name: string;
+  description: string | null;
+  createdAt: Date | null;
+}): IRol => ({
+  id: row.id,
+  name: row.name,
+  description: row.description,
+  createdAt: row.createdAt ?? new Date(),
+});
 
 export class RolRepository {
   private readonly table = "roles";
 
   async create(data: CreateRolDTO): Promise<IRol> {
-    const result = await pool.query(
-      `INSERT INTO roles (name, description) VALUES ($1, $2) RETURNING id, name, description, created_at AS "createdAt"`,
-      normalizeValues([data.name, data.description])
-    );
-    return result.rows[0];
+    const created = await prisma.role.create({
+      data: {
+        name: data.name,
+        description: data.description,
+      },
+      select: roleSelect,
+    });
+    return toRol(created);
   }
 
   async findById(id: number): Promise<IRol | null> {
-    const result = await pool.query(
-      `SELECT id, name, description, created_at AS "createdAt" FROM roles WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.role.findUnique({
+      where: { id },
+      select: roleSelect,
+    });
+    return found ? toRol(found) : null;
   }
 
   async findAll(): Promise<IRol[]> {
-    const result = await pool.query(`SELECT id, name, description, created_at AS "createdAt" FROM roles ORDER BY id`);
-    return result.rows;
+    const rows = await prisma.role.findMany({
+      orderBy: { id: "asc" },
+      select: roleSelect,
+    });
+    return rows.map(toRol);
   }
 
   async findByName(name: string): Promise<IRol | null> {
-    const result = await pool.query(
-      `SELECT id, name, description, created_at AS "createdAt" FROM roles WHERE name = $1`,
-      normalizeValues([name])
-    );
-    return result.rows[0] ?? null;
+    const found = await prisma.role.findUnique({
+      where: { name },
+      select: roleSelect,
+    });
+    return found ? toRol(found) : null;
   }
 
   async update(data: UpdateRolDTO): Promise<IRol | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.name !== undefined) {
-      fields.push(`name = $${index}`);
-      values.push(data.name);
-      index += 1;
-    }
-    if (data.description !== undefined) {
-      fields.push(`description = $${index}`);
-      values.push(data.description);
-      index += 1;
-    }
-    if (data.createdAt !== undefined) {
-      fields.push(`created_at = $${index}`);
-      values.push(data.createdAt);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    const updateData: { name?: string; description?: string | null; createdAt?: Date } = {};
+
+    if (data.name !== undefined) updateData.name = data.name;
+    if (data.description !== undefined) updateData.description = data.description;
+    if (data.createdAt !== undefined) updateData.createdAt = data.createdAt;
+
+    if (Object.keys(updateData).length === 0) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE roles SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name, description, created_at AS "createdAt"`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.role.updateMany({
+      where: { id: data.id as number },
+      data: updateData,
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteRolDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM roles WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.role.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

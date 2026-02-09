@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { ChatService } from "../services/chat.service";
 import { asyncHandler } from "../utils/controller.utils";
+import { normalizeValues } from "../utils/validation.utils";
 import {
   chatClientParamSchema,
   chatIdParamSchema,
@@ -12,49 +13,56 @@ import { broadcastChatMode, broadcastChatSummary } from "../config/websocket.con
 
 const service = new ChatService();
 
+const normalizeResponse = <T>(value: T): T => {
+  if (Array.isArray(value)) {
+    return normalizeValues(value) as T;
+  }
+  return normalizeValues([value])[0] as T;
+};
+
 export const createChat = asyncHandler(async (req: Request, res: Response) => {
   const data = createChatSchema.parse(req.body);
   const result = await service.create(data);
-  res.status(201).json(result);
+  res.status(201).json(normalizeResponse(result));
 });
 
 export const getChatById = asyncHandler(async (req: Request, res: Response) => {
   const { id } = chatIdParamSchema.parse(req.params);
   const result = await service.findById(id);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listChats = asyncHandler(async (_req: Request, res: Response) => {
   const result = await service.list();
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listChatSummaries = asyncHandler(async (_req: Request, res: Response) => {
   const result = await service.listSummaries();
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listChatSummariesByPqrs = asyncHandler(async (_req: Request, res: Response) => {
   const result = await service.listSummariesByPqrs();
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listChatByClient = asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = chatClientParamSchema.parse(req.params);
   const result = await service.findByClientId(clientId);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listChatByUser = asyncHandler(async (req: Request, res: Response) => {
   const { clientId } = chatClientParamSchema.parse({ clientId: req.params.userId });
   const result = await service.listByClientId(clientId);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listChatByArea = asyncHandler(async (req: Request, res: Response) => {
   const areaId = Number(req.params.areaId);
   const result = await service.listByAreaId(areaId);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const updateChat = asyncHandler(async (req: Request, res: Response) => {
@@ -67,7 +75,7 @@ export const updateChat = asyncHandler(async (req: Request, res: Response) => {
     broadcastChatMode(chatId, result.mode ?? null);
     broadcastChatSummary({ chatId, mode: result.mode ?? null });
   }
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const deleteChat = asyncHandler(async (req: Request, res: Response) => {

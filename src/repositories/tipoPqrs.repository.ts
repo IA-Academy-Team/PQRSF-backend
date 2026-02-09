@@ -1,5 +1,4 @@
-import pool from "../config/db.config";
-import { normalizeValues } from "./repository.utils";
+import prisma from "../config/db.config";
 import { ITipoPqrs } from "../models/tipoPqrs.model";
 import { CreateTipoPqrsDTO, UpdateTipoPqrsDTO, DeleteTipoPqrsDTO } from "../schemas/tipoPqrs.schema";
 
@@ -7,48 +6,44 @@ export class TipoPqrsRepository {
   private readonly table = "type_pqrs";
 
   async create(data: CreateTipoPqrsDTO): Promise<ITipoPqrs> {
-    const result = await pool.query(
-      `INSERT INTO type_pqrs (name) VALUES ($1) RETURNING id, name`,
-      normalizeValues([data.name])
-    );
-    return result.rows[0];
+    return prisma.typePqrs.create({
+      data: { name: data.name },
+      select: { id: true, name: true },
+    });
   }
 
   async findById(id: number): Promise<ITipoPqrs | null> {
-    const result = await pool.query(
-      `SELECT id, name FROM type_pqrs WHERE id = $1`,
-      normalizeValues([id])
-    );
-    return result.rows[0] ?? null;
+    return prisma.typePqrs.findUnique({
+      where: { id },
+      select: { id: true, name: true },
+    });
   }
 
   async findAll(): Promise<ITipoPqrs[]> {
-    const result = await pool.query(`SELECT id, name FROM type_pqrs ORDER BY id`);
-    return result.rows;
+    return prisma.typePqrs.findMany({
+      orderBy: { id: "asc" },
+      select: { id: true, name: true },
+    });
   }
 
   async update(data: UpdateTipoPqrsDTO): Promise<ITipoPqrs | null> {
-    const fields: string[] = [];
-    const values: unknown[] = [];
-    let index = 1;
-    if (data.name !== undefined) {
-      fields.push(`name = $${index}`);
-      values.push(data.name);
-      index += 1;
-    }
-    if (fields.length === 0) {
+    if (data.name === undefined) {
       return this.findById(data.id as number);
     }
-    values.push(data.id);
-    const result = await pool.query(
-      `UPDATE type_pqrs SET ${fields.join(', ')} WHERE id = $${index} RETURNING id, name`,
-      normalizeValues(values)
-    );
-    return result.rows[0] ?? null;
+
+    const updated = await prisma.typePqrs.updateMany({
+      where: { id: data.id as number },
+      data: { name: data.name },
+    });
+
+    if (updated.count === 0) return null;
+    return this.findById(data.id as number);
   }
 
   async delete(data: DeleteTipoPqrsDTO): Promise<boolean> {
-    const result = await pool.query(`DELETE FROM type_pqrs WHERE id = $1`, normalizeValues([data.id]));
-    return (result.rowCount ?? 0) > 0;
+    const deleted = await prisma.typePqrs.deleteMany({
+      where: { id: data.id },
+    });
+    return deleted.count > 0;
   }
 }

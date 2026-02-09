@@ -43,9 +43,9 @@ export const register = asyncHandler(async (req: Request, res: Response) => {
       email,
       password,
       name: name ?? email.split("@")[0],
-      phone_number: phoneNumber ?? "",
-      role_id: 1,
-      is_active: true,
+      phoneNumber: phoneNumber ?? "",
+      roleId: 1,
+      isActive: true,
     },
   });
 

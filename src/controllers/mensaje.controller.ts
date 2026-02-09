@@ -10,10 +10,18 @@ import {
 import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.config";
 import { sendChatMessageSchema } from "../schemas/chatIntegration.schema";
 import { ChatIntegrationService } from "../services/chat-integration.service";
-import { optionalPositiveInt } from "../utils/validation.utils";
+import { normalizeValues, optionalPositiveInt } from "../utils/validation.utils";
+import { AppError } from "../middlewares/error.middleware";
 
 const service = new MensajeService();
 const integrationService = new ChatIntegrationService();
+
+const normalizeResponse = <T>(value: T): T => {
+  if (Array.isArray(value)) {
+    return normalizeValues(value) as T;
+  }
+  return normalizeValues([value])[0] as T;
+};
 
 export const createMensaje = asyncHandler(async (req: Request, res: Response) => {
   const data = createMensajeSchema.parse(req.body);
@@ -27,19 +35,35 @@ export const createMensaje = asyncHandler(async (req: Request, res: Response) =>
       lastMessageAt: result.createdAt ?? null,
     });
   }
-  res.status(201).json(result);
+  res.status(201).json(normalizeResponse(result));
 });
 
 export const sendChatMessage = asyncHandler(async (req: Request, res: Response) => {
   const data = sendChatMessageSchema.parse(req.body);
   const result = await integrationService.sendAdminMessage(data);
-  res.status(201).json(result);
+  res.status(201).json(normalizeResponse(result));
+});
+
+export const sendChatFile = asyncHandler(async (req: Request, res: Response) => {
+  const file = (req as Request & { file?: Express.Multer.File }).file;
+  if (!file) {
+    throw new AppError("File is required", 400, "VALIDATION_ERROR", { field: "file" });
+  }
+
+  const chatId = req.body?.chatId;
+  const channel = req.body?.channel;
+  const result = await integrationService.sendAdminFile({
+    chatId,
+    channel,
+    file,
+  });
+  res.status(201).json(normalizeResponse(result));
 });
 
 export const getMensajeById = asyncHandler(async (req: Request, res: Response) => {
   const { id } = deleteMensajeSchema.parse(req.params);
   const result = await service.findById(id);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const listMensajesByChat = asyncHandler(async (req: Request, res: Response) => {
@@ -50,7 +74,7 @@ export const listMensajesByChat = asyncHandler(async (req: Request, res: Respons
       ? optionalPositiveInt(Number(pqrsIdRaw), "pqrsId")
       : undefined;
   const result = pqrsId ? await service.listByChatAndPqrs(chatId, pqrsId) : await service.listByChat(chatId);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const updateMensaje = asyncHandler(async (req: Request, res: Response) => {
@@ -58,7 +82,7 @@ export const updateMensaje = asyncHandler(async (req: Request, res: Response) =>
   const body = updateMensajeSchema.parse(req.body);
   const data = { ...body, id };
   const result = await service.update(data);
-  res.json(result);
+  res.json(normalizeResponse(result));
 });
 
 export const deleteMensaje = asyncHandler(async (req: Request, res: Response) => {

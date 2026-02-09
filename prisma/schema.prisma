@@ -1,0 +1,315 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model TypePerson {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(50)
+  clients   Client[]
+
+  @@map("type_person")
+}
+
+model Stakeholder {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(50)
+  clients   Client[]
+
+  @@map("stakeholder")
+}
+
+model TypePqrs {
+  id      Int    @id @default(autoincrement())
+  name    String @db.VarChar(50)
+  pqrs    Pqrs[]
+
+  @@map("type_pqrs")
+}
+
+model PqrsStatus {
+  id             Int                 @id @default(autoincrement())
+  name           String              @db.VarChar(50)
+  pqrs           Pqrs[]
+  statusHistory  PqrsStatusHistory[]
+
+  @@map("pqrs_status")
+}
+
+model Area {
+  id            Int           @id @default(autoincrement())
+  name          String        @db.VarChar(100)
+  code          String?       @unique @db.VarChar(10)
+  description   String?
+  responsables  Responsible[]
+  pqrs          Pqrs[]
+
+  @@map("area")
+}
+
+model TypeDocument {
+  id         Int        @id @default(autoincrement())
+  name       String     @db.VarChar(50)
+  documents  Document[]
+
+  @@map("type_document")
+}
+
+model Role {
+  id          Int       @id @default(autoincrement())
+  name        String    @unique @db.VarChar(50)
+  description String?   @db.VarChar(255)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  users       User[]
+
+  @@map("roles")
+}
+
+model User {
+  id               Int           @id @default(autoincrement())
+  email            String        @unique @db.VarChar(255)
+  name             String?       @db.VarChar(255)
+  image            String?
+  phoneNumber      String?       @unique @map("phone_number") @db.VarChar(20)
+  isActive         Boolean?      @default(true) @map("is_active")
+  emailVerified    Boolean?      @default(false) @map("email_verified")
+  twoFactorEnabled Boolean?      @default(false) @map("two_factor_enabled")
+  lastLogin        DateTime?     @map("last_login") @db.Timestamptz(6)
+  createdAt        DateTime?     @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt        DateTime?     @default(now()) @map("updated_at") @db.Timestamptz(6)
+  roleId           Int           @default(1) @map("role_id")
+  role             Role          @relation(fields: [roleId], references: [id])
+  sessions         Session[]
+  accounts         Account[]
+  responsables     Responsible[]
+
+  @@map("users")
+}
+
+model Session {
+  id         Int       @id @default(autoincrement())
+  token      String    @unique
+  expiresAt  DateTime  @map("expires_at") @db.Timestamptz(6)
+  ipAddress  String?   @map("ip_address")
+  userAgent  String?   @map("user_agent")
+  createdAt  DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime  @map("updated_at") @db.Timestamptz(6)
+  userId     Int       @map("user_id")
+  user       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model Account {
+  id                     Int       @id @default(autoincrement())
+  providerId             String    @map("provider_id")
+  providerAccountId      String    @map("provider_account_id")
+  password               String?
+  accessToken            String?   @map("access_token")
+  refreshToken           String?   @map("refresh_token")
+  idToken                String?   @map("id_token")
+  accessTokenExpiresAt   DateTime? @map("access_token_expires_at") @db.Timestamptz(6)
+  refreshTokenExpiresAt  DateTime? @map("refresh_token_expires_at") @db.Timestamptz(6)
+  scope                  String?
+  createdAt              DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt              DateTime  @map("updated_at") @db.Timestamptz(6)
+  userId                 Int       @map("user_id")
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, providerAccountId])
+  @@map("accounts")
+}
+
+model Responsible {
+  id             Int            @id @default(autoincrement())
+  userId         Int            @map("user_id")
+  areaId         Int?           @map("area_id")
+  user           User           @relation(fields: [userId], references: [id])
+  area           Area?          @relation(fields: [areaId], references: [id])
+  analyses       Analysis[]
+  reanalyses     Reanalysis[]
+  responses      Response[]
+  notifications  Notification[]
+
+  @@map("responsible")
+}
+
+model Client {
+  id            BigInt      @id
+  name          String?     @db.VarChar(100)
+  document      String?     @db.VarChar(20)
+  email         String?     @unique @db.VarChar(100)
+  phoneNumber   String?     @map("phone_number") @db.VarChar(100)
+  typePersonId  Int?        @map("type_person_id")
+  stakeholderId Int?        @map("stakeholder_id")
+  typePerson    TypePerson? @relation(fields: [typePersonId], references: [id])
+  stakeholder   Stakeholder?@relation(fields: [stakeholderId], references: [id])
+  chats         Chat[]
+  pqrs          Pqrs[]
+
+  @@map("client")
+}
+
+model Chat {
+  id        BigInt     @id
+  mode      Int?       @default(1) @db.SmallInt
+  clientId  BigInt?    @map("client_id")
+  client    Client?    @relation(fields: [clientId], references: [id])
+  messages  Message[]
+
+  @@map("chat")
+}
+
+model Message {
+  id        Int       @id @default(autoincrement())
+  content   String?
+  type      Int?      @db.SmallInt
+  createdAt DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  chatId    BigInt    @map("chat_id")
+  chat      Chat      @relation(fields: [chatId], references: [id])
+
+  @@map("message")
+}
+
+model Pqrs {
+  id               Int                 @id @default(autoincrement())
+  ticketNumber     String              @unique @map("ticket_number") @db.VarChar(50)
+  isAutoResolved   Boolean?            @default(false) @map("is_auto_resolved")
+  dueDate          DateTime?           @map("due_date") @db.Date
+  appeal           String?
+  createdAt        DateTime?           @default(now()) @map("created_at") @db.Timestamp(6)
+  updatedAt        DateTime?           @default(now()) @map("updated_at") @db.Timestamp(6)
+  pqrsStatusId     Int                 @map("pqrs_status_id")
+  clientId         BigInt              @map("client_id")
+  typePqrsId       Int                 @map("type_pqrs_id")
+  areaId           Int                 @map("area_id")
+  description      String
+  pqrsStatus       PqrsStatus          @relation(fields: [pqrsStatusId], references: [id])
+  client           Client              @relation(fields: [clientId], references: [id])
+  typePqrs         TypePqrs            @relation(fields: [typePqrsId], references: [id])
+  area             Area                @relation(fields: [areaId], references: [id])
+  analyses         Analysis[]
+  documents        Document[]
+  responses        Response[]
+  surveys          Survey[]
+  notifications    Notification[]
+  statusHistory    PqrsStatusHistory[]
+
+  @@map("pqrs")
+}
+
+model Analysis {
+  id            Int          @id @default(autoincrement())
+  answer        String?
+  actionTaken   String?      @map("action_taken")
+  createdAt     DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  pqrsId        Int          @map("pqrs_id")
+  responsibleId Int          @map("responsible_id")
+  pqrs          Pqrs         @relation(fields: [pqrsId], references: [id])
+  responsible   Responsible  @relation(fields: [responsibleId], references: [id])
+  reanalyses    Reanalysis[]
+
+  @@map("analysis")
+}
+
+model Reanalysis {
+  id            Int         @id @default(autoincrement())
+  answer        String?
+  actionTaken   String?     @map("action_taken")
+  createdAt     DateTime?   @default(now()) @map("created_at") @db.Timestamp(6)
+  analysisId    Int         @map("analysis_id")
+  responsibleId Int         @map("responsible_id")
+  analysis      Analysis    @relation(fields: [analysisId], references: [id])
+  responsible   Responsible @relation(fields: [responsibleId], references: [id])
+
+  @@map("reanalysis")
+}
+
+model Document {
+  id             Int          @id @default(autoincrement())
+  url            String       @db.VarChar(500)
+  typeDocumentId Int          @map("type_document_id")
+  pqrsId         Int          @map("pqrs_id")
+  typeDocument   TypeDocument @relation(fields: [typeDocumentId], references: [id])
+  pqrs           Pqrs         @relation(fields: [pqrsId], references: [id])
+  responses      Response[]
+
+  @@map("document")
+}
+
+model Response {
+  id            Int          @id @default(autoincrement())
+  content       String
+  channel       Int          @db.SmallInt
+  sentAt        DateTime?    @default(now()) @map("sent_at") @db.Timestamp(6)
+  documentId    Int?         @map("document_id")
+  pqrsId        Int          @map("pqrs_id")
+  responsibleId Int          @map("responsible_id")
+  document      Document?    @relation(fields: [documentId], references: [id])
+  pqrs          Pqrs         @relation(fields: [pqrsId], references: [id])
+  responsible   Responsible  @relation(fields: [responsibleId], references: [id])
+
+  @@map("response")
+}
+
+model Survey {
+  id           Int       @id @default(autoincrement())
+  q1Clarity    Int?      @map("q1_clarity")
+  q2Timeliness Int?      @map("q2_timeliness")
+  q3Quality    Int?      @map("q3_quality")
+  q4Attention  Int?      @map("q4_attention")
+  q5Overall    Int?      @map("q5_overall")
+  comment      String?   @db.VarChar(500)
+  pqrsId       Int       @map("pqrs_id")
+  createdAt    DateTime? @default(now()) @map("created_at") @db.Timestamp(6)
+  pqrs         Pqrs      @relation(fields: [pqrsId], references: [id])
+
+  @@map("survey")
+}
+
+model Notification {
+  id            Int          @id @default(autoincrement())
+  message       String       @db.VarChar(500)
+  status        Int?         @default(1) @db.SmallInt
+  responsibleId Int          @map("responsible_id")
+  pqrsId        Int          @map("pqrs_id")
+  createdAt     DateTime?    @default(now()) @map("created_at") @db.Timestamp(6)
+  responsible   Responsible  @relation(fields: [responsibleId], references: [id])
+  pqrs          Pqrs         @relation(fields: [pqrsId], references: [id])
+
+  @@map("notification")
+}
+
+model Verification {
+  id          Int       @id @default(autoincrement())
+  identifier  String
+  value       String
+  expiresAt   DateTime  @map("expires_at") @db.Timestamptz(6)
+  createdAt   DateTime? @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime? @default(now()) @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([identifier, value])
+  @@map("verifications")
+}
+
+model PqrsStatusHistory {
+  id        Int         @id @default(autoincrement())
+  pqrsId    Int         @map("pqrs_id")
+  statusId  Int         @map("status_id")
+  note      String?
+  createdAt DateTime?   @default(now()) @map("created_at") @db.Timestamp(6)
+  pqrs      Pqrs        @relation(fields: [pqrsId], references: [id], onDelete: Cascade)
+  status    PqrsStatus  @relation(fields: [statusId], references: [id])
+
+  @@map("pqrs_status_history")
+}

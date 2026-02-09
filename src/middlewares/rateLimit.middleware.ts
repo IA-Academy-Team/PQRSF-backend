@@ -7,7 +7,7 @@ export const rateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   message: 'Too many requests, please try again later.',
-  skip: (req) => req.method === 'OPTIONS',
+  skip: (req) => req.method === 'OPTIONS' || req.method === 'GET' || req.method === 'HEAD',
   handler: (req, res, _next, options) => {
     res.setHeader('Access-Control-Allow-Origin', FRONTEND_URL)
     res.setHeader('Access-Control-Allow-Credentials', 'true')
