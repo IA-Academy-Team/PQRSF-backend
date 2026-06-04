@@ -30,6 +30,7 @@ import notificationsRoutes from "./notifications.routes";
 import dashboardRoutes from "./dashboard.routes";
 import responsesRoutes from "./responses.routes";
 import webhooksRoutes from "./webhooks.routes";
+import { receiveTelegramWebhook } from "../controllers/webhook.controller";
 
 const router = Router();
 
@@ -46,7 +47,8 @@ router.use("/pqrsf", pqrsfRoutes);
 // router.use("/notifications", notificationsRoutes); // UNUSED (frontend)
 router.use("/dashboard", dashboardRoutes);
 // router.use("/responses", responsesRoutes); // UNUSED (frontend)
-router.use("/whatsapp", webhooksRoutes); // External integrations (not used by frontend, used by n8n)
+router.post("/telegram/webhook", receiveTelegramWebhook);
+router.use("/whatsapp", webhooksRoutes); // Deprecated: returns 410 for WhatsApp chat integration.
 router.use("/responsables", responsableRoutes);
 // router.use("/clientes", clienteRoutes); // UNUSED (frontend)
 router.use("/chats", chatRoutes);

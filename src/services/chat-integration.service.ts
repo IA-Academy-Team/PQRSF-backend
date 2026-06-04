@@ -8,50 +8,19 @@ import { broadcastChatMessage, broadcastChatSummary } from "../config/websocket.
 import {
   N8N_WEBHOOK_URL,
   TELEGRAM_BOT_TOKEN,
-  WHATSAPP_ACCESS_TOKEN,
-  WHATSAPP_PHONE_ID,
 } from "../config/env.config";
 import type { SendChatMessageDTO } from "../schemas/chatIntegration.schema";
 import { optionalString, requireBigInt } from "../utils/validation.utils";
 
 type InboundPayload = {
-  channel: "whatsapp" | "telegram";
+  channel: "telegram";
   from: string;
   content: string;
   name?: string | null;
   metadata?: Record<string, unknown>;
 };
 
-const WHATSAPP_API_BASE = "https://graph.facebook.com/v20.0";
 const TELEGRAM_API_BASE = "https://api.telegram.org";
-
-const sendWhatsappMessage = async (to: string, text: string) => {
-  if (!WHATSAPP_PHONE_ID || !WHATSAPP_ACCESS_TOKEN) {
-    throw new AppError("WhatsApp credentials not configured", 500, "WHATSAPP_NOT_CONFIGURED");
-  }
-
-  const response = await fetch(`${WHATSAPP_API_BASE}/${WHATSAPP_PHONE_ID}/messages`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${WHATSAPP_ACCESS_TOKEN}`,
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to,
-      type: "text",
-      text: { body: text },
-    }),
-  });
-
-  if (!response.ok) {
-    const errorBody = await response.text();
-    throw new AppError("Failed to send WhatsApp message", 502, "WHATSAPP_SEND_FAILED", {
-      status: response.status,
-      errorBody,
-    });
-  }
-};
 
 const sendTelegramMessage = async (chatId: string, text: string) => {
   const hasTelegramToken = Boolean(TELEGRAM_BOT_TOKEN);
@@ -61,7 +30,7 @@ const sendTelegramMessage = async (chatId: string, text: string) => {
   });
 
   if (!TELEGRAM_BOT_TOKEN) {
-    throw new AppError("Telegram credentials not configured", 500, "TELEGRAM_NOT_CONFIGURED");
+    throw new AppError("Telegram credentials not configured", 503, "TELEGRAM_NOT_CONFIGURED");
   }
 
   const response = await fetch(`${TELEGRAM_API_BASE}/bot${TELEGRAM_BOT_TOKEN}/sendMessage`, {
@@ -83,6 +52,19 @@ const sendTelegramMessage = async (chatId: string, text: string) => {
       errorBody,
       hasTelegramToken,
     });
+    const normalizedError = errorBody.toLowerCase();
+    if (response.status === 400 && normalizedError.includes("chat not found")) {
+      throw new AppError(
+        "Telegram chat not found. The user must start a conversation with the current bot before the system can reply.",
+        400,
+        "TELEGRAM_CHAT_NOT_FOUND",
+        {
+          chatId,
+          status: response.status,
+          errorBody,
+        }
+      );
+    }
     throw new AppError("Failed to send Telegram message", 502, "TELEGRAM_SEND_FAILED", {
       status: response.status,
       errorBody,
@@ -130,6 +112,19 @@ export class ChatIntegrationService {
     private readonly mensajeService = new MensajeService()
   ) {}
 
+  private async findChatClient(clientId: bigint | null | undefined) {
+    if (!clientId) return null;
+    return this.clientRepo.findById(clientId);
+  }
+
+  private resolveTelegramChatId(chatId: bigint, phoneNumber: string | null | undefined) {
+    const normalized = phoneNumber?.trim() ?? "";
+    if (normalized.toLowerCase().startsWith("tg:") || normalized.toLowerCase().startsWith("telegram:")) {
+      return normalizeTelegramChatId(normalized);
+    }
+    return String(chatId);
+  }
+
   private normalizeChatId(value: unknown): bigint {
     if (typeof value === "bigint") {
       if (value > 0n) return value;
@@ -164,11 +159,11 @@ export class ChatIntegrationService {
 
   private async getOrCreateClientByPhone(
     phone: string,
-    channel: "whatsapp" | "telegram",
+    channel: "telegram",
     name?: string | null
   ) {
     const raw = optionalString(phone, "phone") ?? "";
-    const normalized = channel === "telegram" ? tagTelegramPhone(raw) : raw;
+    const normalized = tagTelegramPhone(raw);
     if (!normalized) {
       throw new AppError("Phone number is required", 400, "VALIDATION_ERROR", { phone });
     }
@@ -188,21 +183,6 @@ export class ChatIntegrationService {
       return existing;
     }
 
-    if (channel === "whatsapp") {
-      const digits = normalized.replace(/\D/g, "");
-      if (digits) {
-        const byId = await this.clientRepo.findById(BigInt(digits));
-        if (byId) {
-          const updated = await this.clientRepo.update({
-            id: byId.id,
-            name: byId.name ?? displayName,
-            phoneNumber: byId.phoneNumber ?? normalized,
-          });
-          return updated ?? byId;
-        }
-      }
-    }
-
     let id = BigInt(Date.now());
     while (await this.clientRepo.findById(id)) {
       id += BigInt(1);
@@ -210,7 +190,7 @@ export class ChatIntegrationService {
 
     return this.clientRepo.create({
       id,
-      name: displayName ?? "Usuario WhatsApp",
+      name: displayName ?? "Usuario Telegram",
       document: null,
       email: null,
       phoneNumber: normalized,
@@ -246,12 +226,14 @@ export class ChatIntegrationService {
       throw new AppError("Chat is in IA mode", 409, "CHAT_MODE_AI", { chatId, mode });
     }
 
-    const telegramChatId = String(chat.id);
+    const client = await this.findChatClient(chat.clientId);
+
     console.info("[chat][send-manual][telegram]", {
       chatId: String(chatId),
-      telegramChatId,
+      clientId: chat.clientId ? String(chat.clientId) : null,
     });
 
+    const telegramChatId = this.resolveTelegramChatId(chat.id, client?.phoneNumber);
     await sendTelegramMessage(telegramChatId, content);
 
     const message = await this.mensajeService.create({
@@ -276,7 +258,6 @@ export class ChatIntegrationService {
   async sendAdminFile(params: {
     chatId: bigint;
     file: Express.Multer.File;
-    channel?: "whatsapp" | "telegram";
   }) {
     const chatId = requireBigInt(params.chatId, "chatId");
     const chat = await this.chatRepo.findById(chatId);
@@ -300,13 +281,15 @@ export class ChatIntegrationService {
     });
 
     const content = `${file.originalname || "archivo"}: ${fileUrl}`;
-    const telegramChatId = String(chat.id);
+    const client = await this.findChatClient(chat.clientId);
+
     console.info("[chat][send-file][telegram]", {
       chatId: String(chatId),
-      telegramChatId,
+      clientId: chat.clientId ? String(chat.clientId) : null,
       fileName: file.originalname || "archivo",
     });
 
+    const telegramChatId = this.resolveTelegramChatId(chat.id, client?.phoneNumber);
     await sendTelegramMessage(telegramChatId, content);
 
     const message = await this.mensajeService.create({

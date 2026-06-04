@@ -7,16 +7,14 @@ import {
 
 const router = Router();
 
-// UNUSED (frontend)
 // #swagger.tags = ['Webhooks']
-// #swagger.description = 'Verifies WhatsApp webhook. Returns hub.challenge when the verify token matches.'
+// #swagger.description = 'Deprecated WhatsApp webhook verification. WhatsApp chat integration is no longer supported.'
 // #swagger.parameters['hub.mode'] = { in: 'query', required: true, type: 'string', example: 'subscribe' }
 // #swagger.parameters['hub.verify_token'] = { in: 'query', required: true, type: 'string', example: 'your_verify_token' }
 // #swagger.parameters['hub.challenge'] = { in: 'query', required: true, type: 'string', example: '123' }
 router.get("/webhook", verifyWhatsappWebhook);
-// UNUSED (frontend)
 // #swagger.tags = ['Webhooks']
-// #swagger.description = 'Receives WhatsApp Cloud API webhook events.'
+// #swagger.description = 'Deprecated WhatsApp webhook receiver. WhatsApp chat integration is no longer supported.'
 // #swagger.parameters['body'] = { in: 'body', required: true, schema: { $ref: '#/definitions/WhatsappWebhookPayload' } }
 router.post("/webhook", receiveWhatsappWebhook);
 // #swagger.tags = ['Webhooks']
