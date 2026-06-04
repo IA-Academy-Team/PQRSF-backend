@@ -54,6 +54,12 @@ const sendWhatsappMessage = async (to: string, text: string) => {
 };
 
 const sendTelegramMessage = async (chatId: string, text: string) => {
+  const hasTelegramToken = Boolean(TELEGRAM_BOT_TOKEN);
+  console.info("[telegram][send] request", {
+    chatId,
+    hasTelegramToken,
+  });
+
   if (!TELEGRAM_BOT_TOKEN) {
     throw new AppError("Telegram credentials not configured", 500, "TELEGRAM_NOT_CONFIGURED");
   }
@@ -71,11 +77,22 @@ const sendTelegramMessage = async (chatId: string, text: string) => {
 
   if (!response.ok) {
     const errorBody = await response.text();
+    console.warn("[telegram][send] failed", {
+      chatId,
+      status: response.status,
+      errorBody,
+      hasTelegramToken,
+    });
     throw new AppError("Failed to send Telegram message", 502, "TELEGRAM_SEND_FAILED", {
       status: response.status,
       errorBody,
     });
   }
+
+  console.info("[telegram][send] success", {
+    chatId,
+    status: response.status,
+  });
 };
 
 const normalizeTelegramChatId = (value: string) => {
@@ -229,23 +246,13 @@ export class ChatIntegrationService {
       throw new AppError("Chat is in IA mode", 409, "CHAT_MODE_AI", { chatId, mode });
     }
 
-    const clientId = chat.clientId;
-    if (!clientId) {
-      throw new AppError("Chat has no client", 409, "CHAT_NO_CLIENT", { chatId });
-    }
+    const telegramChatId = String(chat.id);
+    console.info("[chat][send-manual][telegram]", {
+      chatId: String(chatId),
+      telegramChatId,
+    });
 
-    const client = await this.clientRepo.findById(clientId);
-    const fallbackPhone = client?.phoneNumber ?? String(client?.id ?? "").trim();
-    if (!client || !fallbackPhone) {
-      throw new AppError("Client phone is required", 409, "CHAT_NO_PHONE", { chatId, clientId });
-    }
-
-    const channel = data.channel ?? "whatsapp";
-    if (channel === "telegram") {
-      await sendTelegramMessage(normalizeTelegramChatId(fallbackPhone), content);
-    } else {
-      await sendWhatsappMessage(fallbackPhone, content);
-    }
+    await sendTelegramMessage(telegramChatId, content);
 
     const message = await this.mensajeService.create({
       chatId,
@@ -282,17 +289,6 @@ export class ChatIntegrationService {
       throw new AppError("Chat is in IA mode", 409, "CHAT_MODE_AI", { chatId, mode });
     }
 
-    const clientId = chat.clientId;
-    if (!clientId) {
-      throw new AppError("Chat has no client", 409, "CHAT_NO_CLIENT", { chatId });
-    }
-
-    const client = await this.clientRepo.findById(clientId);
-    const fallbackPhone = client?.phoneNumber ?? String(client?.id ?? "").trim();
-    if (!client || !fallbackPhone) {
-      throw new AppError("Client phone is required", 409, "CHAT_NO_PHONE", { chatId, clientId });
-    }
-
     const file = params.file;
     const ext = path.extname(file.originalname || "").replace(/[^a-zA-Z0-9.]/g, "");
     const baseName = path.basename(file.originalname || "archivo", ext).replace(/[^\w.-]+/g, "_");
@@ -304,12 +300,14 @@ export class ChatIntegrationService {
     });
 
     const content = `${file.originalname || "archivo"}: ${fileUrl}`;
-    const channel = params.channel ?? "whatsapp";
-    if (channel === "telegram") {
-      await sendTelegramMessage(normalizeTelegramChatId(fallbackPhone), content);
-    } else {
-      await sendWhatsappMessage(fallbackPhone, content);
-    }
+    const telegramChatId = String(chat.id);
+    console.info("[chat][send-file][telegram]", {
+      chatId: String(chatId),
+      telegramChatId,
+      fileName: file.originalname || "archivo",
+    });
+
+    await sendTelegramMessage(telegramChatId, content);
 
     const message = await this.mensajeService.create({
       chatId,
