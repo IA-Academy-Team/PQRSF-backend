@@ -48,7 +48,7 @@ router.get("/", listPqrsDetailed);
 router.post(
   "/bot-response",
   // #swagger.tags = ['Bot_pqrs']
-  // #swagger.description = 'Returns PQRS response payload formatted for the WhatsApp bot.'
+  // #swagger.description = 'Returns PQRS response payload formatted for the Telegram bot.'
   // #swagger.parameters['body'] = { in: 'body', required: true, schema: { type: 'object', properties: { pqrsId: { type: 'integer' } }, example: { pqrsId: 1 } } }
   getPqrsBotResponse
 );

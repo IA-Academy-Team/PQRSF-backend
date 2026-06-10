@@ -51,10 +51,8 @@ export const sendChatFile = asyncHandler(async (req: Request, res: Response) => 
   }
 
   const chatId = req.body?.chatId;
-  const channel = req.body?.channel;
   const result = await integrationService.sendAdminFile({
     chatId,
-    channel,
     file,
   });
   res.status(201).json(normalizeResponse(result));

@@ -50,7 +50,7 @@ export class ChatRepository {
     return prisma.$queryRaw<IChatSummary[]>(Prisma.sql`SELECT chat.id,
               chat.mode,
               chat.client_id AS "clientId",
-              COALESCE(client.name, 'Usuario WhatsApp') AS "clientName",
+              COALESCE(client.name, 'Usuario Telegram') AS "clientName",
               COALESCE(client.phone_number, chat.client_id::text) AS "clientPhone",
               last_message.content AS "lastMessage",
               last_message.created_at AS "lastMessageAt"
