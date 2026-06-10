@@ -54,16 +54,11 @@ const sendTelegramMessage = async (chatId: string, text: string) => {
     });
     const normalizedError = errorBody.toLowerCase();
     if (response.status === 400 && normalizedError.includes("chat not found")) {
-      throw new AppError(
-        "Telegram chat not found. The user must start a conversation with the current bot before the system can reply.",
-        400,
-        "TELEGRAM_CHAT_NOT_FOUND",
-        {
-          chatId,
-          status: response.status,
-          errorBody,
-        }
-      );
+      throw new AppError("Telegram chat not found", 400, "TELEGRAM_CHAT_NOT_FOUND", {
+        chatId,
+        status: response.status,
+        errorBody,
+      });
     }
     throw new AppError("Failed to send Telegram message", 502, "TELEGRAM_SEND_FAILED", {
       status: response.status,
@@ -123,6 +118,52 @@ export class ChatIntegrationService {
       return normalizeTelegramChatId(normalized);
     }
     return String(chatId);
+  }
+
+  private resolveTelegramChatIdCandidates(chatId: bigint, phoneNumber: string | null | undefined) {
+    const primary = this.resolveTelegramChatId(chatId, phoneNumber);
+    const fallback = String(chatId);
+    return primary === fallback ? [primary] : [primary, fallback];
+  }
+
+  private async sendTelegramWithFallback(params: {
+    chatId: bigint;
+    clientId: bigint | null | undefined;
+    phoneNumber: string | null | undefined;
+    content: string;
+  }) {
+    const { chatId, clientId, phoneNumber, content } = params;
+    const candidates = this.resolveTelegramChatIdCandidates(chatId, phoneNumber);
+    let lastError: AppError | null = null;
+
+    for (const candidate of candidates) {
+      try {
+        await sendTelegramMessage(candidate, content);
+        if (clientId && candidate === String(chatId) && tagTelegramPhone(candidate) !== phoneNumber) {
+          await this.clientRepo.update({
+            id: clientId,
+            phoneNumber: tagTelegramPhone(candidate),
+          });
+        }
+        return;
+      } catch (error) {
+        if (error instanceof AppError && error.code === "TELEGRAM_CHAT_NOT_FOUND") {
+          lastError = error;
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    throw new AppError(
+      "Telegram chat not found. The user must start a conversation with the current bot before the system can reply.",
+      400,
+      "TELEGRAM_CHAT_NOT_FOUND",
+      {
+        attemptedChatIds: candidates,
+        lastError: lastError?.details ?? null,
+      }
+    );
   }
 
   private normalizeChatId(value: unknown): bigint {
@@ -233,8 +274,12 @@ export class ChatIntegrationService {
       clientId: chat.clientId ? String(chat.clientId) : null,
     });
 
-    const telegramChatId = this.resolveTelegramChatId(chat.id, client?.phoneNumber);
-    await sendTelegramMessage(telegramChatId, content);
+    await this.sendTelegramWithFallback({
+      chatId: chat.id,
+      clientId: chat.clientId,
+      phoneNumber: client?.phoneNumber,
+      content,
+    });
 
     const message = await this.mensajeService.create({
       chatId,
@@ -289,8 +334,12 @@ export class ChatIntegrationService {
       fileName: file.originalname || "archivo",
     });
 
-    const telegramChatId = this.resolveTelegramChatId(chat.id, client?.phoneNumber);
-    await sendTelegramMessage(telegramChatId, content);
+    await this.sendTelegramWithFallback({
+      chatId: chat.id,
+      clientId: chat.clientId,
+      phoneNumber: client?.phoneNumber,
+      content,
+    });
 
     const message = await this.mensajeService.create({
       chatId,
